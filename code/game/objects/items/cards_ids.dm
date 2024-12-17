@@ -2012,15 +2012,15 @@
 		)
 	/// List of all access areas.
 	var/static/list/area_names = list(
-		ACCESS_COMMAND = "Command",
+		ACCESS_COMMAND = "Bridge",
 		ACCESS_AI_UPLOAD = "AI Upload",
 		ACCESS_TELEPORTER = "Teleporter",
 		ACCESS_EVA = "EVA Storage",
 		ACCESS_RC_ANNOUNCE = "Announcement",
 		ACCESS_KEYCARD_AUTH = "Keycard Authorization",
 		ACCESS_MINISAT = "Mini Satellite",
-		ACCESS_NETWORK = "Network",
-		ACCESS_GATEWAY = "Gateway",
+		ACCESS_NETWORK = "Network Control",
+		ACCESS_GATEWAY = "Gateway Lounge",
 		ACCESS_ALL_PERSONAL_LOCKERS = "Personal Lockers",
 		ACCESS_CHANGE_IDS = "Change IDs",
 		ACCESS_CAPTAIN = "Captain Office",
@@ -2033,29 +2033,29 @@
 		ACCESS_WEAPONS = "Weapons",
 		ACCESS_HOS = "Head of Security Office",
 		ACCESS_DETECTIVE = "Detective",
-		ACCESS_ENGINEERING = "Engineering",
-		ACCESS_ATMOSPHERICS = "Atmospherics",
+		ACCESS_ENGINEERING = "Primary Engineering",
+		ACCESS_ATMOSPHERICS = "Primary Atmospherics",
 		ACCESS_MAINT_TUNNELS = "Maintenance Tunnels",
 		ACCESS_ENGINE_EQUIP = "Engineering Equipment",
-		ACCESS_CONSTRUCTION = "Construction",
+		ACCESS_CONSTRUCTION = "Construction Area",
 		ACCESS_TECH_STORAGE = "Technical Storage",
 		ACCESS_TCOMMS = "Telecommunications",
 		ACCESS_AUX_BASE = "Auxiliary Base",
-		ACCESS_EXTERNAL_AIRLOCKS = "External Airlocks",
-		ACCESS_CE = "Chief Engineer",
-		ACCESS_MEDICAL = "Medical",
-		ACCESS_MORGUE = "Morgue",
+		ACCESS_EXTERNAL_AIRLOCKS = "external airlocks",
+		ACCESS_CE = "Chief Engineer Office",
+		ACCESS_MEDICAL = "Medical Bay",
+		ACCESS_MORGUE = "Morgue Storage",
 		ACCESS_MORGUE_SECURE = "Secure Morgue",
 		ACCESS_PHARMACY = "Pharmacy",
 		ACCESS_SURGERY = "Surgery",
 		ACCESS_PLUMBING = "Plumbing",
 		ACCESS_VIROLOGY = "Virology",
-		ACCESS_PSYCHOLOGY = "Psychology",
+		ACCESS_PSYCHOLOGY = "Psychologist Office",
 		ACCESS_CMO = "Chief Medical Officer Office",
-		ACCESS_CARGO = "Cargo",
-		ACCESS_SHIPPING = "Shipping",
+		ACCESS_CARGO = "Cargo Bay",
+		ACCESS_SHIPPING = "Shipping Office",
 		ACCESS_MINERAL_STOREROOM = "Mineral Storeroom",
-		ACCESS_MINING = "Mining",
+		ACCESS_MINING = "Mining Den",
 		ACCESS_MINING_STATION = "Mining Station",
 		ACCESS_VAULT = "Vault",
 		ACCESS_QM = "Quartermaster Office",
@@ -2159,6 +2159,12 @@
 	access = list(ACCESS_ENGINEERING, ACCESS_ATMOSPHERICS)
 	access_departments = list(DEPARTMENT_ENGINEERING)
 	assignment = DEPARTMENT_ENGINEERING
+	expires_in = 30 SECONDS
+
+/obj/item/card/id/temp/outside
+	access = list(ACCESS_EVA, ACCESS_EXTERNAL_AIRLOCKS)
+	access_departments = list(DEPARTMENT_COMMAND)
+	assignment = "external access"
 	expires_in = 30 SECONDS
 
 #undef INDEX_NAME_COLOR
