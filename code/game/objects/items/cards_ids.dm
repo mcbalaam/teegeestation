@@ -1980,14 +1980,15 @@
 	. = ..()
 	. += span_notice("You could use a pen or crayon to forge a name, assignment or trim.")
 
+/// access vouchers
+
 /obj/item/card/id/temp
 	name = "temporary access voucher"
-	desc = "A cardboard punchcard that provides temporary access to specified areas."
+	desc = "A cardboard punchcard that provides temporary access to specified areas.\n"
 	icon = 'icons/obj/access_vouchers.dmi'
 	icon_state = "id_card"
 	resistance_flags = null
-	// bank_support = FALSE
-	// mining_support = FALSE
+	assignment = "empty"
 	access = list()
 
 	/// List of departments the voucher provides access to.
@@ -2008,38 +2009,125 @@
 		DEPARTMENT_SUPPLY = "sup",
 		DEPARTMENT_SERVICE = "serv",
 		DEPARTMENT_SCIENCE = "sci",
-	)
+		)
+	/// List of all access areas.
+	var/static/list/area_names = list(
+		ACCESS_COMMAND = "Command",
+		ACCESS_AI_UPLOAD = "AI Upload",
+		ACCESS_TELEPORTER = "Teleporter",
+		ACCESS_EVA = "EVA Storage",
+		ACCESS_RC_ANNOUNCE = "Announcement",
+		ACCESS_KEYCARD_AUTH = "Keycard Authorization",
+		ACCESS_MINISAT = "Mini Satellite",
+		ACCESS_NETWORK = "Network",
+		ACCESS_GATEWAY = "Gateway",
+		ACCESS_ALL_PERSONAL_LOCKERS = "Personal Lockers",
+		ACCESS_CHANGE_IDS = "Change IDs",
+		ACCESS_CAPTAIN = "Captain Office",
+		ACCESS_HOP = "Head of Personnel Office",
+		ACCESS_SECURITY = "Security",
+		ACCESS_BRIG_ENTRANCE = "Brig Entrance",
+		ACCESS_BRIG = "Brig",
+		ACCESS_ARMORY = "Armory",
+		ACCESS_COURT = "Court",
+		ACCESS_WEAPONS = "Weapons",
+		ACCESS_HOS = "Head of Security Office",
+		ACCESS_DETECTIVE = "Detective",
+		ACCESS_ENGINEERING = "Engineering",
+		ACCESS_ATMOSPHERICS = "Atmospherics",
+		ACCESS_MAINT_TUNNELS = "Maintenance Tunnels",
+		ACCESS_ENGINE_EQUIP = "Engineering Equipment",
+		ACCESS_CONSTRUCTION = "Construction",
+		ACCESS_TECH_STORAGE = "Technical Storage",
+		ACCESS_TCOMMS = "Telecommunications",
+		ACCESS_AUX_BASE = "Auxiliary Base",
+		ACCESS_EXTERNAL_AIRLOCKS = "External Airlocks",
+		ACCESS_CE = "Chief Engineer",
+		ACCESS_MEDICAL = "Medical",
+		ACCESS_MORGUE = "Morgue",
+		ACCESS_MORGUE_SECURE = "Secure Morgue",
+		ACCESS_PHARMACY = "Pharmacy",
+		ACCESS_SURGERY = "Surgery",
+		ACCESS_PLUMBING = "Plumbing",
+		ACCESS_VIROLOGY = "Virology",
+		ACCESS_PSYCHOLOGY = "Psychology",
+		ACCESS_CMO = "Chief Medical Officer Office",
+		ACCESS_CARGO = "Cargo",
+		ACCESS_SHIPPING = "Shipping",
+		ACCESS_MINERAL_STOREROOM = "Mineral Storeroom",
+		ACCESS_MINING = "Mining",
+		ACCESS_MINING_STATION = "Mining Station",
+		ACCESS_VAULT = "Vault",
+		ACCESS_QM = "Quartermaster Office",
+		ACCESS_BIT_DEN = "Bit Den",
+		ACCESS_SCIENCE = "Science",
+		ACCESS_RESEARCH = "Research",
+		ACCESS_ORDNANCE = "Ordnance",
+		ACCESS_ORDNANCE_STORAGE = "Ordnance Storage",
+		ACCESS_GENETICS = "Genetics",
+		ACCESS_ROBOTICS = "Robotics",
+		ACCESS_XENOBIOLOGY = "Xenobiology",
+		ACCESS_RD = "Research Director Office",
+		ACCESS_SERVICE = "Service",
+		ACCESS_THEATRE = "Theatre",
+		ACCESS_CHAPEL_OFFICE = "Chapel Office",
+		ACCESS_CREMATORIUM = "Crematorium",
+		ACCESS_LIBRARY = "Library",
+		ACCESS_BAR = "Bar",
+		ACCESS_KITCHEN = "Kitchen",
+		ACCESS_HYDROPONICS = "Hydroponics",
+		ACCESS_JANITOR = "Janitor",
+		ACCESS_LAWYER = "Lawyer"
+		)
 
 	var/list/newaccess = list()
 
 /obj/item/card/id/temp/Initialize(mapload, newaccess)
 	. = ..()
-	access += newaccess
 	issue_time = world.time - SSticker.round_start_time
-	say("[issue_time]")
 	update_appearance(UPDATE_OVERLAYS)
+	addtimer(CALLBACK(src, PROC_REF(expire_voucher), newaccess), expires_in)
+
+/obj/item/card/id/temp/proc/expire_voucher()
+	expired = TRUE
+	access = list()
+
+/// Returns a string of all the areas the voucher provides access to. Requires `list`, returns `string`.
+/obj/item/card/id/temp/proc/access_list_to_pretty_string(voucher_access_list)
+	var/department_list_string = ""
+	var/i = 1
+	for (var/access_string in voucher_access_list)
+		department_list_string += area_names[access_string]
+		if (i < (length(voucher_access_list) - 1))
+			department_list_string += ", "
+		else if (i == (length(voucher_access_list) - 1))
+			department_list_string += " and "
+		i += 1
+	return department_list_string
 
 /obj/item/card/id/temp/examine(mob/user)
-	. = ..()
+	. = desc
 	var/department_list_string = ""
 	var/i = 1
 
 	while (i <= length(access_departments))
 		var/each_department = access_departments[i]
 		department_list_string += each_department
-		if (i < (length(access_departments) - 1))
+		if (i < (length(access_departments) - 2))
 			department_list_string += ", "
-		else if (i == (length(access_departments) - 1))
+		else if (i == (length(access_departments) - 2))
 			department_list_string += " and "
 		i += 1
 
-	. += "<span class='notice'>This voucher [length(department_list_string) == 0 ? "<b>does not provide any access</b>" : "provides access to <b>[lowertext(department_list_string)]</b>"].</span>"
-	. += "<span class='notice'><i>You can take a closer look to see which areas it provides access to.</i></span>"
-	. += "This voucher was[owner_name == null ? "n't issued to anyone" : "issued to <b>[owner_name]</b>"]."
+	. += "<span class='notice'>This voucher [length(department_list_string) == 0 ? "<b>does not provide any access</b>" : "provides access to <b>[lowertext(department_list_string)]</b>"].</span>\n"
+	if (!expired)
+		. += "<span class='notice'><i>You can take a closer look to see which areas it provides access to.</i></span>\n"
+	. += "This voucher was[owner_name == null ? "n't issued to anyone" : "issued to <b>[owner_name]</b>"].\n"
 	if (expired)
-		. += "This voucher is <b>expired</b>."
+		. += "This voucher is <b>expired</b>.\n"
 	else
-		. += "This voucher [issue_time == null ? "has no expiration date" : "will expire at <b>[issue_time]</b>"]."
+		var/untill_expiration = DisplayTimeText((issue_time + expires_in) - (world.time - SSticker.round_start_time)) // issue time plus expiration time minus current time
+		. += "This voucher [issue_time == null ? "has no expiration date" : "will expire in <b>[untill_expiration]</b>"].\n"
 
 /obj/item/card/id/temp/click_alt(mob/living/user)
 	return
@@ -2057,18 +2145,21 @@
 	return
 
 /obj/item/card/id/temp/examine_more(mob/user)
-	. = ..()
+	..()
 	if(!user.can_read(src))
 		return
-
+	if(expired)
+		return
+	var/access_string = access_list_to_pretty_string(access)
 	. += span_notice("<i>You examine [src] closer, and note the following...</i>")
-	. += "This voucher gives access to ..."
-
+	. += "<br>"
+	. += "<span class='notice'>This voucher provides access to [access_string].</span>"
 
 /obj/item/card/id/temp/engineering
-	newaccess = list(ACCESS_ENGINEERING)
+	access = list(ACCESS_ENGINEERING, ACCESS_ATMOSPHERICS)
 	access_departments = list(DEPARTMENT_ENGINEERING)
 	assignment = DEPARTMENT_ENGINEERING
+	expires_in = 30 SECONDS
 
 #undef INDEX_NAME_COLOR
 #undef INDEX_ASSIGNMENT_COLOR
