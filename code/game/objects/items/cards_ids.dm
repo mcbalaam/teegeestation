@@ -2132,15 +2132,9 @@
 			department_list_string += " and "
 		i += 1
 
-	. += "<span class='notice'>This voucher [length(department_list_string) == 0 ? "<b>does not provide any access</b>" : "provides access to <b>[lowertext(department_list_string)]</b>"] department areas.</span>\n"
+	. += "<span class='notice'>This voucher [length(department_list_string) == 0 ? "<b>does not provide any access</b>" : "provides access to <b>[department_list_string]</b>"] department areas.</span>\n"
 	if (!expired)
-		. += "<span class='notice'><i>You can take a closer look to see which areas it provides access to.</i></span>\n"
-	. += "This voucher was[owner_name == null ? "n't issued to anyone" : "issued to <b>[owner_name]</b>"].\n"
-	if (expired)
-		. += "<span class='notice'>This voucher <b>has expired</b>.\n</span>"
-	else
-		var/until_expiration = expires_in_to_pretty_string((issue_time + expires_in) - (world.time - SSticker.round_start_time)) // issue time plus expiration time minus current time
-		. += "<span class='notice'>This voucher [issue_time == null ? "<b>has no expiration date</b>" : "will expire in <b>[until_expiration]</b>"].\n</span>"
+		. += "<span class='notice'><i>You can take a closer look to see more...</i></span>\n"
 
 /obj/item/card/id/temp/click_alt(mob/living/user)
 	return
@@ -2175,14 +2169,20 @@
 	var/access_string = access_list_to_pretty_string(access)
 	. += span_notice("<i>You examine [src] closer, and note the following...</i>")
 	. += "<br>"
-	. += "<span class='notice'>This voucher provides access to <b>[access_string].</b></span>"
+	. += "<span class='notice'>This voucher provides access to <b>[access_string].</b></span>\n"
+	. += "This voucher was[owner_name == null ? "n't issued to anyone" : " issued to <b>[owner_name]</b>"].\n"
+	if (expired)
+		. += "<span class='notice'>This voucher <b>has expired</b>.\n</span>"
+	else
+		var/until_expiration = expires_in_to_pretty_string((issue_time + expires_in) - (world.time - SSticker.round_start_time)) // issue time plus expiration time minus current time
+		. += "<span class='notice'>This voucher [issue_time == null ? "<b>has no expiration date</b>" : "will expire in <b>[until_expiration]</b>"].\n</span>"
 
 /obj/item/card/id/temp/engineering
 	access = list(ACCESS_ENGINEERING, ACCESS_ATMOSPHERICS)
 	access_departments = list(DEPARTMENT_ENGINEERING)
 	assignment = DEPARTMENT_ENGINEERING
 	expires_in = 30 SECONDS
-	owner_name = "Alex Shucks"
+	owner_name = "John Sanabi"
 
 /obj/item/card/id/temp/outside
 	access = list(ACCESS_EVA, ACCESS_EXTERNAL_AIRLOCKS)
