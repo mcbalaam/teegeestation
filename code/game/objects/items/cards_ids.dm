@@ -2014,15 +2014,15 @@
 	var/static/list/area_names = list(
 		ACCESS_COMMAND = "Bridge",
 		ACCESS_AI_UPLOAD = "AI Upload",
-		ACCESS_TELEPORTER = "Teleporter",
+		ACCESS_TELEPORTER = "Teleporter Bay",
 		ACCESS_EVA = "EVA Storage",
-		ACCESS_RC_ANNOUNCE = "Announcement",
-		ACCESS_KEYCARD_AUTH = "Keycard Authorization",
+		ACCESS_RC_ANNOUNCE = "request console announcements",
+		ACCESS_KEYCARD_AUTH = "keycard authorization",
 		ACCESS_MINISAT = "Mini Satellite",
 		ACCESS_NETWORK = "Network Control",
 		ACCESS_GATEWAY = "Gateway Lounge",
-		ACCESS_ALL_PERSONAL_LOCKERS = "Personal Lockers",
-		ACCESS_CHANGE_IDS = "Change IDs",
+		ACCESS_ALL_PERSONAL_LOCKERS = "overriding personal lockers access",
+		ACCESS_CHANGE_IDS = "change IDs",
 		ACCESS_CAPTAIN = "Captain Office",
 		ACCESS_HOP = "Head of Personnel Office",
 		ACCESS_SECURITY = "Security",
@@ -2030,9 +2030,9 @@
 		ACCESS_BRIG = "Brig",
 		ACCESS_ARMORY = "Armory",
 		ACCESS_COURT = "Court",
-		ACCESS_WEAPONS = "Weapons",
+		ACCESS_WEAPONS = "weapons",
 		ACCESS_HOS = "Head of Security Office",
-		ACCESS_DETECTIVE = "Detective",
+		ACCESS_DETECTIVE = "Detective Office",
 		ACCESS_ENGINEERING = "Primary Engineering",
 		ACCESS_ATMOSPHERICS = "Primary Atmospherics",
 		ACCESS_MAINT_TUNNELS = "Maintenance Tunnels",
@@ -2077,7 +2077,7 @@
 		ACCESS_KITCHEN = "Kitchen",
 		ACCESS_HYDROPONICS = "Hydroponics",
 		ACCESS_JANITOR = "Janitor",
-		ACCESS_LAWYER = "Lawyer"
+		ACCESS_LAWYER = "Lawyer Office"
 		)
 
 	var/list/newaccess = list()
@@ -2105,6 +2105,19 @@
 		i += 1
 	return department_list_string
 
+/obj/item/card/id/temp/proc/expires_in_to_pretty_string(until_expiration_time)
+	switch(until_expiration_time)
+		if (0 to 300)
+			return "less than a minute"
+		if (60 SECONDS to 3 MINUTES)
+			return "less than three minutes"
+		if (3 MINUTES to 5 MINUTES)
+			return "around five minutes"
+		if (5 MINUTES to 10 MINUTES)
+			return "around ten minutes"
+		if (10 MINUTES to 30 MINUTES)
+			return "around half an hour"
+
 /obj/item/card/id/temp/examine(mob/user)
 	. = desc
 	var/department_list_string = ""
@@ -2119,17 +2132,20 @@
 			department_list_string += " and "
 		i += 1
 
-	. += "<span class='notice'>This voucher [length(department_list_string) == 0 ? "<b>does not provide any access</b>" : "provides access to <b>[lowertext(department_list_string)]</b>"].</span>\n"
+	. += "<span class='notice'>This voucher [length(department_list_string) == 0 ? "<b>does not provide any access</b>" : "provides access to <b>[lowertext(department_list_string)]</b>"] department areas.</span>\n"
 	if (!expired)
 		. += "<span class='notice'><i>You can take a closer look to see which areas it provides access to.</i></span>\n"
 	. += "This voucher was[owner_name == null ? "n't issued to anyone" : "issued to <b>[owner_name]</b>"].\n"
 	if (expired)
-		. += "This voucher is <b>expired</b>.\n"
+		. += "<span class='notice'>This voucher <b>has expired</b>.\n</span>"
 	else
-		var/untill_expiration = DisplayTimeText((issue_time + expires_in) - (world.time - SSticker.round_start_time)) // issue time plus expiration time minus current time
-		. += "This voucher [issue_time == null ? "has no expiration date" : "will expire in <b>[untill_expiration]</b>"].\n"
+		var/until_expiration = expires_in_to_pretty_string((issue_time + expires_in) - (world.time - SSticker.round_start_time)) // issue time plus expiration time minus current time
+		. += "<span class='notice'>This voucher [issue_time == null ? "<b>has no expiration date</b>" : "will expire in <b>[until_expiration]</b>"].\n</span>"
 
 /obj/item/card/id/temp/click_alt(mob/living/user)
+	return
+
+/obj/item/card/id/temp/click_alt_secondary(mob/user)
 	return
 
 /obj/item/card/id/temp/update_overlays()
@@ -2144,6 +2160,12 @@
 /obj/item/card/id/temp/attack_self(mob/user)
 	return
 
+/obj/item/card/id/interact_with_atom_secondary(atom/interacting_with, mob/living/user, list/modifiers)
+	return
+
+/obj/item/card/id/attack_self_secondary(mob/user, modifiers)
+	return
+
 /obj/item/card/id/temp/examine_more(mob/user)
 	..()
 	if(!user.can_read(src))
@@ -2153,19 +2175,20 @@
 	var/access_string = access_list_to_pretty_string(access)
 	. += span_notice("<i>You examine [src] closer, and note the following...</i>")
 	. += "<br>"
-	. += "<span class='notice'>This voucher provides access to [access_string].</span>"
+	. += "<span class='notice'>This voucher provides access to <b>[access_string].</b></span>"
 
 /obj/item/card/id/temp/engineering
 	access = list(ACCESS_ENGINEERING, ACCESS_ATMOSPHERICS)
 	access_departments = list(DEPARTMENT_ENGINEERING)
 	assignment = DEPARTMENT_ENGINEERING
 	expires_in = 30 SECONDS
+	owner_name = "Alex Shucks"
 
 /obj/item/card/id/temp/outside
 	access = list(ACCESS_EVA, ACCESS_EXTERNAL_AIRLOCKS)
 	access_departments = list(DEPARTMENT_COMMAND)
 	assignment = "external access"
-	expires_in = 30 SECONDS
+	expires_in = 10 MINUTES
 
 #undef INDEX_NAME_COLOR
 #undef INDEX_ASSIGNMENT_COLOR
