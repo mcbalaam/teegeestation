@@ -1980,15 +1980,17 @@
 	. = ..()
 	. += span_notice("You could use a pen or crayon to forge a name, assignment or trim.")
 
-/// access vouchers
-
+/*
+	okay so
+	uhh
+ */
 /obj/item/card/id/temp
 	name = "temporary access voucher"
-	desc = "A cardboard punchcard that provides temporary access to specified areas.\n"
+	desc = "<i>A cardboard punchcard that provides temporary access to specified areas.</i>\n"
 	icon = 'icons/obj/access_vouchers.dmi'
 	icon_state = "id_card"
 	resistance_flags = null
-	assignment = "empty"
+	assignment = "blank"
 	access = list()
 
 	/// List of departments the voucher provides access to.
@@ -1997,7 +1999,7 @@
 	var/owner_name = null
 	/// World time at which the voucher was issued.
 	var/issue_time = null
-	/// The voucher's expiration time. It will loose it's access when it expires.
+	/// The voucher's expiration time. It will lose it's access when it expires.
 	var/expires_in = 5 MINUTES
 	/// If the voucher has already expired.
 	var/expired = FALSE
@@ -2082,22 +2084,25 @@
 
 	var/list/newaccess = list()
 
-/obj/item/card/id/temp/Initialize(mapload, newaccess)
-	. = ..()
-	issue_time = world.time - SSticker.round_start_time
-	update_appearance(UPDATE_OVERLAYS)
-	addtimer(CALLBACK(src, PROC_REF(expire_voucher), newaccess), expires_in)
-
+/// Sets the voucher's `access` to an empty list. Also affects visuals - changes it's description.
 /obj/item/card/id/temp/proc/expire_voucher()
 	expired = TRUE
 	access = list()
+
+/obj/item/card/id/temp/Initialize(mapload, newaccess)
+	. = ..()
+	issue_time = world.time - SSticker.round_start_time
+	if (length(access) == 0)
+		expired = TRUE	// disabling `examine_more` if the voucher is empty
+	update_appearance(UPDATE_OVERLAYS)
+	addtimer(CALLBACK(src, PROC_REF(expire_voucher), newaccess), expires_in)
 
 /// Returns a string of all the areas the voucher provides access to. Requires `list`, returns `string`.
 /obj/item/card/id/temp/proc/access_list_to_pretty_string(voucher_access_list)
 	var/department_list_string = ""
 	var/i = 1
 	for (var/access_string in voucher_access_list)
-		department_list_string += area_names[access_string]
+		department_list_string += "<b>[area_names[access_string]]</b>"
 		if (i < (length(voucher_access_list) - 1))
 			department_list_string += ", "
 		else if (i == (length(voucher_access_list) - 1))
@@ -2105,6 +2110,7 @@
 		i += 1
 	return department_list_string
 
+/// Returns time untill expiration as a string in form of "around X minutes".
 /obj/item/card/id/temp/proc/expires_in_to_pretty_string(until_expiration_time)
 	switch(until_expiration_time)
 		if (0 to 300)
@@ -2132,15 +2138,17 @@
 			department_list_string += " and "
 		i += 1
 
-	. += "<span class='notice'>This voucher [length(department_list_string) == 0 ? "<b>does not provide any access</b>" : "provides access to <b>[department_list_string]</b>"] department areas.</span>\n"
-	if (!expired)
+	. += "<span class='notice'>This voucher [length(department_list_string) == 0 ? "<b>does not provide any access</b>" : "provides access to <b>[department_list_string]</b> department areas"].</span>\n"
+	if (expired)
+		. += "<span class='notice'>This voucher <b>has expired</b>.\n</span>"
+	else
 		. += "<span class='notice'><i>You can take a closer look to see more...</i></span>\n"
 
 /obj/item/card/id/temp/click_alt(mob/living/user)
-	return
+	return	// blocking the withdrawal
 
 /obj/item/card/id/temp/click_alt_secondary(mob/user)
-	return
+	return	// blocking setting up an account
 
 /obj/item/card/id/temp/update_overlays()
 	. = ..()
@@ -2152,13 +2160,13 @@
 		. += "stamp-comm"
 
 /obj/item/card/id/temp/attack_self(mob/user)
-	return
+	return	// blocking editing the voucher
 
-/obj/item/card/id/interact_with_atom_secondary(atom/interacting_with, mob/living/user, list/modifiers)
-	return
+/obj/item/card/id/temp/interact_with_atom_secondary(atom/interacting_with, mob/living/user, list/modifiers)
+	return	// blocking emitting a paystand
 
-/obj/item/card/id/attack_self_secondary(mob/user, modifiers)
-	return
+/obj/item/card/id/temp/attack_self_secondary(mob/user, modifiers)
+	return	// blocking emitting a paystand
 
 /obj/item/card/id/temp/examine_more(mob/user)
 	..()
@@ -2167,15 +2175,21 @@
 	if(expired)
 		return
 	var/access_string = access_list_to_pretty_string(access)
+	var/until_expiration = expires_in_to_pretty_string((issue_time + expires_in) - (world.time - SSticker.round_start_time)) // issue time plus expiration time minus current time
 	. += span_notice("<i>You examine [src] closer, and note the following...</i>")
 	. += "<br>"
-	. += "<span class='notice'>This voucher provides access to <b>[access_string].</b></span>\n"
-	. += "This voucher was[owner_name == null ? "n't issued to anyone" : " issued to <b>[owner_name]</b>"].\n"
-	if (expired)
-		. += "<span class='notice'>This voucher <b>has expired</b>.\n</span>"
-	else
-		var/until_expiration = expires_in_to_pretty_string((issue_time + expires_in) - (world.time - SSticker.round_start_time)) // issue time plus expiration time minus current time
-		. += "<span class='notice'>This voucher [issue_time == null ? "<b>has no expiration date</b>" : "will expire in <b>[until_expiration]</b>"].\n</span>"
+	. += "<span class='notice'>This voucher provides access to [access_string].</span>\n"
+	. += "<span class='notice'>This voucher was[owner_name == null ? "n't issued to anyone" : " issued to <b>[owner_name]</b>"].</span>\n"
+	. += "<span class='notice'>This voucher [issue_time == null ? "<b>has no expiration date</b>" : "will expire in <b>[until_expiration]</b>"].</span>\n"
+
+/obj/item/card/id/temp/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	if(istype(loc, /obj/item/modular_computer))
+		balloon_alert(loc, "doesn't fit!")
+		return
+	if(istype(loc, /obj/machinery/computer))
+		balloon_alert(loc, "doesn't fit!")
+		return
 
 /obj/item/card/id/temp/engineering
 	access = list(ACCESS_ENGINEERING, ACCESS_ATMOSPHERICS)
