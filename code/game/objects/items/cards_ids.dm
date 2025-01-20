@@ -1988,8 +1988,7 @@
 	. += span_notice("You could use a pen or crayon to forge a name, assignment or trim.")
 
 /*
-	okay so
-	uhh
+Temporary access vouchers
  */
 /obj/item/card/id/temp
 	name = "temporary access voucher"
@@ -2120,7 +2119,7 @@
 /// Returns time untill expiration as a string in form of "around X minutes".
 /obj/item/card/id/temp/proc/expires_in_to_pretty_string(until_expiration_time)
 	switch(until_expiration_time)
-		if (0 to 300)
+		if (0 to 60 SECONDS)
 			return "less than a minute"
 		if (60 SECONDS to 3 MINUTES)
 			return "less than three minutes"
@@ -2130,6 +2129,10 @@
 			return "around ten minutes"
 		if (10 MINUTES to 30 MINUTES)
 			return "around half an hour"
+		if (30 MINUTES to 60 MINUTES)
+			return "around an hour"
+		else
+			return "more than an hour"
 
 /obj/item/card/id/temp/examine(mob/user)
 	. = desc
@@ -2189,14 +2192,17 @@
 	. += "<span class='notice'>This voucher was[owner_name == null ? "n't issued to anyone" : " issued to <b>[owner_name]</b>"].</span>\n"
 	. += "<span class='notice'>This voucher [issue_time == null ? "<b>has no expiration date</b>" : "will expire in <b>[until_expiration]</b>"].</span>\n"
 
-/obj/item/card/id/temp/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
-	. = ..()
-	if(istype(loc, /obj/item/modular_computer))
-		balloon_alert(loc, "doesn't fit!")
-		return
-	if(istype(loc, /obj/machinery/computer))
-		balloon_alert(loc, "doesn't fit!")
-		return
+// /obj/item/card/id/temp/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
+// 	. = ..()
+// 	var/mob/living/carbon/human/user = old_loc
+// 	if(istype(loc, /obj/item/modular_computer))
+// 		balloon_alert(user, "doesn't fit!")
+// 		user.put_in_hands(src)
+// 		return
+// 	if(istype(loc, /obj/machinery/computer))
+// 		balloon_alert(user, "doesn't fit!")
+// 		user.put_in_hands(src)
+// 		return
 
 /obj/item/card/id/temp/engineering
 	access = list(ACCESS_ENGINEERING, ACCESS_ATMOSPHERICS)

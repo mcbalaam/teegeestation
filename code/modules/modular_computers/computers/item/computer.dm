@@ -275,9 +275,12 @@
 /obj/item/modular_computer/InsertID(obj/item/card/inserting_id, mob/user)
 	if(!isnull(user) && !user.transferItemToLoc(inserting_id, src))
 		return FALSE
+	if(istype(inserting_id, /obj/item/card/id/temp))
+		balloon_alert(user, "doesn't fit!")
+		user.put_in_hands(inserting_id)
+		return FALSE
 
-	else
-		inserting_id.forceMove(src)
+	inserting_id.forceMove(src)
 
 	if(!isnull(computer_id_slot))
 		RemoveID(user, silent = TRUE)
