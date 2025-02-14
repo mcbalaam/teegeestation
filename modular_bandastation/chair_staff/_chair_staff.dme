@@ -1,0 +1,3 @@
+#include "_chair_staff.dm"
+
+#include "code/chair_staff.dm"

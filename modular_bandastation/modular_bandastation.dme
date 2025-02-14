@@ -17,6 +17,7 @@
 #include "autowiki/_autowiki.dme"
 #include "balance/_balance.dme"
 #include "barsigns/_barsigns.dme"
+#include "chair_staff/_chair_staff.dme"
 #include "changelog/_changelog.dme"
 #include "chat_badges/_chat_badges.dme"
 #include "communication/_communication.dme"
