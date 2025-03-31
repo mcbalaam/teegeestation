@@ -30104,12 +30104,14 @@
 /turf/open/floor/plating,
 /area/station/science/xenobiology)
 "bZZ" = (
-/obj/structure/cable,
-/obj/effect/mapping_helpers/broken_floor,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor/heavy,
+/obj/machinery/door/airlock/maintenance{
+	name = "Atmospherics Maintenance"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/atmos,
+/obj/machinery/atmospherics/pipe/layer_manifold/supply/visible,
 /turf/open/floor/plating,
-/area/station/maintenance/port/fore)
+/area/station/engineering/atmos)
 "cac" = (
 /obj/structure/chair/stool,
 /turf/open/floor/plating,
@@ -42930,15 +42932,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/iron,
 /area/station/hallway/primary/fore)
-"iGy" = (
-/obj/machinery/door/firedoor/heavy,
-/obj/machinery/door/airlock/maintenance{
-	name = "Atmospherics Maintenance"
-	},
-/obj/effect/mapping_helpers/airlock/access/all/engineering/atmos,
-/obj/machinery/atmospherics/pipe/layer_manifold/supply/visible,
-/turf/open/floor/plating,
-/area/station/engineering/atmos)
 "iGz" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/iron,
@@ -46462,6 +46455,10 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
 	},
+/obj/effect/mapping_helpers/airalarm/link{
+	chamber_id = "ordnanceburn"
+	},
+/obj/effect/mapping_helpers/airalarm/tlv_no_checks,
 /turf/open/floor/iron/dark,
 /area/station/science/ordnance)
 "lFC" = (
@@ -54801,6 +54798,13 @@
 /obj/structure/cable,
 /turf/open/floor/iron/white,
 /area/station/medical/medbay/central)
+"sKW" = (
+/obj/structure/cable,
+/obj/effect/mapping_helpers/broken_floor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/station/maintenance/port/fore)
 "sLm" = (
 /obj/structure/disposalpipe/segment{
 	dir = 8
@@ -76235,7 +76239,7 @@ aaa
 ali
 cyi
 aol
-bZZ
+sKW
 wqG
 wqG
 wqG
@@ -94795,7 +94799,7 @@ bFB
 hDz
 bKy
 bjV
-iGy
+bZZ
 bMV
 idX
 nfc
