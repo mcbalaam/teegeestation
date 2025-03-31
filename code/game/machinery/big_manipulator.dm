@@ -21,6 +21,9 @@
 #define WORKER_EMPTY_USE "empty"
 #define WORKER_NORMAL_USE "normal"
 
+#define FILTERS_REQUIRED TRUE
+#define FILTERS_SKIPPED FALSE
+
 /// The Big Manipulator's core. Main part of the mechanism that carries out the entire process.
 /obj/machinery/big_manipulator
 	name = "Big Manipulator"
@@ -87,6 +90,23 @@
 		/obj/item,
 		/obj/structure/closet,
 	)
+
+	var/list/pickup_points = list()
+	var/list/dropoff_points = list()
+
+/datum/interaction_point
+	var/name = "interaction point"
+	var/order = 0
+
+	/// The turf this interaction point represents.
+	var/turf/interaction_turf
+	/// Should we check our filters while interacting with this point?
+	var/filters_required = FILTERS_SKIPPED
+	/*
+	Which items are supposed to be picked up from `interaction_turf` if this is a pickup point
+	or looked for in the `interaction_turf` if this is a dropoff point.
+	*/
+	var/list/atom_filters = list()
 
 /obj/machinery/big_manipulator/Initialize(mapload)
 	. = ..()
