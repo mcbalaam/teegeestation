@@ -24,6 +24,10 @@
 #define FILTERS_REQUIRED TRUE
 #define FILTERS_SKIPPED FALSE
 
+#define TASKING_ROUND_ROBIN "ROUND-ROBIN"
+#define TASKING_STRICT_ROBIN "STRICT R-R"
+#define TASKING_PREFER_FIRST "PREFER FIRST"
+
 /// The Big Manipulator's core. Main part of the mechanism that carries out the entire process.
 /obj/machinery/big_manipulator
 	name = "Big Manipulator"
@@ -91,22 +95,88 @@
 		/obj/structure/closet,
 	)
 
+	/// History of accessed points for round-robin tasking.
+	var/list/roundrobin_history = 1
+	/// Which tasking scenario we use for pickup points?
+	var/pickup_tasking = TASKING_ROUND_ROBIN
+	/// Which tasking scenario we use for dropoff points?
+	var/dropoff_tasking = TASKING_ROUND_ROBIN
+	/// List of pickup points.
 	var/list/pickup_points = list()
+	/// List of dropoff points.
 	var/list/dropoff_points = list()
 
 /datum/interaction_point
 	var/name = "interaction point"
-	var/order = 0
 
 	/// The turf this interaction point represents.
 	var/turf/interaction_turf
 	/// Should we check our filters while interacting with this point?
-	var/filters_required = FILTERS_SKIPPED
+	var/filters_status = FILTERS_SKIPPED
 	/*
 	Which items are supposed to be picked up from `interaction_turf` if this is a pickup point
 	or looked for in the `interaction_turf` if this is a dropoff point.
 	*/
 	var/list/atom_filters = list()
+
+/datum/interaction_point/proc/is_available()
+	if(filters_status == FILTERS_SKIPPED)
+		return TRUE
+
+	for(var/atom/this_atom in interaction_turf)
+		if(this_atom in atom_filters)
+			return FALSE
+
+	return TRUE
+
+/// Calculates the next interaction point the manipulator should transfer the item to. If returns `NONE`, awaits one full cycle.
+/obj/machinery/big_manipulator/proc/find_next_point(tasking_type)
+	if(!tasking_type)
+		tasking_type = TASKING_PREFER_FIRST
+
+	switch(tasking_type)
+		if(TASKING_PREFER_FIRST)
+			for(var/datum/interaction_point/this_point in dropoff_points)
+				if(this_point.is_available())
+					return this_point
+
+			return NONE
+
+		if(TASKING_ROUND_ROBIN)
+			var/datum/interaction_point/this_point = dropoff_points[roundrobin_history]
+			if(this_point.is_available())
+				roundrobin_history += 1
+				if(roundrobin_history > length(dropoff_points))
+					roundrobin_history = 1
+				return this_point
+
+			var/initial_index = roundrobin_history
+			roundrobin_history += 1
+			if(roundrobin_history > length(dropoff_points))
+				roundrobin_history = 1
+
+			while(roundrobin_history != initial_index)
+				this_point = dropoff_points[roundrobin_history]
+				if(this_point.is_available())
+					roundrobin_history += 1
+					if(roundrobin_history > length(dropoff_points))
+						roundrobin_history = 1
+					return this_point
+
+				roundrobin_history += 1
+				if(roundrobin_history > length(dropoff_points))
+					roundrobin_history = 1
+			return NONE
+
+		if(TASKING_STRICT_ROBIN)
+			var/datum/interaction_point/this_point = dropoff_points[roundrobin_history]
+			if(this_point.is_available())
+				roundrobin_history += 1
+				if(roundrobin_history > length(dropoff_points))
+					roundrobin_history = 1
+				return this_point
+
+			return NONE
 
 /obj/machinery/big_manipulator/Initialize(mapload)
 	. = ..()
