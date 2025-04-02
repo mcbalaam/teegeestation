@@ -28,6 +28,13 @@
 #define TASKING_STRICT_ROBIN "STRICT R-R"
 #define TASKING_PREFER_FIRST "PREFER FIRST"
 
+#define TRANSFER_TYPE_PICKUP "pick up"
+#define TRANSFER_TYPE_DROPOFF "drop off"
+
+#define MOVE_CYCLE_SUCCESS "success"
+#define MOVE_CYCLE_HALF "half"
+#define MOVE_CYCLE_FAIL "fail"
+
 /// The Big Manipulator's core. Main part of the mechanism that carries out the entire process.
 /obj/machinery/big_manipulator
 	name = "Big Manipulator"
@@ -95,8 +102,10 @@
 		/obj/structure/closet,
 	)
 
-	/// History of accessed points for round-robin tasking.
-	var/list/roundrobin_history = 1
+	/// History of accessed pickup points for round-robin tasking.
+	var/list/roundrobin_history_pickup = 1
+	/// History of accessed dropoff points for round-robin tasking.
+	var/list/roundrobin_history_dropoff = 1
 	/// Which tasking scenario we use for pickup points?
 	var/pickup_tasking = TASKING_ROUND_ROBIN
 	/// Which tasking scenario we use for dropoff points?
@@ -113,6 +122,8 @@
 	var/turf/interaction_turf
 	/// Should we check our filters while interacting with this point?
 	var/filters_status = FILTERS_SKIPPED
+	/// How should this point be interacted with?
+	var/interaction_mode = INTERACT_DROP
 	/*
 	Which items are supposed to be picked up from `interaction_turf` if this is a pickup point
 	or looked for in the `interaction_turf` if this is a dropoff point.
@@ -130,53 +141,81 @@
 	return TRUE
 
 /// Calculates the next interaction point the manipulator should transfer the item to. If returns `NONE`, awaits one full cycle.
-/obj/machinery/big_manipulator/proc/find_next_point(tasking_type)
+/obj/machinery/big_manipulator/proc/find_next_point(tasking_type, transfer_type)
 	if(!tasking_type)
 		tasking_type = TASKING_PREFER_FIRST
 
+	if(!transfer_type)
+		return NONE
+
+	var/list/interaction_points = transfer_type == TRANSFER_TYPE_DROPOFF ? dropoff_points : pickup_points
+	var/roundrobin_history = transfer_type == TRANSFER_TYPE_DROPOFF ? roundrobin_history_dropoff : roundrobin_history_pickup
+
 	switch(tasking_type)
 		if(TASKING_PREFER_FIRST)
-			for(var/datum/interaction_point/this_point in dropoff_points)
+			for(var/datum/interaction_point/this_point in interaction_points)
 				if(this_point.is_available())
 					return this_point
 
 			return NONE
 
 		if(TASKING_ROUND_ROBIN)
-			var/datum/interaction_point/this_point = dropoff_points[roundrobin_history]
+			var/datum/interaction_point/this_point = interaction_points[roundrobin_history]
 			if(this_point.is_available())
 				roundrobin_history += 1
-				if(roundrobin_history > length(dropoff_points))
+				if(roundrobin_history > length(interaction_points))
 					roundrobin_history = 1
 				return this_point
 
 			var/initial_index = roundrobin_history
 			roundrobin_history += 1
-			if(roundrobin_history > length(dropoff_points))
+			if(roundrobin_history > length(interaction_points))
 				roundrobin_history = 1
 
 			while(roundrobin_history != initial_index)
-				this_point = dropoff_points[roundrobin_history]
+				this_point = interaction_points[roundrobin_history]
 				if(this_point.is_available())
 					roundrobin_history += 1
-					if(roundrobin_history > length(dropoff_points))
+					if(roundrobin_history > length(interaction_points))
 						roundrobin_history = 1
 					return this_point
 
 				roundrobin_history += 1
-				if(roundrobin_history > length(dropoff_points))
+				if(roundrobin_history > length(interaction_points))
 					roundrobin_history = 1
 			return NONE
 
 		if(TASKING_STRICT_ROBIN)
-			var/datum/interaction_point/this_point = dropoff_points[roundrobin_history]
+			var/datum/interaction_point/this_point = interaction_points[roundrobin_history]
 			if(this_point.is_available())
 				roundrobin_history += 1
-				if(roundrobin_history > length(dropoff_points))
+				if(roundrobin_history > length(interaction_points))
 					roundrobin_history = 1
 				return this_point
 
 			return NONE
+
+/obj/machinery/big_manipulator/proc/try_run_full_cycle()
+	// Step 1: picking up the thing
+	var/origin_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
+	if(!origin_point)
+		return MOVE_CYCLE_FAIL // cycle failed - couldn't find a next point: no valid pickup points or didn't meet the filter rules
+
+	if(!try_interact_with_origin_point())
+		return MOVE_CYCLE_FAIL // cycle failed - couldn't pick up the item
+
+	// Step 2: doing something with the item
+	var/destination_point = find_next_point(dropoff_tasking, TRANSFER_TYPE_DROPOFF)
+	if(!destination_point)
+		return MOVE_CYCLE_HALF // cycle failed - couldn't find a next point: no valid dropoff points or didn't meet the filter rules
+
+	if(!try_interact_with_destination_point())
+		return MOVE_CYCLE_HALF // cycle failed - couldn't use the item
+
+
+/obj/machinery/big_manipulator/proc/try_interact_with_origin_point()
+
+/obj/machinery/big_manipulator/proc/try_interact_with_destination_point()
 
 /obj/machinery/big_manipulator/Initialize(mapload)
 	. = ..()
