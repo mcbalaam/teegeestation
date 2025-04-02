@@ -35,6 +35,8 @@
 #define MOVE_CYCLE_HALF "half"
 #define MOVE_CYCLE_FAIL "fail"
 
+#define BASE_POWER_USAGE 0.2
+
 /// The Big Manipulator's core. Main part of the mechanism that carries out the entire process.
 /obj/machinery/big_manipulator
 	name = "Big Manipulator"
@@ -45,13 +47,12 @@
 	circuit = /obj/item/circuitboard/machine/big_manipulator
 	greyscale_colors = "#d8ce13"
 	greyscale_config = /datum/greyscale_config/big_manipulator
+
 	/// Min time manipulator can have in delay. Changing on upgrade.
 	var/minimal_delay = MIN_DELAY_TIER_1
 	/// The time it takes for the manipulator to complete the action cycle.
 	var/interaction_delay = MIN_DELAY_TIER_1
 
-	/// Using high tier manipulators speeds up big manipulator and requires more energy.
-	var/power_use_lvl = 0.2
 	/// The status of the manipulator - `IDLE` or `BUSY`.
 	var/status = STATUS_IDLE
 	/// Is the manipulator turned on?
@@ -72,7 +73,7 @@
 	/// We also use this list to sort priorities from ascending to descending.
 	var/list/allowed_priority_settings = list()
 	/// The object inside the manipulator.
-	var/datum/weakref/containment_obj
+	var/datum/weakref/held_object
 	/// The object used as a filter.
 	var/datum/weakref/filter_obj
 	/// The poor monkey that needs to use mode works.
@@ -131,6 +132,12 @@
 	var/list/atom_filters = list()
 
 /datum/interaction_point/proc/is_available()
+	if(!interaction_turf)
+		return FALSE
+
+	if(isclosedturf(interaction_turf))
+		return FALSE
+
 	if(filters_status == FILTERS_SKIPPED)
 		return TRUE
 
@@ -139,6 +146,41 @@
 			return FALSE
 
 	return TRUE
+
+/datum/interaction_point/New(turf/new_turf, list/new_filters, new_filters_status, new_interaction_mode)
+	if(!new_turf)
+		stack_trace("New manipulator interaction point created, but no valid turf references were passed.")
+		return FALSE
+
+	if(isclosedturf(new_turf))
+		return FALSE
+
+	interaction_turf = new_turf
+
+	if(length(new_filters))
+		atom_filters = new_filters
+
+	if(new_filters_status)
+		filters_status = new_filters_status
+
+	if(new_interaction_mode)
+		interaction_mode = new_interaction_mode
+
+
+/obj/machinery/big_manipulator/proc/create_new_interaction_point(turf/new_turf, list/new_filters, new_filters_status, new_interaction_mode, transfer_type)
+	if(!new_turf)
+		stack_trace("Attempting to create a new interaction point, but no valid turf references were passed.")
+		return
+
+	var/datum/interaction_point/new_interaction_point = new(src, new_turf, new_filters, new_filters_status, new_interaction_mode)
+
+	switch(transfer_type)
+		if(TRANSFER_TYPE_PICKUP)
+			pickup_points += new_interaction_point
+		if(TRANSFER_TYPE_DROPOFF)
+			dropoff_points += new_interaction_point
+
+	return new_interaction_point
 
 /// Calculates the next interaction point the manipulator should transfer the item to. If returns `NONE`, awaits one full cycle.
 /obj/machinery/big_manipulator/proc/find_next_point(tasking_type, transfer_type)
@@ -195,6 +237,31 @@
 
 			return NONE
 
+/obj/machinery/big_manipulator/proc/try_start_full_cycle(datum/source, atom/movable/target)
+	var/empty_hand_check = worker_interaction == WORKER_EMPTY_USE && interaction_mode == INTERACT_USE
+	if(!on)
+		return FALSE
+
+	if(!anchored)
+		return FALSE
+
+	if(status == STATUS_BUSY)
+		return FALSE
+
+	if(!empty_hand_check)
+		if(QDELETED(source) || QDELETED(target))
+			return
+		if(!isturf(target.loc))
+			return
+		if(!check_filter(target))
+			return
+
+	if(!use_energy(active_power_usage, force = FALSE))
+		on = FALSE
+		say("Not enough energy!")
+		return
+	try_run_full_cycle()
+
 /obj/machinery/big_manipulator/proc/try_run_full_cycle()
 	// Step 1: picking up the thing
 	var/origin_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
@@ -219,17 +286,43 @@
 
 /obj/machinery/big_manipulator/Initialize(mapload)
 	. = ..()
-	take_and_drop_turfs_check()
 	create_manipulator_arm()
 	RegisterSignal(manipulator_arm, COMSIG_QDELETING, PROC_REF(on_hand_qdel))
-	manipulator_lvl()
-	set_up_priority_settings()
+	process_upgrades()
+	// set_up_priority_settings() // will be refactored - interaction data is now stored in datums
 	selected_type = allowed_types_to_pick_up[1]
 	if(on)
 		press_on(pressed_by = null)
 	set_wires(new /datum/wires/big_manipulator(src))
 
 	register_context()
+
+/// Checks the component tiers, adjusting the properties of the manipulator.
+/obj/machinery/big_manipulator/proc/process_upgrades()
+	var/datum/stock_part/servo/locate_servo = locate() in component_parts
+	if(!locate_servo)
+		return
+
+	var/manipulator_tier = locate_servo.tier
+	switch(manipulator_tier)
+		if(-INFINITY to 1)
+			minimal_delay = interaction_delay = MIN_DELAY_TIER_1
+			set_greyscale(COLOR_YELLOW)
+			manipulator_arm?.set_greyscale(COLOR_YELLOW)
+		if(2)
+			minimal_delay = interaction_delay = MIN_DELAY_TIER_2
+			set_greyscale(COLOR_ORANGE)
+			manipulator_arm?.set_greyscale(COLOR_ORANGE)
+		if(3)
+			minimal_delay = interaction_delay = MIN_DELAY_TIER_3
+			set_greyscale(COLOR_RED)
+			manipulator_arm?.set_greyscale(COLOR_RED)
+		if(4 to INFINITY)
+			minimal_delay = interaction_delay = MIN_DELAY_TIER_4
+			set_greyscale(COLOR_PURPLE)
+			manipulator_arm?.set_greyscale(COLOR_PURPLE)
+
+	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * BASE_POWER_USAGE * manipulator_tier
 
 /// Init priority settings list for all modes.
 /obj/machinery/big_manipulator/proc/set_up_priority_settings()
@@ -270,8 +363,8 @@
 /obj/machinery/big_manipulator/Destroy(force)
 	. = ..()
 	qdel(manipulator_arm)
-	if(!isnull(containment_obj))
-		var/obj/containment_resolve = containment_obj?.resolve()
+	if(!isnull(held_object))
+		var/obj/containment_resolve = held_object?.resolve()
 		containment_resolve?.forceMove(get_turf(containment_resolve))
 	if(!isnull(filter_obj))
 		var/obj/filter_resolve = filter_obj?.resolve()
@@ -297,7 +390,6 @@
 
 /obj/machinery/big_manipulator/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
 	. = ..()
-	take_and_drop_turfs_check()
 	if(isnull(get_turf(src)))
 		qdel(manipulator_arm)
 		return
@@ -318,14 +410,14 @@
 	default_unfasten_wrench(user, tool, time = 1 SECONDS)
 	return ITEM_INTERACT_SUCCESS
 
-/obj/machinery/big_manipulator/wrench_act_secondary(mob/living/user, obj/item/tool)
-	. = ..()
-	if(status == STATUS_BUSY || on)
-		to_chat(user, span_warning("[src] is activated!"))
-		return ITEM_INTERACT_BLOCKING
-	rotate_big_hand()
-	playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
-	return ITEM_INTERACT_SUCCESS
+// /obj/machinery/big_manipulator/wrench_act_secondary(mob/living/user, obj/item/tool)
+// 	. = ..()
+// 	if(status == STATUS_BUSY || on)
+// 		to_chat(user, span_warning("[src] is activated!"))
+// 		return ITEM_INTERACT_BLOCKING
+// 	rotate_big_hand()
+// 	playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
+// 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/big_manipulator/can_be_unfasten_wrench(mob/user, silent)
 	if(status == STATUS_BUSY || on)
@@ -336,7 +428,6 @@
 /obj/machinery/big_manipulator/default_unfasten_wrench(mob/user, obj/item/wrench, time)
 	. = ..()
 	if(. == SUCCESSFUL_UNFASTEN)
-		take_and_drop_turfs_check()
 
 /obj/machinery/big_manipulator/screwdriver_act(mob/living/user, obj/item/tool)
 	if(default_deconstruction_screwdriver(user, icon_state, icon_state, tool))
@@ -359,8 +450,7 @@
 
 /obj/machinery/big_manipulator/RefreshParts()
 	. = ..()
-
-	manipulator_lvl()
+	process_upgrades()
 
 /obj/machinery/big_manipulator/mouse_drop_dragged(atom/drop_point, mob/user, src_location, over_location, params)
 	if(isnull(monkey_worker))
@@ -430,67 +520,8 @@
 /// Creat manipulator hand effect on manipulator core.
 /obj/machinery/big_manipulator/proc/create_manipulator_arm()
 	manipulator_arm = new/obj/effect/big_manipulator_arm(src)
-	manipulator_arm.dir = take_here
+	manipulator_arm.dir = NORTH
 	vis_contents += manipulator_arm
-
-/// Check servo tier and change manipulator speed, power_use and colour.
-/obj/machinery/big_manipulator/proc/manipulator_lvl()
-	var/datum/stock_part/servo/locate_servo = locate() in component_parts
-	if(!locate_servo)
-		return
-	switch(locate_servo.tier)
-		if(-INFINITY to 1)
-			minimal_delay = interaction_delay = MIN_DELAY_TIER_1
-			power_use_lvl = 0.2
-			set_greyscale(COLOR_YELLOW)
-			manipulator_arm?.set_greyscale(COLOR_YELLOW)
-		if(2)
-			minimal_delay = interaction_delay = MIN_DELAY_TIER_2
-			power_use_lvl = 0.4
-			set_greyscale(COLOR_ORANGE)
-			manipulator_arm?.set_greyscale(COLOR_ORANGE)
-		if(3)
-			minimal_delay = interaction_delay = MIN_DELAY_TIER_3
-			power_use_lvl = 0.6
-			set_greyscale(COLOR_RED)
-			manipulator_arm?.set_greyscale(COLOR_RED)
-		if(4 to INFINITY)
-			minimal_delay = interaction_delay = MIN_DELAY_TIER_4
-			power_use_lvl = 0.8
-			set_greyscale(COLOR_PURPLE)
-			manipulator_arm?.set_greyscale(COLOR_PURPLE)
-
-	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * power_use_lvl
-
-/// Changing take and drop turf tiles when we anchore manipulator or if manipulator not in turf.
-/obj/machinery/big_manipulator/proc/take_and_drop_turfs_check()
-	if(anchored && isturf(src.loc))
-		take_turf = get_step(src, take_here)
-		drop_turf = get_step(src, drop_here)
-	else
-		take_turf = null
-		drop_turf = null
-
-/// Changing take and drop turf dirs and also changing manipulator hand sprite dir.
-/obj/machinery/big_manipulator/proc/rotate_big_hand()
-	switch(take_here)
-		if(NORTH)
-			take_here = EAST
-			drop_here = WEST
-		if(EAST)
-			take_here = SOUTH
-			drop_here = NORTH
-		if(SOUTH)
-			take_here = WEST
-			drop_here = EAST
-		if(WEST)
-			take_here = NORTH
-			drop_here = SOUTH
-	manipulator_arm.dir = take_here
-	var/mob/monkey = monkey_worker?.resolve()
-	if(!isnull(monkey))
-		monkey.dir = manipulator_arm.dir
-	take_and_drop_turfs_check()
 
 /// Deliting hand will destroy our manipulator core.
 /obj/machinery/big_manipulator/proc/on_hand_qdel()
@@ -546,8 +577,8 @@
 /obj/machinery/big_manipulator/proc/start_work(atom/movable/target, hand_is_empty = FALSE)
 	if(!hand_is_empty)
 		target.forceMove(src)
-		containment_obj = WEAKREF(target)
-		manipulator_arm.update_claw(containment_obj)
+		held_object = WEAKREF(target)
+		manipulator_arm.update_claw(held_object)
 	status = STATUS_BUSY
 	do_rotate_animation(1)
 	check_next_move(target, hand_is_empty)
@@ -593,7 +624,7 @@
 /// Checks the priority so that you can configure which object it will select: mob/obj/turf.
 /// Also can use filter to interact only with obj in filter.
 /obj/machinery/big_manipulator/proc/use_thing(atom/movable/target, hand_is_empty = FALSE)
-	var/obj/obj_resolve = containment_obj?.resolve()
+	var/obj/obj_resolve = held_object?.resolve()
 	if(isnull(obj_resolve))
 		finish_manipulation()
 		return
@@ -683,7 +714,7 @@
 /// End of thirds take and drop proc from [take and drop procs loop]:
 /// Starts manipulator hand backward animation.
 /obj/machinery/big_manipulator/proc/finish_manipulation()
-	containment_obj = null
+	held_object = null
 	manipulator_arm.update_claw(null)
 	do_rotate_animation(0)
 	addtimer(CALLBACK(src, PROC_REF(end_work)), interaction_delay SECONDS)
@@ -784,9 +815,9 @@
 
 /// Drop item that manipulator is manipulating.
 /obj/machinery/big_manipulator/proc/drop_held_object()
-	if(isnull(containment_obj))
+	if(isnull(held_object))
 		return
-	var/obj/obj_resolve = containment_obj?.resolve()
+	var/obj/obj_resolve = held_object?.resolve()
 	obj_resolve?.forceMove(get_turf(obj_resolve))
 	finish_manipulation()
 
