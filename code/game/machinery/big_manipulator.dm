@@ -132,10 +132,7 @@
 	var/list/atom_filters = list()
 
 /datum/interaction_point/proc/is_available()
-	if(!interaction_turf)
-		return FALSE
-
-	if(isclosedturf(interaction_turf))
+	if(!is_valid())
 		return FALSE
 
 	if(filters_status == FILTERS_SKIPPED)
@@ -144,6 +141,15 @@
 	for(var/atom/this_atom in interaction_turf)
 		if(this_atom in atom_filters)
 			return FALSE
+
+	return TRUE
+
+/datum/interaction_point/proc/is_valid()
+	if(!interaction_turf)
+		return FALSE
+
+	if(isclosedturf(interaction_turf))
+		return FALSE
 
 	return TRUE
 
@@ -237,8 +243,7 @@
 
 			return NONE
 
-/obj/machinery/big_manipulator/proc/try_start_full_cycle(datum/source, atom/movable/target)
-	var/empty_hand_check = worker_interaction == WORKER_EMPTY_USE && interaction_mode == INTERACT_USE
+/obj/machinery/big_manipulator/proc/try_begin_full_cycle(datum/source, atom/movable/target)
 	if(!on)
 		return FALSE
 
@@ -248,18 +253,11 @@
 	if(status == STATUS_BUSY)
 		return FALSE
 
-	if(!empty_hand_check)
-		if(QDELETED(source) || QDELETED(target))
-			return
-		if(!isturf(target.loc))
-			return
-		if(!check_filter(target))
-			return
-
 	if(!use_energy(active_power_usage, force = FALSE))
 		on = FALSE
-		say("Not enough energy!")
-		return
+		balloon_alert("not enough power!")
+		return FALSE
+
 	try_run_full_cycle()
 
 /obj/machinery/big_manipulator/proc/try_run_full_cycle()
@@ -532,45 +530,45 @@
 /// Pre take and drop proc from [take and drop procs loop]:
 /// Can we begin the `take-and-drop` loop?
 /obj/machinery/big_manipulator/proc/is_ready_to_work()
-	if(worker_interaction == WORKER_EMPTY_USE)
-		try_take_thing()
-		return TRUE
-	if(isclosedturf(drop_turf))
-		on = !on
-		say("Output blocked")
-		return FALSE
-	for(var/take_item in take_turf.contents)
-		if(!check_filter(take_item))
-			continue
-		try_take_thing(take_turf, take_item)
-		break
+	// if(worker_interaction == WORKER_EMPTY_USE)
+	// 	try_take_thing()
+	// 	return TRUE
+	// if(isclosedturf(drop_turf))
+	// 	on = !on
+	// 	say("Output blocked")
+	// 	return FALSE
+	// for(var/take_item in take_turf.contents)
+	// 	if(!check_filter(take_item))
+	// 		continue
+	// 	try_take_thing(take_turf, take_item)
+	// 	break
 	return TRUE
 
-/// First take and drop proc from [take and drop procs loop]:
-/// Check if we can take item from take_turf to work with him. This proc also calling from ATOM_ENTERED signal.
-/obj/machinery/big_manipulator/proc/try_take_thing(datum/source, atom/movable/target)
-	SIGNAL_HANDLER
+// /// First take and drop proc from [take and drop procs loop]:
+// /// Check if we can take item from take_turf to work with him. This proc also calling from ATOM_ENTERED signal.
+// /obj/machinery/big_manipulator/proc/try_take_thing(datum/source, atom/movable/target)
+// 	SIGNAL_HANDLER
 
-	var/empty_hand_check = worker_interaction == WORKER_EMPTY_USE && interaction_mode == INTERACT_USE
+// 	var/empty_hand_check = worker_interaction == WORKER_EMPTY_USE && interaction_mode == INTERACT_USE
 
-	if(!on)
-		return
-	if(!anchored)
-		return
-	if(status == STATUS_BUSY)
-		return
-	if(!empty_hand_check)
-		if(QDELETED(source) || QDELETED(target))
-			return
-		if(!isturf(target.loc))
-			return
-		if(!check_filter(target))
-			return
-	if(!use_energy(active_power_usage, force = FALSE))
-		on = FALSE
-		say("Not enough energy!")
-		return
-	start_work(target, empty_hand_check)
+// 	if(!on)
+// 		return
+// 	if(!anchored)
+// 		return
+// 	if(status == STATUS_BUSY)
+// 		return
+// 	if(!empty_hand_check)
+// 		if(QDELETED(source) || QDELETED(target))
+// 			return
+// 		if(!isturf(target.loc))
+// 			return
+// 		if(!check_filter(target))
+// 			return
+// 	if(!use_energy(active_power_usage, force = FALSE))
+// 		on = FALSE
+// 		say("Not enough energy!")
+// 		return
+// 	start_work(target, empty_hand_check)
 
 /// Second take and drop proc from [take and drop procs loop]:
 /// Taking our item and start manipulator hand rotate animation.
@@ -795,16 +793,55 @@
 
 /// Proc call when we press on/off button
 /obj/machinery/big_manipulator/proc/press_on(pressed_by)
-	if(pressed_by)
-		on = !on
-	if(!is_ready_to_work())
-		return
-	if(on)
-		RegisterSignal(take_turf, COMSIG_ATOM_ENTERED, PROC_REF(try_take_thing))
-		RegisterSignal(take_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON, PROC_REF(try_take_thing))
+	// if(pressed_by)
+	// 	on = !on
+	// if(!is_ready_to_work())
+	// 	return
+	// if(on)
+	// 	RegisterSignal(take_turf, COMSIG_ATOM_ENTERED, PROC_REF(try_take_thing))
+	// 	RegisterSignal(take_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON, PROC_REF(try_take_thing))
+	// else
+	// 	UnregisterSignal(take_turf, COMSIG_ATOM_ENTERED)
+	// 	UnregisterSignal(take_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
+
+/obj/machinery/big_manipulator/proc/switch_power_state(mob/user)
+	var/new_power_state = !on
+	if(new_power_state)
+		if(!powered())
+			balloon_alert(user, "no power!")
+			return
+
+		if(!anchored)
+			balloon_alert(user, "anchor first!")
+			return
+
+		validate_all_points()
+
+		for(var/datum/interaction_point/point in pickup_points)
+			var/turf/pickup_turf = point.interaction_turf
+			RegisterSignal(pickup_turf, COMSIG_ATOM_ENTERED, PROC_REF(try_begin_full_cycle))
+			RegisterSignal(pickup_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON, PROC_REF(try_begin_full_cycle))
+
 	else
-		UnregisterSignal(take_turf, COMSIG_ATOM_ENTERED)
-		UnregisterSignal(take_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
+		for(var/datum/interaction_point/point in pickup_points)
+			var/turf/pickup_turf = point.interaction_turf
+			UnregisterSignal(pickup_turf, COMSIG_ATOM_ENTERED)
+			UnregisterSignal(pickup_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
+
+		drop_held_object()
+		// return_to_init_position()
+
+	on = new_power_state
+
+/obj/machinery/big_manipulator/proc/validate_all_points()
+	for(var/datum/interaction_point/point in pickup_points)
+		if(!point.is_valid())
+			pickup_points.Remove(point)
+
+	for(var/datum/interaction_point/point in dropoff_points)
+		if(!point.is_valid())
+			dropoff_points.Remove(point)
+
 
 /// Proc that check if button not cutted when we press on button.
 /obj/machinery/big_manipulator/proc/try_press_on(mob/user)
