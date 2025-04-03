@@ -116,63 +116,6 @@
 	/// List of dropoff points.
 	var/list/dropoff_points = list()
 
-/datum/interaction_point
-	var/name = "interaction point"
-
-	/// The turf this interaction point represents.
-	var/turf/interaction_turf
-	/// Should we check our filters while interacting with this point?
-	var/filters_status = FILTERS_SKIPPED
-	/// How should this point be interacted with?
-	var/interaction_mode = INTERACT_DROP
-	/*
-	Which items are supposed to be picked up from `interaction_turf` if this is a pickup point
-	or looked for in the `interaction_turf` if this is a dropoff point.
-	*/
-	var/list/atom_filters = list()
-
-/datum/interaction_point/proc/is_available()
-	if(!is_valid())
-		return FALSE
-
-	if(filters_status == FILTERS_SKIPPED)
-		return TRUE
-
-	for(var/atom/this_atom in interaction_turf)
-		if(this_atom in atom_filters)
-			return FALSE
-
-	return TRUE
-
-/datum/interaction_point/proc/is_valid()
-	if(!interaction_turf)
-		return FALSE
-
-	if(isclosedturf(interaction_turf))
-		return FALSE
-
-	return TRUE
-
-/datum/interaction_point/New(turf/new_turf, list/new_filters, new_filters_status, new_interaction_mode)
-	if(!new_turf)
-		stack_trace("New manipulator interaction point created, but no valid turf references were passed.")
-		return FALSE
-
-	if(isclosedturf(new_turf))
-		return FALSE
-
-	interaction_turf = new_turf
-
-	if(length(new_filters))
-		atom_filters = new_filters
-
-	if(new_filters_status)
-		filters_status = new_filters_status
-
-	if(new_interaction_mode)
-		interaction_mode = new_interaction_mode
-
-
 /obj/machinery/big_manipulator/proc/create_new_interaction_point(turf/new_turf, list/new_filters, new_filters_status, new_interaction_mode, transfer_type)
 	if(!new_turf)
 		stack_trace("Attempting to create a new interaction point, but no valid turf references were passed.")
