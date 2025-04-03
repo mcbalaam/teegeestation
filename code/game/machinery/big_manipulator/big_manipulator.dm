@@ -1,42 +1,3 @@
-#define INTERACT_DROP "drop"
-#define INTERACT_USE "use"
-#define INTERACT_THROW "throw"
-
-#define TAKE_ITEMS 1
-#define TAKE_CLOSETS 2
-#define TAKE_HUMANS 3
-
-#define DELAY_STEP 0.1
-#define MAX_DELAY 30
-
-#define MIN_DELAY_TIER_1 2
-#define MIN_DELAY_TIER_2 1.4
-#define MIN_DELAY_TIER_3 0.8
-#define MIN_DELAY_TIER_4 0.2
-
-#define STATUS_BUSY TRUE
-#define STATUS_IDLE FALSE
-
-#define WORKER_SINGLE_USE "single"
-#define WORKER_EMPTY_USE "empty"
-#define WORKER_NORMAL_USE "normal"
-
-#define FILTERS_REQUIRED TRUE
-#define FILTERS_SKIPPED FALSE
-
-#define TASKING_ROUND_ROBIN "ROUND-ROBIN"
-#define TASKING_STRICT_ROBIN "STRICT R-R"
-#define TASKING_PREFER_FIRST "PREFER FIRST"
-
-#define TRANSFER_TYPE_PICKUP "pick up"
-#define TRANSFER_TYPE_DROPOFF "drop off"
-
-#define MOVE_CYCLE_SUCCESS "success"
-#define MOVE_CYCLE_HALF "half"
-#define MOVE_CYCLE_FAIL "fail"
-
-#define BASE_POWER_USAGE 0.2
-
 /// The Big Manipulator's core. Main part of the mechanism that carries out the entire process.
 /obj/machinery/big_manipulator
 	name = "Big Manipulator"
@@ -209,7 +170,7 @@
 	if(!origin_point)
 		return MOVE_CYCLE_FAIL // cycle failed - couldn't find a next point: no valid pickup points or didn't meet the filter rules
 
-	if(!try_interact_with_origin_point())
+	if(!try_interact_with_origin_point(origin_point))
 		return MOVE_CYCLE_FAIL // cycle failed - couldn't pick up the item
 
 	// Step 2: doing something with the item
@@ -217,13 +178,39 @@
 	if(!destination_point)
 		return MOVE_CYCLE_HALF // cycle failed - couldn't find a next point: no valid dropoff points or didn't meet the filter rules
 
-	if(!try_interact_with_destination_point())
+	if(!try_interact_with_destination_point(destination_point))
 		return MOVE_CYCLE_HALF // cycle failed - couldn't use the item
 
 
-/obj/machinery/big_manipulator/proc/try_interact_with_origin_point()
+/obj/machinery/big_manipulator/proc/try_interact_with_destination_point(datum/interaction_point/destination_point, hand_is_empty = FALSE)
+	if(!destination_point)
+		return FALSE
 
-/obj/machinery/big_manipulator/proc/try_interact_with_destination_point()
+	if(hand_is_empty)
+		addtimer(CALLBACK(src, PROC_REF(use_thing_with_empty_hand)), interaction_delay SECONDS)
+		return
+
+	var/atom/target = null
+
+	switch(destination_point.interaction_mode)
+		if(INTERACT_DROP)
+			addtimer(CALLBACK(src, PROC_REF(drop_thing), target), interaction_delay SECONDS)
+		if(INTERACT_USE)
+			addtimer(CALLBACK(src, PROC_REF(use_thing), target), interaction_delay SECONDS)
+		if(INTERACT_THROW)
+			addtimer(CALLBACK(src, PROC_REF(throw_thing), target), interaction_delay SECONDS)
+
+/obj/machinery/big_manipulator/proc/try_interact_with_origin_point(datum/interaction_point/origin_point, hand_is_empty = FALSE)
+	if(!origin_point)
+		return FALSE
+
+	var/turf/origin_turf = origin_point.interaction_turf
+	for(var/atom/movable/movable_atom in origin_turf.contents)
+		if(origin_point.check_filters_for_atom(movable_atom))
+			return
+			// if(try_pickup_item())
+			// 		break
+
 
 /obj/machinery/big_manipulator/Initialize(mapload)
 	. = ..()
@@ -369,6 +356,7 @@
 /obj/machinery/big_manipulator/default_unfasten_wrench(mob/user, obj/item/wrench, time)
 	. = ..()
 	if(. == SUCCESSFUL_UNFASTEN)
+		return
 
 /obj/machinery/big_manipulator/screwdriver_act(mob/living/user, obj/item/tool)
 	if(default_deconstruction_screwdriver(user, icon_state, icon_state, tool))
@@ -1028,26 +1016,3 @@
 /obj/machinery/big_manipulator/proc/cycle_pickup_type()
 	selected_type = cycle_value(selected_type, allowed_types_to_pick_up)
 	is_ready_to_work()
-
-#undef INTERACT_DROP
-#undef INTERACT_USE
-#undef INTERACT_THROW
-
-#undef TAKE_ITEMS
-#undef TAKE_CLOSETS
-#undef TAKE_HUMANS
-
-#undef DELAY_STEP
-#undef MAX_DELAY
-
-#undef WORKER_NORMAL_USE
-#undef WORKER_SINGLE_USE
-#undef WORKER_EMPTY_USE
-
-#undef STATUS_IDLE
-#undef STATUS_BUSY
-
-#undef MIN_DELAY_TIER_1
-#undef MIN_DELAY_TIER_2
-#undef MIN_DELAY_TIER_3
-#undef MIN_DELAY_TIER_4

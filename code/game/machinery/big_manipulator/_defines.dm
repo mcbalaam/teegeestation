@@ -1,0 +1,38 @@
+#define INTERACT_DROP "drop"
+#define INTERACT_USE "use"
+#define INTERACT_THROW "throw"
+
+#define TAKE_ITEMS 1
+#define TAKE_CLOSETS 2
+#define TAKE_HUMANS 3
+
+#define DELAY_STEP 0.1
+#define MAX_DELAY 30
+
+#define MIN_DELAY_TIER_1 2
+#define MIN_DELAY_TIER_2 1.4
+#define MIN_DELAY_TIER_3 0.8
+#define MIN_DELAY_TIER_4 0.2
+
+#define STATUS_BUSY TRUE
+#define STATUS_IDLE FALSE
+
+#define WORKER_SINGLE_USE "single"
+#define WORKER_EMPTY_USE "empty"
+#define WORKER_NORMAL_USE "normal"
+
+#define FILTERS_REQUIRED TRUE
+#define FILTERS_SKIPPED FALSE
+
+#define TASKING_ROUND_ROBIN "ROUND-ROBIN"
+#define TASKING_STRICT_ROBIN "STRICT R-R"
+#define TASKING_PREFER_FIRST "PREFER FIRST"
+
+#define TRANSFER_TYPE_PICKUP "pick up"
+#define TRANSFER_TYPE_DROPOFF "drop off"
+
+#define MOVE_CYCLE_SUCCESS "success"
+#define MOVE_CYCLE_HALF "half"
+#define MOVE_CYCLE_FAIL "fail"
+
+#define BASE_POWER_USAGE 0.2
