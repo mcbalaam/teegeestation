@@ -39,6 +39,21 @@
 	if(new_interaction_mode)
 		interaction_mode = new_interaction_mode
 
+/datum/interaction_point/proc/find_type_priority(override = FALSE)
+	var/lazy_counter = 1
+	for(var/datum/manipulator_priority/take_type in interaction_priorities)
+		if(lazy_counter > 1 && override)
+			return null
+
+		if(take_type.what_type == /turf)
+			return interaction_turf
+
+		lazy_counter++
+
+		for(var/type_in_priority in interaction_turf.contents)
+			if(!istype(type_in_priority, take_type.what_type))
+				continue
+			return type_in_priority
 
 /datum/interaction_point/proc/is_available()
 	if(!is_valid())

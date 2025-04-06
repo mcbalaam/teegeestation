@@ -18,14 +18,7 @@
 	var/status = STATUS_IDLE
 	/// Is the manipulator turned on?
 	var/on = FALSE
-	/// The direction the manipulator arm will take items from.
-	var/take_here = NORTH
-	/// The direction the manipulator arm will drop items to.
-	var/drop_here = SOUTH
-	/// The turf where the manipulator arm will take items from.
-	var/turf/take_turf
-	/// The turf where the manipulator arm will drop items to.
-	var/turf/drop_turf
+
 	/// Priority settings depending on the manipulator drop mode that are available to this manipulator. Filled during Initialize.
 	var/list/priority_settings_for_drop = list()
 	/// Priority settings depending on the manipulator use mode that are available to this manipulator. Filled during Initialize.
@@ -526,24 +519,21 @@
 		if(INTERACT_THROW)
 			addtimer(CALLBACK(src, PROC_REF(throw_thing), target), interaction_delay SECONDS)
 
-/// 3.1 take and drop proc from [take and drop procs loop]:
-/// Drop our item.
-/// Checks the priority to drop item not only ground but also in the storage.
-/obj/machinery/big_manipulator/proc/drop_thing(atom/movable/target)
-	var/where_we_drop = search_type_by_priority_in_drop_turf(allowed_priority_settings)
-	if(isnull(where_we_drop))
-		addtimer(CALLBACK(src, PROC_REF(drop_thing), target), interaction_delay SECONDS)
+/// Drops the item onto the turf.
+/obj/machinery/big_manipulator/proc/drop_thing(datum/interaction_point/destination_point)
+	var/drop_endpoint = destination_point.find_type_priority(override_priority)
+	var/obj/actual_held_object = held_object?.resolve()
+
+	if(isnull(drop_endpoint))
+		addtimer(CALLBACK(src, PROC_REF(drop_thing), destination_point), interaction_delay SECONDS)
 		return
-	if((where_we_drop == drop_turf) || !isitem(target))
-		target.forceMove(drop_turf)
-		target.dir = get_dir(get_turf(target), get_turf(src))
-	else
-		var/atom/drop_target = where_we_drop
-		if(drop_target.atom_storage)
-			if(!drop_target.atom_storage.attempt_insert(target, override = TRUE, messages = FALSE))
-				target.forceMove(drop_target.drop_location())
-		else
-			target.forceMove(where_we_drop)
+
+	var/atom/drop_target = drop_endpoint
+	if(drop_target.atom_storage && (!drop_target.atom_storage.attempt_insert(actual_held_object, override = TRUE, messages = FALSE)))
+		actual_held_object.forceMove(drop_target.drop_location())
+		return
+
+	actual_held_object.forceMove(drop_endpoint)
 	finish_manipulation()
 
 /// 3.2 take and drop proc from [take and drop procs loop]:
@@ -557,24 +547,29 @@
 	if(isnull(obj_resolve))
 		finish_manipulation()
 		return
+
 	var/mob/living/carbon/human/species/monkey/monkey_resolve = monkey_worker?.resolve()
 	if(isnull(monkey_resolve))
 		finish_manipulation()
 		return
+
 	/// If we forceMoved from manipulator we are free now.
 	if(obj_resolve.loc != src && obj_resolve.loc != monkey_resolve)
 		finish_manipulation()
 		return
+
 	if(!isitem(target))
 		target.forceMove(drop_turf) /// We use only items
 		target.dir = get_dir(get_turf(target), get_turf(src))
 		finish_manipulation()
 		return
+
 	var/obj/item/im_item = target
 	var/atom/type_to_use = search_type_by_priority_in_drop_turf(allowed_priority_settings)
 	if(isnull(type_to_use))
 		check_end_of_use(im_item, item_was_used = FALSE)
 		return
+
 	monkey_resolve.put_in_active_hand(im_item)
 	if(im_item.GetComponent(/datum/component/two_handed)) /// Using two-handed items in two hands.
 		im_item.attack_self(monkey_resolve)
@@ -635,7 +630,7 @@
 		return
 	var/obj/item/im_item = target
 	im_item.forceMove(drop_turf)
-	im_item.throw_at(get_edge_target_turf(get_turf(src), drop_here), manipulator_throw_range - 1, 2)
+	// im_item.throw_at(get_edge_target_turf(get_turf(src), drop_here), manipulator_throw_range - 1, 2)
 	src.do_attack_animation(drop_turf)
 	manipulator_arm.do_attack_animation(drop_turf)
 	finish_manipulation()
