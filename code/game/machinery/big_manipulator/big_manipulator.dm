@@ -10,24 +10,17 @@
 	greyscale_config = /datum/greyscale_config/big_manipulator
 
 	/// Min time manipulator can have in delay. Changing on upgrade.
-	var/minimal_interaction_multiplier = MIN_DELAY_TIER_1
-	/// Time it takes to rotate between adjacent points (45 degrees)
-	var/rotation_delay = MIN_DELAY_TIER_1 * 0.5
+	var/minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_1
+	/// Base interaction delay (between repeating actions and adjacent points)
+	var/interaction_delay = BASE_INTERACTION_TIME * STARTING_MULTIPLIER
 	/// The interaction time modifier - faster to slower.
 	var/interaction_multiplier = STARTING_MULTIPLIER
-	/// The time it takes for the manipulator to move from one point to another.
-	var/interaction_delay = MIN_DELAY_TIER_1 * STARTING_MULTIPLIER
 
 	/// The status of the manipulator - `IDLE` or `BUSY`.
 	var/status = STATUS_IDLE
 	/// Is the manipulator turned on?
 	var/on = FALSE
 
-	/// Priority settings depending on the manipulator use mode that are available to this manipulator. Filled during Initialize.
-	var/list/priority_settings_for_use = list()
-	/// What priority settings are available to use at the moment.
-	/// We also use this list to sort priorities from ascending to descending.
-	var/list/allowed_priority_settings = list()
 	/// The object inside the manipulator.
 	var/datum/weakref/held_object
 	/// The poor monkey that needs to use mode works.
@@ -165,17 +158,14 @@
 	var/current_dir = manipulator_arm.dir
 	var/angle_diff = dir2angle(target_dir) - dir2angle(current_dir)
 
-	// normalizing the degree
 	if(angle_diff > 180)
 		angle_diff -= 360
 	if(angle_diff < -180)
 		angle_diff += 360
 
-	// calculating the degree
 	var/num_rotations = abs(angle_diff) / 45
-	var/total_rotation_time = num_rotations * rotation_delay
+	var/total_rotation_time = num_rotations * interaction_delay
 
-	// animating the rotation
 	animate(manipulator_arm, transform = matrix(angle_diff, MATRIX_ROTATE), time = total_rotation_time)
 	manipulator_arm.dir = target_dir
 
@@ -213,18 +203,16 @@
 		return FALSE
 
 	if(hand_is_empty)
-		addtimer(CALLBACK(src, PROC_REF(use_thing_with_empty_hand)), interaction_delay SECONDS)
+		use_thing_with_empty_hand(destination_point)
 		return
-
-	var/atom/target = null
 
 	switch(destination_point.interaction_mode)
 		if(INTERACT_DROP)
-			addtimer(CALLBACK(src, PROC_REF(try_drop_thing), target), interaction_delay SECONDS)
+			try_drop_thing(destination_point)
 		if(INTERACT_USE)
-			addtimer(CALLBACK(src, PROC_REF(try_use_thing), target), interaction_delay SECONDS)
+			try_use_thing(destination_point)
 		if(INTERACT_THROW)
-			addtimer(CALLBACK(src, PROC_REF(throw_thing), target), interaction_delay SECONDS)
+			throw_thing(destination_point)
 
 /obj/machinery/big_manipulator/proc/try_interact_with_origin_point(datum/interaction_point/origin_point, hand_is_empty = FALSE)
 	if(!origin_point)
@@ -260,23 +248,23 @@
 	var/manipulator_tier = locate_servo.tier
 	switch(manipulator_tier)
 		if(-INFINITY to 1)
-			minimal_interaction_multiplier = interaction_delay = MIN_DELAY_TIER_1
-			rotation_delay = MIN_DELAY_TIER_1 * 0.5
+			minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_1
+			interaction_delay = BASE_INTERACTION_TIME * MIN_ROTATION_MULTIPLIER_TIER_1
 			set_greyscale(COLOR_YELLOW)
 			manipulator_arm?.set_greyscale(COLOR_YELLOW)
 		if(2)
-			minimal_interaction_multiplier = interaction_delay = MIN_DELAY_TIER_2
-			rotation_delay = MIN_DELAY_TIER_2 * 0.5
+			minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_2
+			interaction_delay = BASE_INTERACTION_TIME * MIN_ROTATION_MULTIPLIER_TIER_2
 			set_greyscale(COLOR_ORANGE)
 			manipulator_arm?.set_greyscale(COLOR_ORANGE)
 		if(3)
-			minimal_interaction_multiplier = interaction_delay = MIN_DELAY_TIER_3
-			rotation_delay = MIN_DELAY_TIER_3 * 0.5
+			minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_3
+			interaction_delay = BASE_INTERACTION_TIME * MIN_ROTATION_MULTIPLIER_TIER_3
 			set_greyscale(COLOR_RED)
 			manipulator_arm?.set_greyscale(COLOR_RED)
 		if(4 to INFINITY)
-			minimal_interaction_multiplier = interaction_delay = MIN_DELAY_TIER_4
-			rotation_delay = MIN_DELAY_TIER_4 * 0.5
+			minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_4
+			interaction_delay = BASE_INTERACTION_TIME * MIN_ROTATION_MULTIPLIER_TIER_4
 			set_greyscale(COLOR_PURPLE)
 			manipulator_arm?.set_greyscale(COLOR_PURPLE)
 
@@ -356,15 +344,6 @@
 	. = ..()
 	default_unfasten_wrench(user, tool, time = 1 SECONDS)
 	return ITEM_INTERACT_SUCCESS
-
-// /obj/machinery/big_manipulator/wrench_act_secondary(mob/living/user, obj/item/tool)
-// 	. = ..()
-// 	if(status == STATUS_BUSY || on)
-// 		to_chat(user, span_warning("[src] is activated!"))
-// 		return ITEM_INTERACT_BLOCKING
-// 	rotate_big_hand()
-// 	playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
-// 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/big_manipulator/can_be_unfasten_wrench(mob/user, silent)
 	if(status == STATUS_BUSY || on)
@@ -485,7 +464,6 @@
 		held_object = WEAKREF(target)
 		manipulator_arm.update_claw(held_object)
 	status = STATUS_BUSY
-	do_rotate_animation(1)
 	try_interact_with_origin_point(target, hand_is_empty)
 
 /// Drops the item onto the turf.
@@ -618,7 +596,6 @@
 /obj/machinery/big_manipulator/proc/finish_manipulation()
 	held_object = null
 	manipulator_arm.update_claw(null)
-	do_rotate_animation(0)
 	addtimer(CALLBACK(src, PROC_REF(end_work)), interaction_delay SECONDS)
 
 /// Completes the work cycle and prepares for the next one
@@ -631,15 +608,6 @@
 		if(pickup_point.is_available(interaction_mode))
 			try_begin_full_cycle()
 			return
-
-/// Rotates manipulator hand 90 degrees.
-/obj/machinery/big_manipulator/proc/do_rotate_animation(backward)
-	animate(manipulator_arm, transform = matrix(90, MATRIX_ROTATE), interaction_delay SECONDS * 0.5)
-	addtimer(CALLBACK(src, PROC_REF(finish_rotate_animation), backward), interaction_delay SECONDS * 0.5)
-
-/// Rotates manipulator hand from 90 degrees to 180 or 0 if backward.
-/obj/machinery/big_manipulator/proc/finish_rotate_animation(backward)
-	animate(manipulator_arm, transform = matrix(180 * backward, MATRIX_ROTATE), interaction_delay SECONDS * 0.5)
 
 /obj/machinery/big_manipulator/proc/check_filter(atom/movable/target)
 	if (target.anchored || HAS_TRAIT(target, TRAIT_NODROP))
@@ -721,10 +689,6 @@
 	obj_resolve?.forceMove(get_turf(obj_resolve))
 	finish_manipulation()
 
-/// Changes manipulator working speed time.
-/obj/machinery/big_manipulator/proc/change_delay(new_delay)
-	interaction_delay = round(clamp(new_delay, minimal_interaction_multiplier, MAX_DELAY), DELAY_STEP)
-
 /obj/machinery/big_manipulator/ui_interact(mob/user, datum/tgui/ui)
 	if(id_locked)
 		to_chat(user, span_warning("[src] is locked behind id authentication!"))
@@ -757,7 +721,6 @@
 			priority_list += list(priority_data)
 	data["settings_list"] = priority_list
 	data["min_delay"] = minimal_interaction_multiplier
-	data["interaction_delay"] = interaction_delay
 	return data
 
 /obj/machinery/big_manipulator/ui_static_data(mob/user)
@@ -800,17 +763,6 @@
 		if("cycle_throw_range")
 			cycle_throw_range()
 			return TRUE
-		if("changeDelay")
-			change_delay(text2num(params["new_delay"]))
-			return TRUE
-
-/// Using on change_priority: looks for a setting with the same number that we set earlier and reduce it.
-/obj/machinery/big_manipulator/proc/check_similarities(number_we_minus)
-	for(var/datum/manipulator_priority/similarities as anything in allowed_priority_settings)
-		if(similarities.number != number_we_minus)
-			continue
-		similarities.number++
-		break
 
 /// Cycles the given value in the given list. Retuns the next value in the list, or the first one if the list isn't long enough.
 /obj/machinery/big_manipulator/proc/cycle_value(current_value, list/possible_values)
