@@ -10,19 +10,19 @@
 	greyscale_config = /datum/greyscale_config/big_manipulator
 
 	/// Min time manipulator can have in delay. Changing on upgrade.
-	var/minimal_delay = MIN_DELAY_TIER_1
-	/// The time it takes for the manipulator to complete the action cycle.
-	var/interaction_delay = MIN_DELAY_TIER_1
+	var/minimal_interaction_multiplier = MIN_DELAY_TIER_1
 	/// Time it takes to rotate between adjacent points (45 degrees)
 	var/rotation_delay = MIN_DELAY_TIER_1 * 0.5
+	/// The interaction time modifier - faster to slower.
+	var/interaction_multiplier = STARTING_MULTIPLIER
+	/// The time it takes for the manipulator to move from one point to another.
+	var/interaction_delay = MIN_DELAY_TIER_1 * STARTING_MULTIPLIER
 
 	/// The status of the manipulator - `IDLE` or `BUSY`.
 	var/status = STATUS_IDLE
 	/// Is the manipulator turned on?
 	var/on = FALSE
 
-	/// Priority settings depending on the manipulator drop mode that are available to this manipulator. Filled during Initialize.
-	var/list/priority_settings_for_drop = list()
 	/// Priority settings depending on the manipulator use mode that are available to this manipulator. Filled during Initialize.
 	var/list/priority_settings_for_use = list()
 	/// What priority settings are available to use at the moment.
@@ -38,6 +38,8 @@
 	var/id_locked = FALSE
 	/// The manipulator's arm.
 	var/obj/effect/big_manipulator_arm/manipulator_arm
+	/// Has this manipulator been emagged?
+	var/emagged = FALSE
 
 	/// How should the manipulator interact with the object?
 	var/interaction_mode = INTERACT_DROP
@@ -52,7 +54,7 @@
 	/// Is the power access wire cut? Disables the power button if `TRUE`.
 	var/power_access_wire_cut = FALSE
 	/// List where we can set selected type. Taking items by Initialize.
-	var/list/allowed_types_to_pick_up = list(
+	var/list/type_filters = list(
 		/obj/item,
 		/obj/structure/closet,
 	)
@@ -73,9 +75,12 @@
 /obj/machinery/big_manipulator/proc/create_new_interaction_point(turf/new_turf, list/new_filters, new_filters_status, new_interaction_mode, transfer_type)
 	if(!new_turf)
 		stack_trace("Attempting to create a new interaction point, but no valid turf references were passed.")
-		return
+		return FALSE
 
 	var/datum/interaction_point/new_interaction_point = new(src, new_turf, new_filters, new_filters_status, new_interaction_mode)
+
+	if(QDELETED(new_interaction_point))
+		return FALSE
 
 	switch(transfer_type)
 		if(TRANSFER_TYPE_PICKUP)
@@ -83,7 +88,16 @@
 		if(TRANSFER_TYPE_DROPOFF)
 			dropoff_points += new_interaction_point
 
+	if(emagged)
+		new_interaction_point.type_filters += /mob/living
+
 	return new_interaction_point
+
+/obj/machinery/big_manipulator/proc/update_all_points_on_emag_act()
+	for(var/datum/interaction_point/pickup_point in pickup_points)
+		pickup_point.type_filters += /mob/living
+	for(var/datum/interaction_point/dropoff_point in dropoff_points)
+		dropoff_point.type_filters += /mob/living
 
 /// Calculates the next interaction point the manipulator should transfer the item to. If returns `NONE`, awaits one full cycle.
 /obj/machinery/big_manipulator/proc/find_next_point(tasking_type, transfer_type)
@@ -99,14 +113,14 @@
 	switch(tasking_type)
 		if(TASKING_PREFER_FIRST)
 			for(var/datum/interaction_point/this_point in interaction_points)
-				if(this_point.is_available())
+				if(this_point.is_available(transfer_type))
 					return this_point
 
 			return NONE
 
 		if(TASKING_ROUND_ROBIN)
 			var/datum/interaction_point/this_point = interaction_points[roundrobin_history]
-			if(this_point.is_available())
+			if(this_point.is_available(transfer_type))
 				roundrobin_history += 1
 				if(roundrobin_history > length(interaction_points))
 					roundrobin_history = 1
@@ -119,7 +133,7 @@
 
 			while(roundrobin_history != initial_index)
 				this_point = interaction_points[roundrobin_history]
-				if(this_point.is_available())
+				if(this_point.is_available(transfer_type))
 					roundrobin_history += 1
 					if(roundrobin_history > length(interaction_points))
 						roundrobin_history = 1
@@ -132,7 +146,7 @@
 
 		if(TASKING_STRICT_ROBIN)
 			var/datum/interaction_point/this_point = interaction_points[roundrobin_history]
-			if(this_point.is_available())
+			if(this_point.is_available(transfer_type))
 				roundrobin_history += 1
 				if(roundrobin_history > length(interaction_points))
 					roundrobin_history = 1
@@ -181,10 +195,10 @@
 		balloon_alert("not enough power!")
 		return FALSE
 
+	status = STATUS_BUSY
 	try_run_full_cycle()
 
 /obj/machinery/big_manipulator/proc/try_run_full_cycle()
-	// Step 1: picking up the thing
 	var/origin_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
 	if(!origin_point)
 		return MOVE_CYCLE_FAIL // cycle failed - couldn't find a next point: no valid pickup points or didn't meet the filter rules
@@ -227,9 +241,9 @@
 	RegisterSignal(manipulator_arm, COMSIG_QDELETING, PROC_REF(on_hand_qdel))
 	process_upgrades()
 	// set_up_priority_settings() // will be refactored - interaction data is now stored in datums
-	selected_type = allowed_types_to_pick_up[1]
+	selected_type = type_filters[1]
 	if(on)
-		press_on(pressed_by = null)
+		switch_power_state(null)
 	set_wires(new /datum/wires/big_manipulator(src))
 
 	register_context()
@@ -243,35 +257,27 @@
 	var/manipulator_tier = locate_servo.tier
 	switch(manipulator_tier)
 		if(-INFINITY to 1)
-			minimal_delay = interaction_delay = MIN_DELAY_TIER_1
+			minimal_interaction_multiplier = interaction_delay = MIN_DELAY_TIER_1
 			rotation_delay = MIN_DELAY_TIER_1 * 0.5
 			set_greyscale(COLOR_YELLOW)
 			manipulator_arm?.set_greyscale(COLOR_YELLOW)
 		if(2)
-			minimal_delay = interaction_delay = MIN_DELAY_TIER_2
+			minimal_interaction_multiplier = interaction_delay = MIN_DELAY_TIER_2
 			rotation_delay = MIN_DELAY_TIER_2 * 0.5
 			set_greyscale(COLOR_ORANGE)
 			manipulator_arm?.set_greyscale(COLOR_ORANGE)
 		if(3)
-			minimal_delay = interaction_delay = MIN_DELAY_TIER_3
+			minimal_interaction_multiplier = interaction_delay = MIN_DELAY_TIER_3
 			rotation_delay = MIN_DELAY_TIER_3 * 0.5
 			set_greyscale(COLOR_RED)
 			manipulator_arm?.set_greyscale(COLOR_RED)
 		if(4 to INFINITY)
-			minimal_delay = interaction_delay = MIN_DELAY_TIER_4
+			minimal_interaction_multiplier = interaction_delay = MIN_DELAY_TIER_4
 			rotation_delay = MIN_DELAY_TIER_4 * 0.5
 			set_greyscale(COLOR_PURPLE)
 			manipulator_arm?.set_greyscale(COLOR_PURPLE)
 
 	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * BASE_POWER_USAGE * manipulator_tier
-
-/// Init priority settings list for all modes.
-/obj/machinery/big_manipulator/proc/set_up_priority_settings()
-	for(var/datum/manipulator_priority/priority_for_drop as anything in subtypesof(/datum/manipulator_priority/for_drop))
-		priority_settings_for_drop += new priority_for_drop
-	for(var/datum/manipulator_priority/priority_for_use as anything in subtypesof(/datum/manipulator_priority/for_use))
-		priority_settings_for_use += new priority_for_use
-	update_priority_list()
 
 /obj/machinery/big_manipulator/examine(mob/user)
 	. = ..()
@@ -340,7 +346,7 @@
 		return FALSE
 	balloon_alert(user, "overloaded functions installed")
 	obj_flags |= EMAGGED
-	allowed_types_to_pick_up += /mob/living
+	type_filters += /mob/living
 	return TRUE
 
 /obj/machinery/big_manipulator/wrench_act(mob/living/user, obj/item/tool)
@@ -468,49 +474,6 @@
 
 	deconstruct(TRUE)
 
-/// Pre take and drop proc from [take and drop procs loop]:
-/// Can we begin the `take-and-drop` loop?
-/obj/machinery/big_manipulator/proc/is_ready_to_work()
-	// if(worker_interaction == WORKER_EMPTY_USE)
-	// 	try_take_thing()
-	// 	return TRUE
-	// if(isclosedturf(drop_turf))
-	// 	on = !on
-	// 	say("Output blocked")
-	// 	return FALSE
-	// for(var/take_item in take_turf.contents)
-	// 	if(!check_filter(take_item))
-	// 		continue
-	// 	try_take_thing(take_turf, take_item)
-	// 	break
-	return TRUE
-
-// /// First take and drop proc from [take and drop procs loop]:
-// /// Check if we can take item from take_turf to work with him. This proc also calling from ATOM_ENTERED signal.
-// /obj/machinery/big_manipulator/proc/try_take_thing(datum/source, atom/movable/target)
-// 	SIGNAL_HANDLER
-
-// 	var/empty_hand_check = worker_interaction == WORKER_EMPTY_USE && interaction_mode == INTERACT_USE
-
-// 	if(!on)
-// 		return
-// 	if(!anchored)
-// 		return
-// 	if(status == STATUS_BUSY)
-// 		return
-// 	if(!empty_hand_check)
-// 		if(QDELETED(source) || QDELETED(target))
-// 			return
-// 		if(!isturf(target.loc))
-// 			return
-// 		if(!check_filter(target))
-// 			return
-// 	if(!use_energy(active_power_usage, force = FALSE))
-// 		on = FALSE
-// 		say("Not enough energy!")
-// 		return
-// 	start_work(target, empty_hand_check)
-
 /// Second take and drop proc from [take and drop procs loop]:
 /// Taking our item and start manipulator hand rotate animation.
 /obj/machinery/big_manipulator/proc/start_work(atom/movable/target, hand_is_empty = FALSE)
@@ -521,20 +484,6 @@
 	status = STATUS_BUSY
 	do_rotate_animation(1)
 	check_next_move(target, hand_is_empty)
-
-/// 2.5 take and drop proc from [take and drop procs loop]:
-/// Choose what we will do with our item by checking the interaction_mode.
-// /obj/machinery/big_manipulator/proc/check_next_move(atom/movable/target, hand_is_empty = FALSE)
-// 	if(hand_is_empty)
-// 		addtimer(CALLBACK(src, PROC_REF(use_thing_with_empty_hand)), interaction_delay SECONDS)
-// 		return
-// 	switch(interaction_mode)
-// 		if(INTERACT_DROP)
-// 			addtimer(CALLBACK(src, PROC_REF(try_drop_thing), target), interaction_delay SECONDS)
-// 		if(INTERACT_USE)
-// 			addtimer(CALLBACK(src, PROC_REF(try_use_thing), target), interaction_delay SECONDS)
-// 		if(INTERACT_THROW)
-// 			addtimer(CALLBACK(src, PROC_REF(throw_thing), target), interaction_delay SECONDS)
 
 /// Drops the item onto the turf.
 /obj/machinery/big_manipulator/proc/try_drop_thing(datum/interaction_point/destination_point)
@@ -554,12 +503,7 @@
 	finish_manipulation()
 	return TRUE
 
-/// 3.2 take and drop proc from [take and drop procs loop]:
-/// Use our item on random atom in drop turf contents then
-/// Starts manipulator hand backward animation by defualt, but
-/// You can also set the setting in ui so that it does not return to its privious position and continues to use object in its hand.
-/// Checks the priority so that you can configure which object it will select: mob/obj/turf.
-/// Also can use filter to interact only with obj in filter.
+/// Attempts to use the held object on the target atom.
 /obj/machinery/big_manipulator/proc/try_use_thing(datum/interaction_point/destination_point, atom/movable/target, hand_is_empty = FALSE)
 	var/obj/obj_resolve = held_object?.resolve()
 	var/mob/living/carbon/human/species/monkey/monkey_resolve = monkey_worker?.resolve()
@@ -590,16 +534,31 @@
 
 	check_for_cycle_end_drop(destination_point, TRUE)
 
-/obj/machinery/big_manipulator/proc/use_thing_with_empty_hand()
+/// Checks if we should continue using the empty hand after interaction
+/obj/machinery/big_manipulator/proc/check_end_of_use_for_use_with_empty_hand(datum/interaction_point/destination_point, item_was_used = TRUE)
+	if(!on || (worker_interaction != WORKER_EMPTY_USE && interaction_mode == INTERACT_USE))
+		finish_manipulation()
+		return
+
+	if(!item_was_used)
+		finish_manipulation()
+		return
+
+	addtimer(CALLBACK(src, PROC_REF(use_thing_with_empty_hand), destination_point), interaction_delay SECONDS)
+
+/// Uses the empty hand to interact with objects
+/obj/machinery/big_manipulator/proc/use_thing_with_empty_hand(datum/interaction_point/destination_point)
 	var/mob/living/carbon/human/species/monkey/monkey_resolve = monkey_worker?.resolve()
 	if(isnull(monkey_resolve))
 		finish_manipulation()
 		return
-	var/atom/type_to_use = search_type_by_priority_in_drop_turf(allowed_priority_settings)
+
+	var/atom/type_to_use = destination_point.find_type_priority(override_priority)
 	if(isnull(type_to_use))
-		check_end_of_use_for_use_with_empty_hand()
+		check_end_of_use_for_use_with_empty_hand(destination_point, FALSE)
 		return
-	/// We don't do unarmed attack on item because we will take it so we just attack self it like if we wanna to on/off table lamp.
+
+	// we don't do unarmed attack on items because we will take them
 	if(isitem(type_to_use))
 		var/obj/item/interact_with_item = type_to_use
 		var/resolve_loc = interact_with_item.loc
@@ -608,15 +567,10 @@
 		interact_with_item.forceMove(resolve_loc)
 	else
 		monkey_resolve.UnarmedAttack(type_to_use)
-	do_attack_animation(drop_turf)
-	manipulator_arm.do_attack_animation(drop_turf)
-	check_end_of_use_for_use_with_empty_hand()
 
-/obj/machinery/big_manipulator/proc/check_end_of_use_for_use_with_empty_hand(obj/item/my_item, item_was_used)
-	if(!on || (worker_interaction != WORKER_EMPTY_USE && interaction_mode == INTERACT_USE))
-		finish_manipulation()
-		return
-	addtimer(CALLBACK(src, PROC_REF(use_thing_with_empty_hand), my_item), interaction_delay SECONDS)
+	do_attack_animation(destination_point.interaction_turf)
+	manipulator_arm.do_attack_animation(destination_point.interaction_turf)
+	check_end_of_use_for_use_with_empty_hand(destination_point, TRUE)
 
 /// Checks what should we do with the `held_object` after `USE`-ing it.
 /obj/machinery/big_manipulator/proc/check_for_cycle_end_drop(datum/interaction_point/drop_point, item_used = TRUE)
@@ -666,7 +620,13 @@
 /// Finishes work and begins to look for a new item for [take and drop procs loop].
 /obj/machinery/big_manipulator/proc/end_work()
 	status = STATUS_IDLE
-	is_ready_to_work()
+	if(!on)
+		return
+
+	for(var/datum/interaction_point/pickup_point in pickup_points)
+		if(pickup_point.is_available(interaction_mode))
+			try_begin_full_cycle()
+			return
 
 /// Rotates manipulator hand 90 degrees.
 /obj/machinery/big_manipulator/proc/do_rotate_animation(backward)
@@ -698,56 +658,15 @@
 		available_modes = list(INTERACT_DROP, INTERACT_THROW)
 
 	interaction_mode = cycle_value(interaction_mode, available_modes)
-	update_priority_list()
 	is_ready_to_work()
-
-/// Update priority list in ui. Creating new list and sort it by priority number.
-/obj/machinery/big_manipulator/proc/update_priority_list()
-	allowed_priority_settings = list()
-	var/list/priority_mode_list
-	if(interaction_mode == INTERACT_DROP)
-		priority_mode_list = priority_settings_for_drop.Copy()
-	if(interaction_mode == INTERACT_USE)
-		priority_mode_list = priority_settings_for_use.Copy()
-	if(isnull(priority_mode_list))
-		return
-	for(var/we_need_increasing in 1 to length(priority_mode_list))
-		for(var/datum/manipulator_priority/what_priority in priority_mode_list)
-			if(what_priority.number != we_need_increasing)
-				continue
-			allowed_priority_settings += what_priority
-
-/// Proc that return item by type in priority list. Selects item and increasing priority number if don't found req type.
-/obj/machinery/big_manipulator/proc/search_type_by_priority_in_drop_turf(list/priority_list)
-	var/lazy_counter = 1
-	for(var/datum/manipulator_priority/take_type in priority_list)
-		/// If we set override_priority on TRUE we don't go to priority below.
-		if(lazy_counter > 1 && override_priority)
-			return null
-		/// If we need turf we don't check turf.contents and just return drop_turf.
-		if(take_type.what_type == /turf)
-			return drop_turf
-		lazy_counter++
-		for(var/type_in_priority in drop_turf.contents)
-			if(!istype(type_in_priority, take_type.what_type))
-				continue
-			return type_in_priority
-
-/// Proc call when we press on/off button
-/obj/machinery/big_manipulator/proc/press_on(pressed_by)
-	// if(pressed_by)
-	// 	on = !on
-	// if(!is_ready_to_work())
-	// 	return
-	// if(on)
-	// 	RegisterSignal(take_turf, COMSIG_ATOM_ENTERED, PROC_REF(try_take_thing))
-	// 	RegisterSignal(take_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON, PROC_REF(try_take_thing))
-	// else
-	// 	UnregisterSignal(take_turf, COMSIG_ATOM_ENTERED)
-	// 	UnregisterSignal(take_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
 
 /obj/machinery/big_manipulator/proc/switch_power_state(mob/user)
 	var/new_power_state = !on
+
+	if(!user)
+		on = new_power_state
+		return
+
 	if(new_power_state)
 		if(!powered())
 			balloon_alert(user, "no power!")
@@ -771,7 +690,6 @@
 			UnregisterSignal(pickup_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
 
 		drop_held_object()
-		// return_to_init_position()
 
 	on = new_power_state
 
@@ -788,9 +706,9 @@
 /// Proc that check if button not cutted when we press on button.
 /obj/machinery/big_manipulator/proc/try_press_on(mob/user)
 	if(power_access_wire_cut)
-		balloon_alert(user, "button is cut off!")
+		balloon_alert(user, "unresponsive!")
 		return
-	press_on(pressed_by = TRUE)
+	switch_power_state(user)
 
 /// Drop item that manipulator is manipulating.
 /obj/machinery/big_manipulator/proc/drop_held_object()
@@ -802,7 +720,7 @@
 
 /// Changes manipulator working speed time.
 /obj/machinery/big_manipulator/proc/change_delay(new_delay)
-	interaction_delay = round(clamp(new_delay, minimal_delay, MAX_DELAY), DELAY_STEP)
+	interaction_delay = round(clamp(new_delay, minimal_interaction_multiplier, MAX_DELAY), DELAY_STEP)
 
 /obj/machinery/big_manipulator/ui_interact(mob/user, datum/tgui/ui)
 	if(id_locked)
@@ -828,13 +746,14 @@
 	data["throw_range"] = manipulator_throw_range
 	var/list/priority_list = list()
 	data["settings_list"] = list()
-	for(var/datum/manipulator_priority/allowed_setting as anything in allowed_priority_settings)
-		var/list/priority_data = list()
-		priority_data["name"] = allowed_setting.name
-		priority_data["priority_width"] = allowed_setting.number
-		priority_list += list(priority_data)
+	for(var/datum/interaction_point/point in pickup_points)
+		for(var/datum/manipulator_priority/priority in point.get_sorted_priorities())
+			var/list/priority_data = list()
+			priority_data["name"] = priority.name
+			priority_data["priority_width"] = priority.number
+			priority_list += list(priority_data)
 	data["settings_list"] = priority_list
-	data["min_delay"] = minimal_delay
+	data["min_delay"] = minimal_interaction_multiplier
 	data["interaction_delay"] = interaction_delay
 	return data
 
@@ -869,13 +788,11 @@
 			return TRUE
 		if("change_priority")
 			var/new_priority_number = params["priority"]
-			for(var/datum/manipulator_priority/new_order as anything in allowed_priority_settings)
-				if(new_order.number != new_priority_number)
-					continue
-				new_order.number--
-				check_similarities(new_order.number)
-				break
-			update_priority_list()
+			for(var/datum/interaction_point/point in pickup_points)
+				for(var/datum/manipulator_priority/priority in point.interaction_priorities)
+					if(priority.number == new_priority_number)
+						point.update_priority(priority, new_priority_number - 1)
+						break
 			return TRUE
 		if("cycle_throw_range")
 			cycle_throw_range()
@@ -891,101 +808,6 @@
 			continue
 		similarities.number++
 		break
-
-/// Manipulator hand. Effect we animate to show that the manipulator is working and moving something.
-/obj/effect/big_manipulator_arm
-	name = "mechanical claw"
-	desc = "Takes and drops objects."
-	icon = 'icons/obj/machines/big_manipulator_parts/big_manipulator_hand.dmi'
-	icon_state = "hand"
-	layer = LOW_ITEM_LAYER
-	appearance_flags = KEEP_TOGETHER | LONG_GLIDE | TILE_BOUND | PIXEL_SCALE
-	anchored = TRUE
-	greyscale_config = /datum/greyscale_config/manipulator_arm
-	pixel_x = -32
-	pixel_y = -32
-	/// We get item from big manipulator and takes its icon to create overlay.
-	var/datum/weakref/item_in_my_claw
-	/// Var to icon that used as overlay on manipulator claw to show what item it grabs.
-	var/mutable_appearance/icon_overlay
-
-/obj/effect/big_manipulator_arm/update_overlays()
-	. = ..()
-	. += update_item_overlay()
-
-/obj/effect/big_manipulator_arm/proc/update_item_overlay()
-	if(isnull(item_in_my_claw))
-		return icon_overlay = null
-	var/atom/movable/item_data = item_in_my_claw.resolve()
-	icon_overlay = mutable_appearance(item_data.icon, item_data.icon_state, item_data.layer, src, item_data.plane, item_data.alpha, item_data.appearance_flags)
-	icon_overlay.color = item_data.color
-	icon_overlay.appearance = item_data.appearance
-	icon_overlay.pixel_w = 32 + calculate_item_offset(is_x = TRUE)
-	icon_overlay.pixel_z = 32 + calculate_item_offset(is_x = FALSE)
-	return icon_overlay
-
-/// Updates item that is in the claw.
-/obj/effect/big_manipulator_arm/proc/update_claw(clawed_item)
-	item_in_my_claw = clawed_item
-	update_appearance()
-
-/// Calculate x and y coordinates so that the item icon appears in the claw and not somewhere in the corner.
-/obj/effect/big_manipulator_arm/proc/calculate_item_offset(is_x = TRUE, pixels_to_offset = 32)
-	var/offset
-	switch(dir)
-		if(NORTH)
-			offset = is_x ? 0 : pixels_to_offset
-		if(SOUTH)
-			offset = is_x ? 0 : -pixels_to_offset
-		if(EAST)
-			offset = is_x ? pixels_to_offset : 0
-		if(WEST)
-			offset = is_x ? -pixels_to_offset : 0
-	return offset
-
-/// Priorities that manipulator use to choose to work on item with type same with what_type.
-/datum/manipulator_priority
-	/// Name that user will see in ui.
-	var/name
-	/// What type carries this priority.
-	var/what_type
-	/**
-	* Place in the priority queue. The lower the number, the more important the priority.
-	* Doesn't really matter what number you enter, user can set priority for themselves,
-	* BUT!!!
-	* Don't write the same numbers in the same parent otherwise something may go wrong.
-	*/
-	var/number
-
-/datum/manipulator_priority/for_drop/on_floor
-	name = "DROP ON FLOOR"
-	what_type = /turf
-	number = 1
-
-/datum/manipulator_priority/for_drop/in_storage
-	name = "DROP IN STORAGE"
-	what_type = /obj/item/storage
-	number = 2
-
-/datum/manipulator_priority/for_use/on_living
-	name = "USE ON LIVING"
-	what_type = /mob/living
-	number = 1
-
-/datum/manipulator_priority/for_use/on_structure
-	name = "USE ON STRUCTURE"
-	what_type = /obj/structure
-	number = 2
-
-/datum/manipulator_priority/for_use/on_machinery
-	name = "USE ON MACHINERY"
-	what_type = /obj/machinery
-	number = 3
-
-/datum/manipulator_priority/for_use/on_items
-	name = "USE ON ITEM"
-	what_type = /obj/item
-	number = 4
 
 /// Cycles the given value in the given list. Retuns the next value in the list, or the first one if the list isn't long enough.
 /obj/machinery/big_manipulator/proc/cycle_value(current_value, list/possible_values)
@@ -1005,5 +827,5 @@
 	manipulator_throw_range = cycle_value(manipulator_throw_range, possible_ranges)
 
 /obj/machinery/big_manipulator/proc/cycle_pickup_type()
-	selected_type = cycle_value(selected_type, allowed_types_to_pick_up)
+	selected_type = cycle_value(selected_type, type_filters)
 	is_ready_to_work()
