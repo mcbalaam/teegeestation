@@ -31,11 +31,8 @@
 #define TRANSFER_TYPE_PICKUP "pick up"
 #define TRANSFER_TYPE_DROPOFF "drop off"
 
-#define MOVE_CYCLE_SUCCESS "success"
-#define MOVE_CYCLE_HALF "half"
-#define MOVE_CYCLE_FAIL "fail"
-
 #define BASE_POWER_USAGE 0.2
 #define BASE_INTERACTION_TIME
 
 #define STARTING_MULTIPLIER 5
+#define CYCLE_SKIP_TIMEOUT 1 SECONDS

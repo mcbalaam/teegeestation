@@ -152,6 +152,8 @@
 					roundrobin_history = 1
 				return this_point
 
+			if(status == STATUS_BUSY)
+				addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
 			return NONE
 
 /// Rotates the manipulator arm to face the target point
@@ -201,7 +203,8 @@
 /obj/machinery/big_manipulator/proc/try_run_full_cycle()
 	var/origin_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
 	if(!origin_point)
-		return MOVE_CYCLE_FAIL // cycle failed - couldn't find a next point: no valid pickup points or didn't meet the filter rules
+		status = STATUS_IDLE
+		return FALSE
 
 	rotate_to_point(origin_point, PROC_REF(try_interact_with_origin_point))
 
@@ -483,7 +486,7 @@
 		manipulator_arm.update_claw(held_object)
 	status = STATUS_BUSY
 	do_rotate_animation(1)
-	check_next_move(target, hand_is_empty)
+	try_interact_with_origin_point(target, hand_is_empty)
 
 /// Drops the item onto the turf.
 /obj/machinery/big_manipulator/proc/try_drop_thing(datum/interaction_point/destination_point)
@@ -593,31 +596,32 @@
 
 	finish_manipulation()
 
-/// 3.3 take and drop proc from [take and drop procs loop]:
-/// Throw item away!!!
-/obj/machinery/big_manipulator/proc/throw_thing(atom/movable/target)
-	if(!(isitem(target) || isliving(target)))
+/// Throwing the held object in the direction of the drop point.
+/obj/machinery/big_manipulator/proc/throw_thing(datum/interaction_point/drop_point, atom/movable/target)
+	var/drop_turf = drop_point.interaction_turf
+	var/throw_range = drop_point.throw_range
+
+	if((!(isitem(target) || isliving(target))) && !emagged)
 		target.forceMove(drop_turf)
 		target.dir = get_dir(get_turf(target), get_turf(src))
-		finish_manipulation()  /// We throw only items and living mobs
+		finish_manipulation()
 		return
-	var/obj/item/im_item = target
-	im_item.forceMove(drop_turf)
-	// im_item.throw_at(get_edge_target_turf(get_turf(src), drop_here), manipulator_throw_range - 1, 2)
-	src.do_attack_animation(drop_turf)
+
+	var/obj/object_to_throw = target
+	object_to_throw.forceMove(drop_turf)
+	object_to_throw.throw_at(get_edge_target_turf(get_turf(src), drop_turf), throw_range, 2)
+	do_attack_animation(drop_turf)
 	manipulator_arm.do_attack_animation(drop_turf)
 	finish_manipulation()
 
-/// End of thirds take and drop proc from [take and drop procs loop]:
-/// Starts manipulator hand backward animation.
+/// Completes the current manipulation action
 /obj/machinery/big_manipulator/proc/finish_manipulation()
 	held_object = null
 	manipulator_arm.update_claw(null)
 	do_rotate_animation(0)
 	addtimer(CALLBACK(src, PROC_REF(end_work)), interaction_delay SECONDS)
 
-/// Fourth and last take and drop proc from [take and drop procs loop]:
-/// Finishes work and begins to look for a new item for [take and drop procs loop].
+/// Completes the work cycle and prepares for the next one
 /obj/machinery/big_manipulator/proc/end_work()
 	status = STATUS_IDLE
 	if(!on)
@@ -658,7 +662,6 @@
 		available_modes = list(INTERACT_DROP, INTERACT_THROW)
 
 	interaction_mode = cycle_value(interaction_mode, available_modes)
-	is_ready_to_work()
 
 /obj/machinery/big_manipulator/proc/switch_power_state(mob/user)
 	var/new_power_state = !on
@@ -828,4 +831,3 @@
 
 /obj/machinery/big_manipulator/proc/cycle_pickup_type()
 	selected_type = cycle_value(selected_type, type_filters)
-	is_ready_to_work()
