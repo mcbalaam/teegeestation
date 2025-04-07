@@ -30,8 +30,6 @@
 	var/list/allowed_priority_settings = list()
 	/// The object inside the manipulator.
 	var/datum/weakref/held_object
-	/// The object used as a filter.
-	var/datum/weakref/filter_obj
 	/// The poor monkey that needs to use mode works.
 	var/datum/weakref/monkey_worker
 	/// weakref to id that locked this manipualtor.
@@ -151,17 +149,17 @@
 	var/current_dir = manipulator_arm.dir
 	var/angle_diff = dir2angle(target_dir) - dir2angle(current_dir)
 
-	// Нормализуем угол к диапазону -180..180
+	// normalizing the degree
 	if(angle_diff > 180)
 		angle_diff -= 360
 	if(angle_diff < -180)
 		angle_diff += 360
 
-	// Вычисляем количество поворотов на 45 градусов
+	// calculating the degree
 	var/num_rotations = abs(angle_diff) / 45
 	var/total_rotation_time = num_rotations * rotation_delay
 
-	// Анимируем поворот
+	// animating the rotation
 	animate(manipulator_arm, transform = matrix(angle_diff, MATRIX_ROTATE), time = total_rotation_time)
 	manipulator_arm.dir = target_dir
 
@@ -309,9 +307,6 @@
 	if(!isnull(held_object))
 		var/obj/containment_resolve = held_object?.resolve()
 		containment_resolve?.forceMove(get_turf(containment_resolve))
-	if(!isnull(filter_obj))
-		var/obj/filter_resolve = filter_obj?.resolve()
-		filter_resolve?.forceMove(get_turf(filter_resolve))
 	var/mob/monkey_resolve = monkey_worker?.resolve()
 	if(!isnull(monkey_resolve))
 		monkey_resolve.forceMove(get_turf(monkey_resolve))
@@ -695,9 +690,6 @@
 	var/obj/item/target_item = target
 	if (target_item.item_flags & (ABSTRACT|DROPDEL))
 		return FALSE
-	var/filtered_obj = filter_obj?.resolve()
-	if((filtered_obj && !istype(target_item, filtered_obj)))
-		return FALSE
 	return TRUE
 
 /// Proc called when we changing item interaction mode.
@@ -831,7 +823,6 @@
 /obj/machinery/big_manipulator/ui_data(mob/user)
 	var/list/data = list()
 	data["active"] = on
-	data["item_as_filter"] = filter_obj?.resolve()
 	data["selected_type"] = selected_type.name
 	data["interaction_mode"] = interaction_mode
 	data["worker_interaction"] = worker_interaction
@@ -871,25 +862,6 @@
 			return TRUE
 		if("change_mode")
 			change_mode()
-			return TRUE
-		if("add_filter")
-			var/mob/living/living_user = ui.user
-			if(!isliving(living_user))
-				return FALSE
-			var/obj/give_obj_back = filter_obj?.resolve()
-			if(give_obj_back)
-				give_obj_back.forceMove(get_turf(src))
-				filter_obj = null
-				is_ready_to_work()
-				to_chat(living_user, span_warning("Filter removed"))
-				return TRUE
-			var/obj/item/get_active_held_item = living_user.get_active_held_item()
-			if(isnull(get_active_held_item))
-				to_chat(living_user, span_warning("You need item in hand to put it as filter"))
-				return FALSE
-			filter_obj = WEAKREF(get_active_held_item)
-			get_active_held_item.forceMove(src)
-			is_ready_to_work()
 			return TRUE
 		if("highest_priority_change")
 			override_priority = !override_priority
