@@ -524,17 +524,17 @@
 
 /// 2.5 take and drop proc from [take and drop procs loop]:
 /// Choose what we will do with our item by checking the interaction_mode.
-/obj/machinery/big_manipulator/proc/check_next_move(atom/movable/target, hand_is_empty = FALSE)
-	if(hand_is_empty)
-		addtimer(CALLBACK(src, PROC_REF(use_thing_with_empty_hand)), interaction_delay SECONDS)
-		return
-	switch(interaction_mode)
-		if(INTERACT_DROP)
-			addtimer(CALLBACK(src, PROC_REF(try_drop_thing), target), interaction_delay SECONDS)
-		if(INTERACT_USE)
-			addtimer(CALLBACK(src, PROC_REF(try_use_thing), target), interaction_delay SECONDS)
-		if(INTERACT_THROW)
-			addtimer(CALLBACK(src, PROC_REF(throw_thing), target), interaction_delay SECONDS)
+// /obj/machinery/big_manipulator/proc/check_next_move(atom/movable/target, hand_is_empty = FALSE)
+// 	if(hand_is_empty)
+// 		addtimer(CALLBACK(src, PROC_REF(use_thing_with_empty_hand)), interaction_delay SECONDS)
+// 		return
+// 	switch(interaction_mode)
+// 		if(INTERACT_DROP)
+// 			addtimer(CALLBACK(src, PROC_REF(try_drop_thing), target), interaction_delay SECONDS)
+// 		if(INTERACT_USE)
+// 			addtimer(CALLBACK(src, PROC_REF(try_use_thing), target), interaction_delay SECONDS)
+// 		if(INTERACT_THROW)
+// 			addtimer(CALLBACK(src, PROC_REF(throw_thing), target), interaction_delay SECONDS)
 
 /// Drops the item onto the turf.
 /obj/machinery/big_manipulator/proc/try_drop_thing(datum/interaction_point/destination_point)
@@ -629,16 +629,14 @@
 		finish_manipulation()
 		return
 
-	if(!on || interaction_mode != INTERACT_USE)
+	if(!on || drop_point.interaction_mode != INTERACT_USE)
 		finish_manipulation()
 		return
 
-	// Если предмет был успешно использован и мы в режиме USE, продолжаем использовать
 	if(item_used)
 		addtimer(CALLBACK(src, PROC_REF(try_use_thing), drop_point), interaction_delay SECONDS)
 		return
 
-	// Если предмет не был использован (нет подходящей цели), завершаем цикл
 	finish_manipulation()
 
 /// 3.3 take and drop proc from [take and drop procs loop]:
