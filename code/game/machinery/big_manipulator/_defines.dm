@@ -36,3 +36,4 @@
 #define MOVE_CYCLE_FAIL "fail"
 
 #define BASE_POWER_USAGE 0.2
+#define BASE_INTERACTION_TIME

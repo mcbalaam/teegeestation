@@ -13,6 +13,8 @@
 	var/minimal_delay = MIN_DELAY_TIER_1
 	/// The time it takes for the manipulator to complete the action cycle.
 	var/interaction_delay = MIN_DELAY_TIER_1
+	/// Time it takes to rotate between adjacent points (45 degrees)
+	var/rotation_delay = MIN_DELAY_TIER_1 * 0.5
 
 	/// The status of the manipulator - `IDLE` or `BUSY`.
 	var/status = STATUS_IDLE
@@ -140,6 +142,32 @@
 
 			return NONE
 
+/// Rotates the manipulator arm to face the target point
+/obj/machinery/big_manipulator/proc/rotate_to_point(datum/interaction_point/target_point, callback)
+	if(!target_point)
+		return FALSE
+
+	var/target_dir = get_dir(get_turf(src), target_point.interaction_turf)
+	var/current_dir = manipulator_arm.dir
+	var/angle_diff = dir2angle(target_dir) - dir2angle(current_dir)
+
+	// Нормализуем угол к диапазону -180..180
+	if(angle_diff > 180)
+		angle_diff -= 360
+	if(angle_diff < -180)
+		angle_diff += 360
+
+	// Вычисляем количество поворотов на 45 градусов
+	var/num_rotations = abs(angle_diff) / 45
+	var/total_rotation_time = num_rotations * rotation_delay
+
+	// Анимируем поворот
+	animate(manipulator_arm, transform = matrix(angle_diff, MATRIX_ROTATE), time = total_rotation_time)
+	manipulator_arm.dir = target_dir
+
+	addtimer(CALLBACK(src, callback, target_point), total_rotation_time)
+	return TRUE
+
 /obj/machinery/big_manipulator/proc/try_begin_full_cycle(datum/source, atom/movable/target)
 	if(!on)
 		return FALSE
@@ -163,17 +191,7 @@
 	if(!origin_point)
 		return MOVE_CYCLE_FAIL // cycle failed - couldn't find a next point: no valid pickup points or didn't meet the filter rules
 
-	if(!try_interact_with_origin_point(origin_point))
-		return MOVE_CYCLE_FAIL // cycle failed - couldn't pick up the item
-
-	// Step 2: doing something with the item
-	var/destination_point = find_next_point(dropoff_tasking, TRANSFER_TYPE_DROPOFF)
-	if(!destination_point)
-		return MOVE_CYCLE_HALF // cycle failed - couldn't find a next point: no valid dropoff points or didn't meet the filter rules
-
-	if(!try_interact_with_destination_point(destination_point))
-		return MOVE_CYCLE_HALF // cycle failed - couldn't use the item
-
+	rotate_to_point(origin_point, PROC_REF(try_interact_with_origin_point))
 
 /obj/machinery/big_manipulator/proc/try_interact_with_destination_point(datum/interaction_point/destination_point, hand_is_empty = FALSE)
 	if(!destination_point)
@@ -187,9 +205,9 @@
 
 	switch(destination_point.interaction_mode)
 		if(INTERACT_DROP)
-			addtimer(CALLBACK(src, PROC_REF(drop_thing), target), interaction_delay SECONDS)
+			addtimer(CALLBACK(src, PROC_REF(try_drop_thing), target), interaction_delay SECONDS)
 		if(INTERACT_USE)
-			addtimer(CALLBACK(src, PROC_REF(use_thing), target), interaction_delay SECONDS)
+			addtimer(CALLBACK(src, PROC_REF(try_use_thing), target), interaction_delay SECONDS)
 		if(INTERACT_THROW)
 			addtimer(CALLBACK(src, PROC_REF(throw_thing), target), interaction_delay SECONDS)
 
@@ -228,18 +246,22 @@
 	switch(manipulator_tier)
 		if(-INFINITY to 1)
 			minimal_delay = interaction_delay = MIN_DELAY_TIER_1
+			rotation_delay = MIN_DELAY_TIER_1 * 0.5
 			set_greyscale(COLOR_YELLOW)
 			manipulator_arm?.set_greyscale(COLOR_YELLOW)
 		if(2)
 			minimal_delay = interaction_delay = MIN_DELAY_TIER_2
+			rotation_delay = MIN_DELAY_TIER_2 * 0.5
 			set_greyscale(COLOR_ORANGE)
 			manipulator_arm?.set_greyscale(COLOR_ORANGE)
 		if(3)
 			minimal_delay = interaction_delay = MIN_DELAY_TIER_3
+			rotation_delay = MIN_DELAY_TIER_3 * 0.5
 			set_greyscale(COLOR_RED)
 			manipulator_arm?.set_greyscale(COLOR_RED)
 		if(4 to INFINITY)
 			minimal_delay = interaction_delay = MIN_DELAY_TIER_4
+			rotation_delay = MIN_DELAY_TIER_4 * 0.5
 			set_greyscale(COLOR_PURPLE)
 			manipulator_arm?.set_greyscale(COLOR_PURPLE)
 
@@ -513,28 +535,29 @@
 		return
 	switch(interaction_mode)
 		if(INTERACT_DROP)
-			addtimer(CALLBACK(src, PROC_REF(drop_thing), target), interaction_delay SECONDS)
+			addtimer(CALLBACK(src, PROC_REF(try_drop_thing), target), interaction_delay SECONDS)
 		if(INTERACT_USE)
-			addtimer(CALLBACK(src, PROC_REF(use_thing), target), interaction_delay SECONDS)
+			addtimer(CALLBACK(src, PROC_REF(try_use_thing), target), interaction_delay SECONDS)
 		if(INTERACT_THROW)
 			addtimer(CALLBACK(src, PROC_REF(throw_thing), target), interaction_delay SECONDS)
 
 /// Drops the item onto the turf.
-/obj/machinery/big_manipulator/proc/drop_thing(datum/interaction_point/destination_point)
+/obj/machinery/big_manipulator/proc/try_drop_thing(datum/interaction_point/destination_point)
 	var/drop_endpoint = destination_point.find_type_priority(override_priority)
 	var/obj/actual_held_object = held_object?.resolve()
 
 	if(isnull(drop_endpoint))
-		addtimer(CALLBACK(src, PROC_REF(drop_thing), destination_point), interaction_delay SECONDS)
-		return
+		stack_trace("Interaction point returned no turfs to transfer the item to.")
+		return FALSE
 
 	var/atom/drop_target = drop_endpoint
 	if(drop_target.atom_storage && (!drop_target.atom_storage.attempt_insert(actual_held_object, override = TRUE, messages = FALSE)))
 		actual_held_object.forceMove(drop_target.drop_location())
-		return
+		return TRUE
 
 	actual_held_object.forceMove(drop_endpoint)
 	finish_manipulation()
+	return TRUE
 
 /// 3.2 take and drop proc from [take and drop procs loop]:
 /// Use our item on random atom in drop turf contents then
@@ -542,41 +565,35 @@
 /// You can also set the setting in ui so that it does not return to its privious position and continues to use object in its hand.
 /// Checks the priority so that you can configure which object it will select: mob/obj/turf.
 /// Also can use filter to interact only with obj in filter.
-/obj/machinery/big_manipulator/proc/use_thing(atom/movable/target, hand_is_empty = FALSE)
+/obj/machinery/big_manipulator/proc/try_use_thing(datum/interaction_point/destination_point, atom/movable/target, hand_is_empty = FALSE)
 	var/obj/obj_resolve = held_object?.resolve()
-	if(isnull(obj_resolve))
-		finish_manipulation()
-		return
-
 	var/mob/living/carbon/human/species/monkey/monkey_resolve = monkey_worker?.resolve()
-	if(isnull(monkey_resolve))
-		finish_manipulation()
-		return
+	var/destination_turf = destination_point.interaction_turf
 
-	/// If we forceMoved from manipulator we are free now.
-	if(obj_resolve.loc != src && obj_resolve.loc != monkey_resolve)
+	if(!obj_resolve || !monkey_resolve) // if something that's supposed to be here is not here anymore
 		finish_manipulation()
-		return
+		return FALSE
 
-	if(!isitem(target))
-		target.forceMove(drop_turf) /// We use only items
-		target.dir = get_dir(get_turf(target), get_turf(src))
+	if(!(obj_resolve.loc == src && obj_resolve.loc == monkey_resolve)) // if we don't hold the said item or the monkey isn't buckled
 		finish_manipulation()
-		return
+		return FALSE
 
-	var/obj/item/im_item = target
-	var/atom/type_to_use = search_type_by_priority_in_drop_turf(allowed_priority_settings)
+	var/obj/item/held_item = obj_resolve
+	var/atom/type_to_use = destination_point.find_type_priority(override_priority)
+
 	if(isnull(type_to_use))
-		check_end_of_use(im_item, item_was_used = FALSE)
-		return
+		check_for_cycle_end_drop(destination_point, FALSE)
+		return FALSE
 
-	monkey_resolve.put_in_active_hand(im_item)
-	if(im_item.GetComponent(/datum/component/two_handed)) /// Using two-handed items in two hands.
-		im_item.attack_self(monkey_resolve)
-	im_item.melee_attack_chain(monkey_resolve, type_to_use)
-	do_attack_animation(drop_turf)
-	manipulator_arm.do_attack_animation(drop_turf)
-	check_end_of_use(im_item, item_was_used = TRUE)
+	monkey_resolve.put_in_active_hand(held_item)
+	if(held_item.GetComponent(/datum/component/two_handed))
+		held_item.attack_self(monkey_resolve)
+
+	held_item.melee_attack_chain(monkey_resolve, type_to_use)
+	do_attack_animation(destination_turf)
+	manipulator_arm.do_attack_animation(destination_turf)
+
+	check_for_cycle_end_drop(destination_point, TRUE)
 
 /obj/machinery/big_manipulator/proc/use_thing_with_empty_hand()
 	var/mob/living/carbon/human/species/monkey/monkey_resolve = monkey_worker?.resolve()
@@ -606,19 +623,28 @@
 		return
 	addtimer(CALLBACK(src, PROC_REF(use_thing_with_empty_hand), my_item), interaction_delay SECONDS)
 
-/// Check what we gonna do next with our item. Drop it or use again.
-/obj/machinery/big_manipulator/proc/check_end_of_use(obj/item/my_item, item_was_used)
-	if(!on)
-		my_item.forceMove(drop_turf)
-		my_item.dir = get_dir(get_turf(my_item), get_turf(src))
+/// Checks what should we do with the `held_object` after `USE`-ing it.
+/obj/machinery/big_manipulator/proc/check_for_cycle_end_drop(datum/interaction_point/drop_point, item_used = TRUE)
+	var/obj/obj_resolve = held_object.resolve()
+	var/turf/drop_turf = drop_point.interaction_turf
+
+	if(worker_interaction == WORKER_SINGLE_USE && item_used)
+		obj_resolve.forceMove(drop_turf)
+		obj_resolve.dir = get_dir(get_turf(obj_resolve), get_turf(src))
 		finish_manipulation()
 		return
-	if(worker_interaction == WORKER_SINGLE_USE && item_was_used)
-		my_item.forceMove(drop_turf)
-		my_item.dir = get_dir(get_turf(my_item), get_turf(src))
+
+	if(!on || interaction_mode != INTERACT_USE)
 		finish_manipulation()
 		return
-	addtimer(CALLBACK(src, PROC_REF(use_thing), my_item), interaction_delay SECONDS)
+
+	// Если предмет был успешно использован и мы в режиме USE, продолжаем использовать
+	if(item_used)
+		addtimer(CALLBACK(src, PROC_REF(try_use_thing), drop_point), interaction_delay SECONDS)
+		return
+
+	// Если предмет не был использован (нет подходящей цели), завершаем цикл
+	finish_manipulation()
 
 /// 3.3 take and drop proc from [take and drop procs loop]:
 /// Throw item away!!!
