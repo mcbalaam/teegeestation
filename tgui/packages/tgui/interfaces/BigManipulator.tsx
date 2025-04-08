@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import {
   Box,
   Button,
+  Modal,
+  ProgressBar,
   Section,
   Slider,
   Stack,
@@ -24,11 +27,23 @@ type ManipulatorData = {
   delay_step: number;
   min_delay: number;
   max_delay: number;
+  current_task_type: string;
+  current_task_duration: number;
+  pickup_points: PointData[];
+  dropoff_points: PointData[];
 };
 
 type PrioritySettings = {
   name: string;
   priority_width: number;
+};
+
+type PointData = {
+  name: string;
+  turf: string;
+  mode: string;
+  filters: string[];
+  item_filters: string[];
 };
 
 const MasterControls = () => {
@@ -128,6 +143,103 @@ const ConfigRow = (props: ConfigRowProps) => {
   );
 };
 
+const PointSection = (props: {
+  title: string;
+  points: PointData[];
+  onAdd: () => void;
+  act: (action: string, params?: Record<string, any>) => void;
+}) => {
+  const { title, points, onAdd, act } = props;
+  const [editingPoint, setEditingPoint] = useState<PointData | null>(null);
+
+  const handleEditPoint = (point: PointData) => {
+    setEditingPoint(point);
+  };
+
+  const handleDirectionClick = (dx: number, dy: number) => {
+    if (!editingPoint) return;
+
+    act('move_point', {
+      index: points.indexOf(editingPoint),
+      dx: dx,
+      dy: dy,
+    });
+    setEditingPoint(null);
+  };
+
+  return (
+    <>
+      <Section
+        title={title}
+        buttons={<Button icon="plus" color="transparent" onClick={onAdd} />}
+      >
+        <Stack vertical>
+          {points.map((point, index) => (
+            <Stack.Item
+              key={index}
+              style={{
+                padding: '5px',
+              }}
+              className="candystripe"
+            >
+              <Box>
+                <Stack>
+                  <Stack.Item grow>
+                    <Box>
+                      <strong>{point.name}</strong>
+                      <br />
+                      <small>Режим: {point.mode.toUpperCase()}</small>
+                      <br />
+                      <small>Фильтры: {point.item_filters.join(', ')}</small>
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="trash"
+                      color="transparent"
+                      onClick={() => act('remove_point', { index: index })}
+                    />
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="arrow-up-right-from-square"
+                      color="transparent"
+                      onClick={() => handleEditPoint(point)}
+                    />
+                  </Stack.Item>
+                </Stack>
+              </Box>
+            </Stack.Item>
+          ))}
+        </Stack>
+      </Section>
+
+      {editingPoint && (
+        <Modal>
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '5px',
+              width: '150px',
+            }}
+          >
+            <Button onClick={() => handleDirectionClick(-1, 1)}>↖</Button>
+            <Button onClick={() => handleDirectionClick(0, 1)}>↑</Button>
+            <Button onClick={() => handleDirectionClick(1, 1)}>↗</Button>
+            <Button onClick={() => handleDirectionClick(-1, 0)}>←</Button>
+            <Button disabled>•</Button>
+            <Button onClick={() => handleDirectionClick(1, 0)}>→</Button>
+            <Button onClick={() => handleDirectionClick(-1, -1)}>↙</Button>
+            <Button onClick={() => handleDirectionClick(0, -1)}>↓</Button>
+            <Button onClick={() => handleDirectionClick(1, -1)}>↘</Button>
+          </Box>
+        </Modal>
+      )}
+    </>
+  );
+};
+
 export const BigManipulator = () => {
   const { data, act } = useBackend<ManipulatorData>();
   const {
@@ -139,124 +251,166 @@ export const BigManipulator = () => {
     throw_range,
     item_as_filter,
     selected_type,
+    current_task_type,
+    current_task_duration,
+    pickup_points,
+    dropoff_points,
   } = data;
 
   return (
-    <Window title="Manipulator Interface" width={320} height={410}>
-      <Window.Content>
-        <Section
-          title="Action Panel"
-          buttons={
-            <Button
-              icon="power-off"
-              selected={active}
-              content={active ? 'On' : 'Off'}
-              onClick={() => act('on')}
-            />
-          }
+    <Window title="Manipulator Interface" width={420} height={610}>
+      <Window.Content overflowY="auto">
+        <Box
+          style={{
+            height: '100%',
+            overflowY: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
         >
-          <Box
-            style={{
-              lineHeight: '1.8em',
-              marginBottom: '-5px',
-            }}
+          <Section
+            title="Action Panel"
+            buttons={
+              <Button
+                icon="power-off"
+                selected={active}
+                content={active ? 'On' : 'Off'}
+                onClick={() => act('on')}
+              />
+            }
           >
-            <MasterControls />
-          </Box>
-        </Section>
+            <Box
+              style={{
+                lineHeight: '1.8em',
+                marginBottom: '-5px',
+              }}
+            >
+              <MasterControls />
+            </Box>
+          </Section>
 
-        <Section title="Configuration">
-          <Table>
-            <ConfigRow
-              label="Interaction Mode"
-              content={interaction_mode.toUpperCase()}
-              onClick={() => act('change_mode')}
-              tooltip="Cycle through interaction modes"
-            />
-
-            {interaction_mode === 'throw' && (
-              <ConfigRow
-                label="Throwing Range"
-                content={`${throw_range} TILE${throw_range > 1 ? 'S' : ''}`}
-                onClick={() => act('change_throw_range')}
-                tooltip="Cycle the distance an object will travel when thrown"
-              />
-            )}
-
-            <ConfigRow
-              label="Interaction Filter"
-              content={selected_type.toUpperCase()}
-              onClick={() => act('change_take_item_type')}
-              tooltip="Cycle through types of items to filter"
-            />
-            {interaction_mode === 'use' && (
-              <ConfigRow
-                label="Worker Interactions"
-                content={worker_interaction.toUpperCase()}
-                onClick={() => act('worker_interaction_change')}
-                tooltip={
-                  worker_interaction === 'normal'
-                    ? 'Interact using the held item'
-                    : worker_interaction === 'single'
-                      ? 'Drop the item after a single cycle'
-                      : 'Interact with an empty hand'
-                }
-              />
-            )}
-            <ConfigRow
-              label="Item Filter"
-              content={item_as_filter ? item_as_filter : 'NONE'}
-              onClick={() => act('add_filter')}
-              tooltip="Click while holding an item to set filtering type"
-            />
-
-            {interaction_mode !== 'throw' && (
-              <ConfigRow
-                label="Override List Priority"
-                content={highest_priority ? 'TRUE' : 'FALSE'}
-                onClick={() => act('highest_priority_change')}
-                tooltip="Only interact with the highest dropoff point in the list"
-                selected={!!highest_priority}
-              />
-            )}
-          </Table>
-        </Section>
-
-        {interaction_mode !== 'throw' && (
           <Section>
+            <ProgressBar
+              value={1}
+              maxValue={1}
+              style={{
+                transitionDuration: `${current_task_duration}s`,
+              }}
+            >
+              <Stack lineHeight="1.8em">
+                <Stack.Item ml="-2px">Current task:</Stack.Item>
+                <Stack.Item grow>{current_task_type.toUpperCase()}</Stack.Item>
+              </Stack>
+            </ProgressBar>
+          </Section>
+
+          <PointSection
+            title="Pickup Points"
+            points={pickup_points}
+            onAdd={() => act('create_pickup_point')}
+            act={act}
+          />
+
+          <PointSection
+            title="Dropoff Points"
+            points={dropoff_points}
+            onAdd={() => act('create_dropoff_point')}
+            act={act}
+          />
+
+          <Section title="Configuration">
             <Table>
-              {settings_list.map((setting) => (
-                <Table.Row
-                  key={setting.name}
-                  className="candystripe"
-                  style={{
-                    height: '2em',
-                    paddingLeft: '20px',
-                    lineHeight: '2em',
-                  }}
-                >
-                  <Table.Cell
-                    style={{
-                      paddingLeft: '2px',
-                      width: '2em',
-                    }}
-                  >
-                    <Button
-                      icon="arrow-up"
-                      onClick={() =>
-                        act('change_priority', {
-                          priority: setting.priority_width,
-                        })
-                      }
-                    />
-                  </Table.Cell>
-                  <Table.Cell>{setting.name}</Table.Cell>
-                  <Table.Cell>{setting.priority_width}</Table.Cell>
-                </Table.Row>
-              ))}
+              <ConfigRow
+                label="Interaction Mode"
+                content={interaction_mode.toUpperCase()}
+                onClick={() => act('change_mode')}
+                tooltip="Cycle through interaction modes"
+              />
+
+              {interaction_mode === 'throw' && (
+                <ConfigRow
+                  label="Throwing Range"
+                  content={`${throw_range} TILE${throw_range > 1 ? 'S' : ''}`}
+                  onClick={() => act('change_throw_range')}
+                  tooltip="Cycle the distance an object will travel when thrown"
+                />
+              )}
+
+              <ConfigRow
+                label="Interaction Filter"
+                content={selected_type.toUpperCase()}
+                onClick={() => act('change_take_item_type')}
+                tooltip="Cycle through types of items to filter"
+              />
+              {interaction_mode === 'use' && (
+                <ConfigRow
+                  label="Worker Interactions"
+                  content={worker_interaction.toUpperCase()}
+                  onClick={() => act('worker_interaction_change')}
+                  tooltip={
+                    worker_interaction === 'normal'
+                      ? 'Interact using the held item'
+                      : worker_interaction === 'single'
+                        ? 'Drop the item after a single cycle'
+                        : 'Interact with an empty hand'
+                  }
+                />
+              )}
+              <ConfigRow
+                label="Item Filter"
+                content={item_as_filter ? item_as_filter : 'NONE'}
+                onClick={() => act('add_filter')}
+                tooltip="Click while holding an item to set filtering type"
+              />
+
+              {interaction_mode !== 'throw' && (
+                <ConfigRow
+                  label="Override List Priority"
+                  content={highest_priority ? 'TRUE' : 'FALSE'}
+                  onClick={() => act('highest_priority_change')}
+                  tooltip="Only interact with the highest dropoff point in the list"
+                  selected={!!highest_priority}
+                />
+              )}
             </Table>
           </Section>
-        )}
+
+          {interaction_mode !== 'throw' && (
+            <Section>
+              <Table>
+                {settings_list.map((setting) => (
+                  <Table.Row
+                    key={setting.name}
+                    className="candystripe"
+                    style={{
+                      height: '2em',
+                      paddingLeft: '20px',
+                      lineHeight: '2em',
+                    }}
+                  >
+                    <Table.Cell
+                      style={{
+                        paddingLeft: '2px',
+                        width: '2em',
+                      }}
+                    >
+                      <Button
+                        icon="arrow-up"
+                        onClick={() =>
+                          act('change_priority', {
+                            priority: setting.priority_width,
+                          })
+                        }
+                      />
+                    </Table.Cell>
+                    <Table.Cell>{setting.name}</Table.Cell>
+                    <Table.Cell>{setting.priority_width}</Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table>
+            </Section>
+          )}
+        </Box>
       </Window.Content>
     </Window>
   );

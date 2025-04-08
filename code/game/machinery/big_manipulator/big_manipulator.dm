@@ -21,6 +21,13 @@
 	/// Is the manipulator turned on?
 	var/on = FALSE
 
+	/// Время начала текущей задачи
+	var/current_task_start_time = 0
+	/// Общее время выполнения текущей задачи
+	var/current_task_duration = 0
+	/// Тип текущей задачи (для UI)
+	var/current_task_type = "idle"
+
 	/// The object inside the manipulator.
 	var/datum/weakref/held_object
 	/// The poor monkey that needs to use mode works.
@@ -65,10 +72,29 @@
 	/// List of dropoff points.
 	var/list/dropoff_points = list()
 
+/obj/machinery/big_manipulator/proc/find_suitable_turf()
+	var/turf/center = get_turf(src)
+	if(!center)
+		return null
+
+	var/turf/north = get_step(center, NORTH)
+	if(north && !isclosedturf(north))
+		return north
+
+	var/list/directions = list(EAST, SOUTH, WEST, NORTHWEST, SOUTHWEST, SOUTHEAST, NORTHEAST)
+	for(var/dir in directions)
+		var/turf/check = get_step(center, dir)
+		if(check && !isclosedturf(check))
+			return check
+
+	return null
+
 /obj/machinery/big_manipulator/proc/create_new_interaction_point(turf/new_turf, list/new_filters, new_filters_status, new_interaction_mode, transfer_type)
 	if(!new_turf)
-		stack_trace("Attempting to create a new interaction point, but no valid turf references were passed.")
-		return FALSE
+		new_turf = find_suitable_turf()
+		if(!new_turf)
+			balloon_alert(usr, "no suitable turfs found!")
+			return FALSE
 
 	var/datum/interaction_point/new_interaction_point = new(src, new_turf, new_filters, new_filters_status, new_interaction_mode)
 
@@ -166,9 +192,11 @@
 	var/num_rotations = abs(angle_diff) / 45
 	var/total_rotation_time = num_rotations * interaction_delay
 
+	start_task("rotate", total_rotation_time)
 	animate(manipulator_arm, transform = matrix(angle_diff, MATRIX_ROTATE), time = total_rotation_time)
 	manipulator_arm.dir = target_dir
 
+	addtimer(CALLBACK(src, PROC_REF(end_task)), total_rotation_time)
 	addtimer(CALLBACK(src, callback, target_point), total_rotation_time)
 	return TRUE
 
@@ -711,8 +739,33 @@
 	data["worker_interaction"] = worker_interaction
 	data["highest_priority"] = override_priority
 	data["throw_range"] = manipulator_throw_range
+	data["current_task_type"] = current_task_type
+	data["current_task_duration"] = current_task_duration
+	data["min_delay"] = minimal_interaction_multiplier
+
+	var/list/pickup_points_data = list()
+	for(var/datum/interaction_point/point in pickup_points)
+		var/list/point_data = list()
+		point_data["name"] = point.name
+		point_data["turf"] = point.interaction_turf
+		point_data["mode"] = "PICK"
+		point_data["filters"] = point.type_filters
+		point_data["item_filters"] = point.atom_filters
+		pickup_points_data += list(point_data)
+	data["pickup_points"] = pickup_points_data
+
+	var/list/dropoff_points_data = list()
+	for(var/datum/interaction_point/point in dropoff_points)
+		var/list/point_data = list()
+		point_data["name"] = point.name
+		point_data["turf"] = point.interaction_turf
+		point_data["mode"] = point.interaction_mode
+		point_data["filters"] = point.type_filters
+		point_data["item_filters"] = point.atom_filters
+		dropoff_points_data += list(point_data)
+	data["dropoff_points"] = dropoff_points_data
+
 	var/list/priority_list = list()
-	data["settings_list"] = list()
 	for(var/datum/interaction_point/point in pickup_points)
 		for(var/datum/manipulator_priority/priority in point.get_sorted_priorities())
 			var/list/priority_data = list()
@@ -720,7 +773,7 @@
 			priority_data["priority_width"] = priority.number
 			priority_list += list(priority_data)
 	data["settings_list"] = priority_list
-	data["min_delay"] = minimal_interaction_multiplier
+
 	return data
 
 /obj/machinery/big_manipulator/ui_static_data(mob/user)
@@ -763,6 +816,30 @@
 		if("cycle_throw_range")
 			cycle_throw_range()
 			return TRUE
+		if("create_pickup_point")
+			create_new_interaction_point(null, null, null, null, TRANSFER_TYPE_PICKUP)
+			return TRUE
+		if("create_dropoff_point")
+			create_new_interaction_point(null, null, null, null, TRANSFER_TYPE_DROPOFF)
+			return TRUE
+		if("move_point")
+			var/index = params["index"]
+			var/dx = params["dx"]
+			var/dy = params["dy"]
+
+			var/list/all_points = pickup_points + dropoff_points
+			if(index < 1 || index > length(all_points))
+				return FALSE
+
+			var/datum/interaction_point/point = all_points[index]
+			var/turf/current_turf = point.interaction_turf
+			var/turf/new_turf = locate(current_turf.x + dx, current_turf.y + dy, current_turf.z)
+
+			if(!new_turf || isclosedturf(new_turf))
+				return FALSE
+
+			point.interaction_turf = new_turf
+			return TRUE
 
 /// Cycles the given value in the given list. Retuns the next value in the list, or the first one if the list isn't long enough.
 /obj/machinery/big_manipulator/proc/cycle_value(current_value, list/possible_values)
@@ -783,3 +860,15 @@
 
 /obj/machinery/big_manipulator/proc/cycle_pickup_type()
 	selected_type = cycle_value(selected_type, type_filters)
+
+/// Начинает новую задачу с указанной длительностью
+/obj/machinery/big_manipulator/proc/start_task(task_type, duration)
+	current_task_start_time = world.time
+	current_task_duration = duration
+	current_task_type = task_type
+
+/// Завершает текущую задачу
+/obj/machinery/big_manipulator/proc/end_task()
+	current_task_start_time = 0
+	current_task_duration = 0
+	current_task_type = "idle"

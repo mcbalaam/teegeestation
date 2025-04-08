@@ -53,6 +53,7 @@
 
 	interaction_priorities = fill_priority_list()
 
+/// Finds the type priority of the interaction point.
 /datum/interaction_point/proc/find_type_priority(override = FALSE)
 	var/lazy_counter = 1
 	for(var/datum/manipulator_priority/take_type in interaction_priorities)
@@ -113,18 +114,20 @@
 /// Fills the interaction endpoint priority list for the current interaction mode.
 /datum/interaction_point/proc/fill_priority_list()
 	var/list/priorities_to_set = list()
+	var/priority_number = 1
+
 	switch(interaction_mode)
 		if(INTERACT_DROP)
 			priorities_to_set = list(
-				/datum/manipulator_priority/for_drop/on_floor,
-				/datum/manipulator_priority/for_drop/in_storage,
+				new /datum/manipulator_priority/for_drop/on_floor(priority_number++),
+				new /datum/manipulator_priority/for_drop/in_storage(priority_number++),
 				)
 		if(INTERACT_USE)
 			priorities_to_set = list(
-				/datum/manipulator_priority/for_use/on_living,
-				/datum/manipulator_priority/for_use/on_structure,
-				/datum/manipulator_priority/for_use/on_machinery,
-				/datum/manipulator_priority/for_use/on_items,
+				new /datum/manipulator_priority/for_use/on_living(priority_number++),
+				new /datum/manipulator_priority/for_use/on_structure(priority_number++),
+				new /datum/manipulator_priority/for_use/on_machinery(priority_number++),
+				new /datum/manipulator_priority/for_use/on_items(priority_number++),
 				)
 
 	return length(priorities_to_set) ? priorities_to_set : list()
