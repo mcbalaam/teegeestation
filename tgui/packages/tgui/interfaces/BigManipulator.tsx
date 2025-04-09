@@ -111,7 +111,8 @@ type ConfigRowProps = {
 };
 
 const ConfigRow = (props: ConfigRowProps) => {
-  const { label, content, onClick, tooltip, selected = false } = props;
+  const { label, content, onClick, ...rest } = props;
+  const { tooltip = '', selected = false } = rest;
 
   return (
     <Table.Row
@@ -202,7 +203,7 @@ const PointSection = (props: {
                   </Stack.Item>
                   <Stack.Item>
                     <Button
-                      icon="arrow-up-right-from-square"
+                      icon="gear"
                       color="transparent"
                       onClick={() => handleEditPoint(point)}
                     />
@@ -215,25 +216,82 @@ const PointSection = (props: {
       </Section>
 
       {editingPoint && (
-        <Modal>
-          <Box
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '5px',
-              width: '150px',
-            }}
-          >
-            <Button onClick={() => handleDirectionClick(-1, 1)}>↖</Button>
-            <Button onClick={() => handleDirectionClick(0, 1)}>↑</Button>
-            <Button onClick={() => handleDirectionClick(1, 1)}>↗</Button>
-            <Button onClick={() => handleDirectionClick(-1, 0)}>←</Button>
-            <Button disabled>•</Button>
-            <Button onClick={() => handleDirectionClick(1, 0)}>→</Button>
-            <Button onClick={() => handleDirectionClick(-1, -1)}>↙</Button>
-            <Button onClick={() => handleDirectionClick(0, -1)}>↓</Button>
-            <Button onClick={() => handleDirectionClick(1, -1)}>↘</Button>
-          </Box>
+        <Modal
+          style={{
+            padding: '6px',
+            width: '340px',
+            boxSizing: 'initial',
+          }}
+        >
+          <Section title="Destination Point">
+            <Stack>
+              <Stack.Item>
+                {' '}
+                <Box
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '2em 2em 2em',
+                    gridAutoRows: '2em',
+                    gap: '2px',
+                    rowGap: '2px',
+                  }}
+                >
+                  {[-1, 0, 1].map((dx) =>
+                    [-1, 0, 1].map((dy) => {
+                      const isCenter = dx === 0 && dy === 0;
+                      let icon;
+                      if (dx === 0 && dy === 1) icon = 'arrow-right';
+                      if (dx === -1 && dy === 0) icon = 'arrow-up';
+                      if (dx === 1 && dy === 0) icon = 'arrow-down';
+                      if (dx === 0 && dy === -1) icon = 'arrow-left';
+                      if (dx === 0 && dy === 0) icon = 'location-dot';
+
+                      return (
+                        <Button
+                          key={`${dx},${dy}`}
+                          icon={icon}
+                          disabled={isCenter}
+                          onClick={() =>
+                            !isCenter && handleDirectionClick(dx, dy)
+                          }
+                          // color="transparent"
+                          style={{
+                            margin: '0px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            lineHeight: '2em',
+                          }}
+                        />
+                      );
+                    }),
+                  )}
+                </Box>
+              </Stack.Item>
+              <Stack.Item grow>
+                <Table>
+                  <ConfigRow
+                    label="Overfill"
+                    content="FALSE"
+                    onClick={() => act('change_mode')}
+                    tooltip=""
+                  />
+                  <ConfigRow
+                    label="Object Type"
+                    content="ITEM"
+                    onClick={() => act('change_mode')}
+                    tooltip=""
+                  />
+                  <ConfigRow
+                    label="Filters"
+                    content="NONE"
+                    onClick={() => act('change_mode')}
+                    tooltip=""
+                  />
+                </Table>
+              </Stack.Item>
+            </Stack>
+          </Section>
         </Modal>
       )}
     </>
