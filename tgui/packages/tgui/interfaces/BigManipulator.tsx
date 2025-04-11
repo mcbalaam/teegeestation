@@ -31,6 +31,7 @@ type ManipulatorData = {
   current_task_duration: number;
   pickup_points: PointData[];
   dropoff_points: PointData[];
+  manipulator_position: string;
 };
 
 type PrioritySettings = {
@@ -44,6 +45,7 @@ type PointData = {
   mode: string;
   filters: string[];
   item_filters: string[];
+  filters_status: boolean;
 };
 
 const MasterControls = () => {
@@ -150,22 +152,50 @@ const PointSection = (props: {
   onAdd: () => void;
   act: (action: string, params?: Record<string, any>) => void;
 }) => {
+  const { data } = useBackend<ManipulatorData>();
   const { title, points, onAdd, act } = props;
   const [editingPoint, setEditingPoint] = useState<PointData | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  const handleEditPoint = (point: PointData) => {
+  const handleEditPoint = (point: PointData, index: number) => {
     setEditingPoint(point);
+    setEditingIndex(index);
   };
 
   const handleDirectionClick = (dx: number, dy: number) => {
-    if (!editingPoint) return;
+    if (!editingPoint || editingIndex === null) return;
 
+    const [baseX, baseY] = data.manipulator_position.split(',').map(Number);
+    const [pointX, pointY] = editingPoint.turf.split(',').map(Number);
+
+    // Обновляем состояние точки локально
+    const newTurf = `${pointX + dx},${pointY + dy}`;
+    setEditingPoint({
+      ...editingPoint,
+      turf: newTurf,
+    });
+
+    // Отправляем изменения на сервер
     act('move_point', {
-      index: points.indexOf(editingPoint),
+      index: editingIndex + 1,
       dx: dx,
       dy: dy,
     });
-    setEditingPoint(null);
+  };
+
+  const getPointDirection = (
+    point: PointData,
+  ): { dx: number; dy: number } | null => {
+    if (!point || !point.turf) return null;
+
+    const [pointX, pointY] = point.turf.split(',').map(Number);
+    const [baseX, baseY] = data.manipulator_position.split(',').map(Number);
+
+    // Определяем относительное положение точки от манипулятора
+    const dx = Math.sign(pointX - baseX);
+    const dy = Math.sign(pointY - baseY);
+
+    return { dx, dy };
   };
 
   return (
@@ -189,25 +219,34 @@ const PointSection = (props: {
                     <Box>
                       <strong>{point.name}</strong>
                       <br />
-                      <small>Режим: {point.mode.toUpperCase()}</small>
+                      <small>Mode: {point.mode.toUpperCase()}</small>
                       <br />
-                      <small>Фильтры: {point.item_filters.join(', ')}</small>
+                      <small>
+                        Filters:{' '}
+                        {point.item_filters.length
+                          ? point.item_filters.join(', ')
+                          : 'NONE'}
+                      </small>
                     </Box>
                   </Stack.Item>
-                  <Stack.Item>
-                    <Button
-                      icon="trash"
-                      color="transparent"
-                      onClick={() => act('remove_point', { index: index })}
-                    />
-                  </Stack.Item>
-                  <Stack.Item>
-                    <Button
-                      icon="gear"
-                      color="transparent"
-                      onClick={() => handleEditPoint(point)}
-                    />
-                  </Stack.Item>
+                  <Stack vertical>
+                    <Stack.Item>
+                      <Button
+                        icon="gear"
+                        color="transparent"
+                        onClick={() => handleEditPoint(point, index)}
+                      />
+                    </Stack.Item>
+                    <Stack.Item>
+                      <Button
+                        icon="trash"
+                        color="transparent"
+                        onClick={() =>
+                          act('remove_point', { index: index + 1 })
+                        }
+                      />
+                    </Stack.Item>
+                  </Stack>
                 </Stack>
               </Box>
             </Stack.Item>
@@ -215,7 +254,7 @@ const PointSection = (props: {
         </Stack>
       </Section>
 
-      {editingPoint && (
+      {editingPoint && editingIndex !== null && (
         <Modal
           style={{
             padding: '6px',
@@ -223,71 +262,158 @@ const PointSection = (props: {
             boxSizing: 'initial',
           }}
         >
-          <Section title="Destination Point">
+          <Section
+            title="Point Properties"
+            buttons={
+              <Button
+                icon="xmark"
+                color="bad"
+                onClick={() => {
+                  setEditingPoint(null);
+                  setEditingIndex(null);
+                }}
+              />
+            }
+          >
             <Stack>
               <Stack.Item>
-                {' '}
                 <Box
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '2em 2em 2em',
-                    gridAutoRows: '2em',
+                    gridTemplateColumns: '1fr 1fr 1fr',
+                    gridTemplateRows: '1fr 1fr 1fr',
+                    height: '60px',
+                    width: '67px',
                     gap: '2px',
                     rowGap: '2px',
                   }}
                 >
-                  {[-1, 0, 1].map((dx) =>
-                    [-1, 0, 1].map((dy) => {
-                      const isCenter = dx === 0 && dy === 0;
-                      let icon;
-                      if (dx === 0 && dy === 1) icon = 'arrow-right';
-                      if (dx === -1 && dy === 0) icon = 'arrow-up';
-                      if (dx === 1 && dy === 0) icon = 'arrow-down';
-                      if (dx === 0 && dy === -1) icon = 'arrow-left';
-                      if (dx === 0 && dy === 0) icon = 'location-dot';
+                  {[
+                    [-1, 1],
+                    [0, 1],
+                    [1, 1],
+                    [-1, 0],
+                    [0, 0],
+                    [1, 0],
+                    [-1, -1],
+                    [0, -1],
+                    [1, -1],
+                  ].map(([dx, dy]) => {
+                    const isCenter = dx === 0 && dy === 0;
+                    let icon;
+                    if (dx === 1 && dy === 1) icon = 'arrow-up-right';
+                    else if (dx === 0 && dy === 1) icon = 'arrow-up';
+                    else if (dx === -1 && dy === 1) icon = 'arrow-up-left';
+                    else if (dx === 1 && dy === 0) icon = 'arrow-right';
+                    else if (dx === -1 && dy === 0) icon = 'arrow-left';
+                    else if (dx === 1 && dy === -1) icon = 'arrow-down-right';
+                    else if (dx === 0 && dy === -1) icon = 'arrow-down';
+                    else if (dx === -1 && dy === -1) icon = 'arrow-down-left';
+                    else if (dx === 0 && dy === 0) icon = 'location-dot';
 
-                      return (
-                        <Button
-                          key={`${dx},${dy}`}
-                          icon={icon}
-                          disabled={isCenter}
-                          onClick={() =>
-                            !isCenter && handleDirectionClick(dx, dy)
-                          }
-                          // color="transparent"
-                          style={{
-                            margin: '0px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            lineHeight: '2em',
-                          }}
-                        />
-                      );
-                    }),
-                  )}
+                    const currentDirection = getPointDirection(editingPoint);
+                    const isCurrentDirection =
+                      currentDirection &&
+                      dx === currentDirection.dx &&
+                      dy === currentDirection.dy;
+
+                    return (
+                      <Button
+                        key={`${dx},${dy}`}
+                        icon={icon}
+                        disabled={isCenter}
+                        color={isCurrentDirection ? 'good' : 'default'}
+                        onClick={() =>
+                          !isCenter && handleDirectionClick(dx, dy)
+                        }
+                        style={{
+                          margin: '0px',
+                          textAlign: 'center',
+                          padding: '0px',
+                          cursor: 'pointer',
+                        }}
+                      />
+                    );
+                  })}
                 </Box>
               </Stack.Item>
               <Stack.Item grow>
                 <Table>
-                  <ConfigRow
-                    label="Overfill"
-                    content="FALSE"
-                    onClick={() => act('change_mode')}
-                    tooltip=""
-                  />
-                  <ConfigRow
-                    label="Object Type"
-                    content="ITEM"
-                    onClick={() => act('change_mode')}
-                    tooltip=""
-                  />
-                  <ConfigRow
-                    label="Filters"
-                    content="NONE"
-                    onClick={() => act('change_mode')}
-                    tooltip=""
-                  />
+                  {title === 'Pickup Points' ? (
+                    <>
+                      <ConfigRow
+                        label="Object Type"
+                        content="ITEMS"
+                        onClick={() =>
+                          act('change_pickup_type', {
+                            index: editingIndex + 1,
+                          })
+                        }
+                        tooltip="Cycle the pickup type"
+                      />
+                      <ConfigRow
+                        label="Item Filters"
+                        content={
+                          editingPoint.item_filters.length
+                            ? 'ACTIVE'
+                            : 'INACTIVE'
+                        }
+                        onClick={() =>
+                          act('toggle_item_filter', {
+                            index: editingIndex + 1,
+                          })
+                        }
+                        tooltip="Toggle item filters"
+                      />
+                      <ConfigRow
+                        label="Skip Item Filters"
+                        content={editingPoint.filters_status ? 'TRUE' : 'FALSE'}
+                        onClick={() =>
+                          act('toggle_filters_skip', {
+                            index: editingIndex + 1,
+                          })
+                        }
+                        tooltip="Toggle filter skipping"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <ConfigRow
+                        label="Mode"
+                        content={editingPoint.mode.toUpperCase()}
+                        onClick={() =>
+                          act('change_dropoff_mode', {
+                            index: editingIndex + 1,
+                          })
+                        }
+                        tooltip="Change dropoff mode"
+                      />
+                      <ConfigRow
+                        label="Overflow"
+                        content="OFF"
+                        onClick={() =>
+                          act('toggle_overflow', {
+                            index: editingIndex + 1,
+                          })
+                        }
+                        tooltip="Toggle overflow"
+                      />
+                      <ConfigRow
+                        label="Filters"
+                        content={
+                          editingPoint.item_filters.length
+                            ? 'ACTIVE'
+                            : 'INACTIVE'
+                        }
+                        onClick={() =>
+                          act('toggle_dropoff_filters', {
+                            index: editingIndex + 1,
+                          })
+                        }
+                        tooltip="Toggle filters"
+                      />
+                    </>
+                  )}
                 </Table>
               </Stack.Item>
             </Stack>
@@ -330,11 +456,12 @@ export const BigManipulator = () => {
             title="Action Panel"
             buttons={
               <Button
-                icon="power-off"
-                selected={active}
-                content={active ? 'On' : 'Off'}
+                icon={active ? 'stop' : 'play'}
+                color={active ? 'bad' : 'good'}
                 onClick={() => act('on')}
-              />
+              >
+                {active ? 'Stop' : 'Run'}
+              </Button>
             }
           >
             <Box
@@ -436,9 +563,9 @@ export const BigManipulator = () => {
           {interaction_mode !== 'throw' && (
             <Section>
               <Table>
-                {settings_list.map((setting) => (
+                {settings_list.map((setting, index) => (
                   <Table.Row
-                    key={setting.name}
+                    key={`${setting.name}-${index}`}
                     className="candystripe"
                     style={{
                       height: '2em',

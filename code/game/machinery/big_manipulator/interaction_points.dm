@@ -119,16 +119,19 @@
 	switch(interaction_mode)
 		if(INTERACT_DROP)
 			priorities_to_set = list(
-				new /datum/manipulator_priority/for_drop/on_floor(priority_number++),
-				new /datum/manipulator_priority/for_drop/in_storage(priority_number++),
+				new /datum/manipulator_priority/for_drop/on_floor(),
+				new /datum/manipulator_priority/for_drop/in_storage()
 				)
 		if(INTERACT_USE)
 			priorities_to_set = list(
-				new /datum/manipulator_priority/for_use/on_living(priority_number++),
-				new /datum/manipulator_priority/for_use/on_structure(priority_number++),
-				new /datum/manipulator_priority/for_use/on_machinery(priority_number++),
-				new /datum/manipulator_priority/for_use/on_items(priority_number++),
+				new /datum/manipulator_priority/for_use/on_living(),
+				new /datum/manipulator_priority/for_use/on_structure(),
+				new /datum/manipulator_priority/for_use/on_machinery(),
+				new /datum/manipulator_priority/for_use/on_items()
 				)
+
+	for(var/datum/manipulator_priority/priority in priorities_to_set)
+		priority.number = priority_number++
 
 	return length(priorities_to_set) ? priorities_to_set : list()
 
@@ -153,5 +156,8 @@
 /// Gets the current priority list sorted by priority number
 /datum/interaction_point/proc/get_sorted_priorities()
 	var/list/sorted = interaction_priorities.Copy()
-	sortTim(sorted, GLOBAL_PROC_REF(cmp_numeric_asc))
+	sortTim(sorted, GLOBAL_PROC_REF(cmp_manipulator_priority))
 	return sorted
+
+/proc/cmp_manipulator_priority(datum/manipulator_priority/a, datum/manipulator_priority/b)
+	return a.number - b.number

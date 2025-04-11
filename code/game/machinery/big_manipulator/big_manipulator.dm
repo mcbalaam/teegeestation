@@ -1,6 +1,6 @@
 /// The Big Manipulator's core. Main part of the mechanism that carries out the entire process.
 /obj/machinery/big_manipulator
-	name = "Big Manipulator"
+	name = "big manipulator"
 	desc = "Operates different objects. Truly, a groundbreaking innovation..."
 	icon = 'icons/obj/machines/big_manipulator_parts/big_manipulator_core.dmi'
 	icon_state = "core"
@@ -96,7 +96,7 @@
 			balloon_alert(usr, "no suitable turfs found!")
 			return FALSE
 
-	var/datum/interaction_point/new_interaction_point = new(src, new_turf, new_filters, new_filters_status, new_interaction_mode)
+	var/datum/interaction_point/new_interaction_point = new(new_turf, new_filters, new_filters_status, new_interaction_mode)
 
 	if(QDELETED(new_interaction_point))
 		return FALSE
@@ -742,12 +742,13 @@
 	data["current_task_type"] = current_task_type
 	data["current_task_duration"] = current_task_duration
 	data["min_delay"] = minimal_interaction_multiplier
+	data["manipulator_position"] = "[x],[y]"
 
 	var/list/pickup_points_data = list()
 	for(var/datum/interaction_point/point in pickup_points)
 		var/list/point_data = list()
 		point_data["name"] = point.name
-		point_data["turf"] = point.interaction_turf
+		point_data["turf"] = "[point.interaction_turf.x],[point.interaction_turf.y]"
 		point_data["mode"] = "PICK"
 		point_data["filters"] = point.type_filters
 		point_data["item_filters"] = point.atom_filters
@@ -758,7 +759,7 @@
 	for(var/datum/interaction_point/point in dropoff_points)
 		var/list/point_data = list()
 		point_data["name"] = point.name
-		point_data["turf"] = point.interaction_turf
+		point_data["turf"] = "[point.interaction_turf.x],[point.interaction_turf.y]"
 		point_data["mode"] = point.interaction_mode
 		point_data["filters"] = point.type_filters
 		point_data["item_filters"] = point.atom_filters
@@ -813,7 +814,7 @@
 						point.update_priority(priority, new_priority_number - 1)
 						break
 			return TRUE
-		if("cycle_throw_range")
+		if("change_throw_range")
 			cycle_throw_range()
 			return TRUE
 		if("create_pickup_point")
@@ -824,8 +825,8 @@
 			return TRUE
 		if("move_point")
 			var/index = params["index"]
-			var/dx = params["dx"]
-			var/dy = params["dy"]
+			var/dx = text2num(params["dx"])
+			var/dy = text2num(params["dy"])
 
 			var/list/all_points = pickup_points + dropoff_points
 			if(index < 1 || index > length(all_points))
@@ -833,12 +834,58 @@
 
 			var/datum/interaction_point/point = all_points[index]
 			var/turf/current_turf = point.interaction_turf
+			message_admins("Moving point from [current_turf.x],[current_turf.y] by offset [dx],[dy]")
 			var/turf/new_turf = locate(current_turf.x + dx, current_turf.y + dy, current_turf.z)
 
 			if(!new_turf || isclosedturf(new_turf))
+				message_admins("Failed to move: new turf is [new_turf ? "closed" : "null"]")
 				return FALSE
 
 			point.interaction_turf = new_turf
+			message_admins("Moved point to [new_turf.x],[new_turf.y]")
+			return TRUE
+		if("change_pickup_type")
+			var/index = params["index"]
+			if(index < 1 || index > length(pickup_points))
+				return FALSE
+			var/datum/interaction_point/point = pickup_points[index]
+			point.filtering_mode = cycle_value(point.filtering_mode, list(TAKE_ITEMS, TAKE_CLOSETS, TAKE_HUMANS))
+			return TRUE
+		if("toggle_item_filter")
+			var/index = params["index"]
+			var/list/all_points = pickup_points + dropoff_points
+			if(index < 1 || index > length(all_points))
+				return FALSE
+			var/datum/interaction_point/point = all_points[index]
+			point.atom_filters = list()
+			return TRUE
+		if("toggle_filters_skip")
+			var/index = params["index"]
+			if(index < 1 || index > length(pickup_points))
+				return FALSE
+			var/datum/interaction_point/point = pickup_points[index]
+			point.filters_status = !point.filters_status
+			return TRUE
+		if("change_dropoff_mode")
+			var/index = params["index"]
+			if(index < 1 || index > length(dropoff_points))
+				return FALSE
+			var/datum/interaction_point/point = dropoff_points[index]
+			point.interaction_mode = cycle_value(point.interaction_mode, list(INTERACT_DROP, INTERACT_USE, INTERACT_THROW))
+			return TRUE
+		if("toggle_overflow")
+			var/index = params["index"]
+			if(index < 1 || index > length(dropoff_points))
+				return FALSE
+			var/datum/interaction_point/point = dropoff_points[index]
+			// Здесь можно добавить логику для переполнения, если она нужна
+			return TRUE
+		if("toggle_dropoff_filters")
+			var/index = params["index"]
+			if(index < 1 || index > length(dropoff_points))
+				return FALSE
+			var/datum/interaction_point/point = dropoff_points[index]
+			point.atom_filters = list()
 			return TRUE
 
 /// Cycles the given value in the given list. Retuns the next value in the list, or the first one if the list isn't long enough.
