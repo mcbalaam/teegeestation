@@ -166,16 +166,16 @@ const PointSection = (props: {
     if (!editingPoint || editingIndex === null) return;
 
     const [baseX, baseY] = data.manipulator_position.split(',').map(Number);
-    const [pointX, pointY] = editingPoint.turf.split(',').map(Number);
 
-    // Обновляем состояние точки локально
-    const newTurf = `${pointX + dx},${pointY + dy}`;
+    const newX = baseX + dx;
+    const newY = baseY + dy;
+    const newTurf = `${newX},${newY}`;
+
     setEditingPoint({
       ...editingPoint,
       turf: newTurf,
     });
 
-    // Отправляем изменения на сервер
     act('move_point', {
       index: editingIndex + 1,
       dx: dx,
@@ -343,7 +343,7 @@ const PointSection = (props: {
                     <>
                       <ConfigRow
                         label="Object Type"
-                        content="ITEMS"
+                        content={editingPoint.mode.toUpperCase()}
                         onClick={() =>
                           act('change_pickup_type', {
                             index: editingIndex + 1,

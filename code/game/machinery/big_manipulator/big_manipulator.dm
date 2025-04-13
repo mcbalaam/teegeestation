@@ -120,6 +120,10 @@
 
 /// Calculates the next interaction point the manipulator should transfer the item to. If returns `NONE`, awaits one full cycle.
 /obj/machinery/big_manipulator/proc/find_next_point(tasking_type, transfer_type)
+	if(!length(pickup_points) || !length(dropoff_points))
+		balloon_alert(usr, "no points!")
+		return NONE
+
 	if(!tasking_type)
 		tasking_type = TASKING_PREFER_FIRST
 
@@ -128,6 +132,16 @@
 
 	var/list/interaction_points = transfer_type == TRANSFER_TYPE_DROPOFF ? dropoff_points : pickup_points
 	var/roundrobin_history = transfer_type == TRANSFER_TYPE_DROPOFF ? roundrobin_history_dropoff : roundrobin_history_pickup
+
+	// Проверяем, есть ли хотя бы одна точка с подходящими объектами
+	var/has_available_points = FALSE
+	for(var/datum/interaction_point/point in interaction_points)
+		if(point.is_available(transfer_type))
+			has_available_points = TRUE
+			break
+
+	if(!has_available_points)
+		return NONE
 
 	switch(tasking_type)
 		if(TASKING_PREFER_FIRST)
@@ -200,7 +214,7 @@
 	addtimer(CALLBACK(src, callback, target_point), total_rotation_time)
 	return TRUE
 
-/obj/machinery/big_manipulator/proc/try_begin_full_cycle(datum/source, atom/movable/target)
+/obj/machinery/big_manipulator/proc/try_begin_full_cycle()
 	if(!on)
 		return FALSE
 
@@ -219,12 +233,29 @@
 	try_run_full_cycle()
 
 /obj/machinery/big_manipulator/proc/try_run_full_cycle()
-	var/origin_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
+	var/datum/interaction_point/origin_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
 	if(!origin_point)
 		status = STATUS_IDLE
+		SStgui.update_uis(src)
+		addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
+		return FALSE
+
+	var/turf/origin_turf = origin_point.interaction_turf
+	var/has_suitable_objects = FALSE
+	for(var/atom/movable/movable_atom in origin_turf.contents)
+		if(origin_point.check_filters_for_atom(movable_atom))
+			has_suitable_objects = TRUE
+			break
+
+	if(!has_suitable_objects)
+		balloon_alert(usr, "skipping one full cycle")
+		status = STATUS_IDLE
+		SStgui.update_uis(src)
+		addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
 		return FALSE
 
 	rotate_to_point(origin_point, PROC_REF(try_interact_with_origin_point))
+	return TRUE
 
 /obj/machinery/big_manipulator/proc/try_interact_with_destination_point(datum/interaction_point/destination_point, hand_is_empty = FALSE)
 	if(!destination_point)
@@ -232,7 +263,7 @@
 
 	if(hand_is_empty)
 		use_thing_with_empty_hand(destination_point)
-		return
+		return TRUE
 
 	switch(destination_point.interaction_mode)
 		if(INTERACT_DROP)
@@ -242,6 +273,14 @@
 		if(INTERACT_THROW)
 			throw_thing(destination_point)
 
+	// После взаимодействия ищем следующую точку
+	var/datum/interaction_point/next_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
+	if(next_point)
+		rotate_to_point(next_point, PROC_REF(try_interact_with_origin_point))
+	else
+		status = STATUS_IDLE
+	return TRUE
+
 /obj/machinery/big_manipulator/proc/try_interact_with_origin_point(datum/interaction_point/origin_point, hand_is_empty = FALSE)
 	if(!origin_point)
 		return FALSE
@@ -249,17 +288,20 @@
 	var/turf/origin_turf = origin_point.interaction_turf
 	for(var/atom/movable/movable_atom in origin_turf.contents)
 		if(origin_point.check_filters_for_atom(movable_atom))
-			return
-			// if(try_pickup_item())
-			// 		break
+			start_work(movable_atom, hand_is_empty)
+			return TRUE
 
+	// Если не нашли подходящий объект, ждем следующего цикла
+	balloon_alert(usr, "skipping one full cycle")
+	status = STATUS_IDLE
+	addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
+	return FALSE
 
 /obj/machinery/big_manipulator/Initialize(mapload)
 	. = ..()
 	create_manipulator_arm()
 	RegisterSignal(manipulator_arm, COMSIG_QDELETING, PROC_REF(on_hand_qdel))
 	process_upgrades()
-	// set_up_priority_settings() // will be refactored - interaction data is now stored in datums
 	selected_type = type_filters[1]
 	if(on)
 		switch_power_state(null)
@@ -682,6 +724,10 @@
 			RegisterSignal(pickup_turf, COMSIG_ATOM_ENTERED, PROC_REF(try_begin_full_cycle))
 			RegisterSignal(pickup_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON, PROC_REF(try_begin_full_cycle))
 
+		on = new_power_state
+		SStgui.update_uis(src)
+		try_begin_full_cycle()
+
 	else
 		for(var/datum/interaction_point/point in pickup_points)
 			var/turf/pickup_turf = point.interaction_turf
@@ -689,8 +735,8 @@
 			UnregisterSignal(pickup_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
 
 		drop_held_object()
-
-	on = new_power_state
+		on = new_power_state
+		SStgui.update_uis(src)
 
 /obj/machinery/big_manipulator/proc/validate_all_points()
 	for(var/datum/interaction_point/point in pickup_points)
@@ -708,6 +754,10 @@
 		balloon_alert(user, "unresponsive!")
 		return
 	switch_power_state(user)
+	if(on)
+		balloon_alert(user, "activated")
+	else
+		balloon_alert(user, "deactivated")
 
 /// Drop item that manipulator is manipulating.
 /obj/machinery/big_manipulator/proc/drop_held_object()
@@ -734,7 +784,7 @@
 /obj/machinery/big_manipulator/ui_data(mob/user)
 	var/list/data = list()
 	data["active"] = on
-	data["selected_type"] = selected_type.name
+	data["selected_type"] = selected_type
 	data["interaction_mode"] = interaction_mode
 	data["worker_interaction"] = worker_interaction
 	data["highest_priority"] = override_priority
@@ -796,6 +846,7 @@
 			return TRUE
 		if("change_take_item_type")
 			cycle_pickup_type()
+			SStgui.update_uis(src)
 			return TRUE
 		if("change_mode")
 			change_mode()
@@ -833,9 +884,7 @@
 				return FALSE
 
 			var/datum/interaction_point/point = all_points[index]
-			var/turf/current_turf = point.interaction_turf
-			message_admins("Moving point from [current_turf.x],[current_turf.y] by offset [dx],[dy]")
-			var/turf/new_turf = locate(current_turf.x + dx, current_turf.y + dy, current_turf.z)
+			var/turf/new_turf = locate(x + dx, y + dy, z)
 
 			if(!new_turf || isclosedturf(new_turf))
 				message_admins("Failed to move: new turf is [new_turf ? "closed" : "null"]")
@@ -907,6 +956,7 @@
 
 /obj/machinery/big_manipulator/proc/cycle_pickup_type()
 	selected_type = cycle_value(selected_type, type_filters)
+	SStgui.update_uis(src)
 
 /// Начинает новую задачу с указанной длительностью
 /obj/machinery/big_manipulator/proc/start_task(task_type, duration)
