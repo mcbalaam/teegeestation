@@ -19,8 +19,8 @@ export const GamePanelTabs = [
 ] as GamePanelTab[];
 
 export const spawnLocationOptions = [
-  'On floor below own mob',
-  'On floor below own mob, dropped via supply pod',
-  "In own's mob hand",
-  'In marked object',
+  'Current location',
+  'Current location via droppod',
+  "In own mob's hand",
+  'At a marked object',
 ];

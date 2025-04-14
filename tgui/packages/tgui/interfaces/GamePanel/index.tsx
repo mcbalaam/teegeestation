@@ -33,7 +33,7 @@ export function GamePanel(props) {
   return (
     <Window
       height={selectedTab ? 500 : 80}
-      title="Game Panel"
+      title="Spawn Panel"
       width={500}
       theme="admin"
       buttons={
@@ -67,7 +67,6 @@ export function GamePanel(props) {
               </Tabs>
             </Stack.Item>
           </Stack>
-          <Stack.Divider />
           <Stack.Item grow>
             {selectedTabData && (
               <CreateObject

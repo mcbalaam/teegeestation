@@ -1,7 +1,7 @@
-#define FLOOR_BELOW_MOB "On floor below own mob"
-#define SUPPLY_BELOW_MOB "On floor below own mob, dropped via supply pod"
-#define MOB_HAND "In own's mob hand"
-#define MARKED_OBJECT "In marked object"
+#define FLOOR_BELOW_MOB "Current location"
+#define SUPPLY_BELOW_MOB "Current location via droppod"
+#define MOB_HAND "In own mob's hand"
+#define MARKED_OBJECT "At a marked object"
 #define ABSOLUTE_OFFSET "absolute"
 #define RELATIVE_OFFSET "relative"
 
@@ -74,6 +74,16 @@ ADMIN_VERB(game_panel, R_ADMIN, "Game Panel", "Opens Game Panel (TGUI).", ADMIN_
 			object_count = params?["newNumber"]
 		if("dir-changed")
 			dir = params?["newDir"]
+		if("cycle_dir")
+			switch(dir)
+				if(1)
+					dir = 2
+				if(2)
+					dir = 4
+				if(4)
+					dir = 8
+				if(8)
+					dir = 1
 		if("name-changed")
 			object_name = params?["newName"]
 		if("selected-object-changed")
