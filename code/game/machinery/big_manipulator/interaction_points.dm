@@ -1,3 +1,5 @@
+#define DIAG_INTERACTION_POINT_HUD "interaction_point"
+
 /datum/interaction_point
 	var/name = "interaction point"
 
@@ -68,6 +70,10 @@
 		for(var/type_in_priority in interaction_turf.contents)
 			if(!istype(type_in_priority, take_type.what_type))
 				continue
+			if(isliving(type_in_priority))
+				var/mob/living/living_target = type_in_priority
+				if(living_target.stat == DEAD) // Пропускаем мертвых
+					continue
 			return type_in_priority
 
 /// Checks if the interaction point is available - if it has items that can be interacted with.
@@ -78,11 +84,11 @@
 	if(filters_status == FILTERS_SKIPPED)
 		return TRUE
 
-	for(var/atom/this_atom in interaction_turf)
-		if(this_atom in atom_filters)
+	for(var/atom/movable/movable_atom in interaction_turf.contents)
+		if(check_filters_for_atom(movable_atom))
 			return interaction_mode == INTERACT_DROP ? FALSE : TRUE
 
-	return TRUE
+	return FALSE
 
 /// Checks if the interaction point is valid.
 /datum/interaction_point/proc/is_valid()
@@ -161,3 +167,7 @@
 
 /proc/cmp_manipulator_priority(datum/manipulator_priority/a, datum/manipulator_priority/b)
 	return a.number - b.number
+
+/datum/interaction_point/Destroy()
+	interaction_turf = null
+	return ..()

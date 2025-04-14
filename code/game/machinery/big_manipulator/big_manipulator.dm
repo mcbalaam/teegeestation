@@ -8,6 +8,7 @@
 	circuit = /obj/item/circuitboard/machine/big_manipulator
 	greyscale_colors = "#d8ce13"
 	greyscale_config = /datum/greyscale_config/big_manipulator
+	hud_possible = list(DIAG_LAUNCHPAD_HUD)
 
 	/// Min time manipulator can have in delay. Changing on upgrade.
 	var/minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_1
@@ -21,11 +22,8 @@
 	/// Is the manipulator turned on?
 	var/on = FALSE
 
-	/// Время начала текущей задачи
 	var/current_task_start_time = 0
-	/// Общее время выполнения текущей задачи
 	var/current_task_duration = 0
-	/// Тип текущей задачи (для UI)
 	var/current_task_type = "idle"
 
 	/// The object inside the manipulator.
@@ -72,6 +70,24 @@
 	/// List of dropoff points.
 	var/list/dropoff_points = list()
 
+/obj/machinery/big_manipulator/proc/update_hud_for_all_points()
+	for(var/datum/interaction_point/point in pickup_points)
+		update_hud_for_point(point, TRANSFER_TYPE_PICKUP)
+
+	for(var/datum/interaction_point/point in dropoff_points)
+		update_hud_for_point(point, TRANSFER_TYPE_DROPOFF)
+
+/obj/machinery/big_manipulator/proc/update_hud_for_point(datum/interaction_point/point, point_type)
+	if(!is_operational)
+		return
+
+	var/image/holder = hud_list[DIAG_LAUNCHPAD_HUD]
+	var/mutable_appearance/target = mutable_appearance('icons/effects/effects.dmi', point_type == TRANSFER_TYPE_PICKUP ? "launchpad_pull" : "launchpad_launch", ABOVE_NORMAL_TURF_LAYER, src, GAME_PLANE)
+
+	var/target_turf = point.interaction_turf
+	holder.appearance = target
+	holder.loc = target_turf
+
 /obj/machinery/big_manipulator/proc/find_suitable_turf()
 	var/turf/center = get_turf(src)
 	if(!center)
@@ -110,6 +126,7 @@
 	if(emagged)
 		new_interaction_point.type_filters += /mob/living
 
+	update_hud_for_point(new_interaction_point, transfer_type)
 	return new_interaction_point
 
 /obj/machinery/big_manipulator/proc/update_all_points_on_emag_act()
@@ -306,8 +323,10 @@
 	if(on)
 		switch_power_state(null)
 	set_wires(new /datum/wires/big_manipulator(src))
-
 	register_context()
+	prepare_huds()
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+		diag_hud.add_atom_to_hud(src)
 
 /// Checks the component tiers, adjusting the properties of the manipulator.
 /obj/machinery/big_manipulator/proc/process_upgrades()
@@ -369,7 +388,9 @@
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/big_manipulator/Destroy(force)
-	. = ..()
+	remove_all_huds()
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+		diag_hud.remove_atom_from_hud(src)
 	qdel(manipulator_arm)
 	if(!isnull(held_object))
 		var/obj/containment_resolve = held_object?.resolve()
@@ -378,6 +399,7 @@
 	if(!isnull(monkey_resolve))
 		monkey_resolve.forceMove(get_turf(monkey_resolve))
 	locked_by_this_id = null
+	return ..()
 
 /obj/machinery/big_manipulator/Exited(atom/movable/gone, direction)
 	if(isnull(monkey_worker))
@@ -706,6 +728,8 @@
 
 	if(!user)
 		on = new_power_state
+		if(!on)
+			remove_all_huds()
 		return
 
 	if(new_power_state)
@@ -719,34 +743,26 @@
 
 		validate_all_points()
 
-		for(var/datum/interaction_point/point in pickup_points)
-			var/turf/pickup_turf = point.interaction_turf
-			RegisterSignal(pickup_turf, COMSIG_ATOM_ENTERED, PROC_REF(try_begin_full_cycle))
-			RegisterSignal(pickup_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON, PROC_REF(try_begin_full_cycle))
-
 		on = new_power_state
 		SStgui.update_uis(src)
 		try_begin_full_cycle()
 
 	else
-		for(var/datum/interaction_point/point in pickup_points)
-			var/turf/pickup_turf = point.interaction_turf
-			UnregisterSignal(pickup_turf, COMSIG_ATOM_ENTERED)
-			UnregisterSignal(pickup_turf, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
-
 		drop_held_object()
 		on = new_power_state
+		remove_all_huds()
 		SStgui.update_uis(src)
 
 /obj/machinery/big_manipulator/proc/validate_all_points()
 	for(var/datum/interaction_point/point in pickup_points)
 		if(!point.is_valid())
+			remove_hud_for_point(point)
 			pickup_points.Remove(point)
 
 	for(var/datum/interaction_point/point in dropoff_points)
 		if(!point.is_valid())
+			remove_hud_for_point(point)
 			dropoff_points.Remove(point)
-
 
 /// Proc that check if button not cutted when we press on button.
 /obj/machinery/big_manipulator/proc/try_press_on(mob/user)
@@ -784,7 +800,7 @@
 /obj/machinery/big_manipulator/ui_data(mob/user)
 	var/list/data = list()
 	data["active"] = on
-	data["selected_type"] = selected_type
+	data["selected_type"] = "[selected_type]"
 	data["interaction_mode"] = interaction_mode
 	data["worker_interaction"] = worker_interaction
 	data["highest_priority"] = override_priority
@@ -802,6 +818,7 @@
 		point_data["mode"] = "PICK"
 		point_data["filters"] = point.type_filters
 		point_data["item_filters"] = point.atom_filters
+		point_data["filtering_mode"] = point.filtering_mode
 		pickup_points_data += list(point_data)
 	data["pickup_points"] = pickup_points_data
 
@@ -846,7 +863,6 @@
 			return TRUE
 		if("change_take_item_type")
 			cycle_pickup_type()
-			SStgui.update_uis(src)
 			return TRUE
 		if("change_mode")
 			change_mode()
@@ -878,20 +894,21 @@
 			var/index = params["index"]
 			var/dx = text2num(params["dx"])
 			var/dy = text2num(params["dy"])
+			var/is_pickup = params["is_pickup"] == "true"
 
-			var/list/all_points = pickup_points + dropoff_points
-			if(index < 1 || index > length(all_points))
+			var/list/points = is_pickup ? pickup_points : dropoff_points
+			if(index < 1 || index > length(points))
 				return FALSE
 
-			var/datum/interaction_point/point = all_points[index]
+			var/datum/interaction_point/point = points[index]
 			var/turf/new_turf = locate(x + dx, y + dy, z)
 
 			if(!new_turf || isclosedturf(new_turf))
-				message_admins("Failed to move: new turf is [new_turf ? "closed" : "null"]")
+
 				return FALSE
 
 			point.interaction_turf = new_turf
-			message_admins("Moved point to [new_turf.x],[new_turf.y]")
+			update_hud_for_point(point, is_pickup ? TRANSFER_TYPE_PICKUP : TRANSFER_TYPE_DROPOFF)
 			return TRUE
 		if("change_pickup_type")
 			var/index = params["index"]
@@ -941,10 +958,13 @@
 /obj/machinery/big_manipulator/proc/cycle_value(current_value, list/possible_values)
 	var/current_index = possible_values.Find(current_value)
 	if(current_index == null)
+		to_chat(world, span_notice("DEBUG: Value cycled to [possible_values[1]]"))
 		return possible_values[1]
 
 	var/next_index = (current_index % possible_values.len) + 1
+	to_chat(world, span_notice("DEBUG: Value cycled to [possible_values[next_index]]"))
 	return possible_values[next_index]
+
 
 /obj/machinery/big_manipulator/proc/cycle_worker_interaction()
 	var/list/worker_modes = list(WORKER_NORMAL_USE, WORKER_SINGLE_USE, WORKER_EMPTY_USE)
@@ -969,3 +989,17 @@
 	current_task_start_time = 0
 	current_task_duration = 0
 	current_task_type = "idle"
+
+/obj/machinery/big_manipulator/proc/remove_hud_for_point(datum/interaction_point/point)
+	if(!point)
+		return
+	var/image/holder = hud_list[DIAG_LAUNCHPAD_HUD]
+	if(holder)
+		qdel(holder)
+		hud_list[DIAG_LAUNCHPAD_HUD] = null
+
+/obj/machinery/big_manipulator/proc/remove_all_huds()
+	for(var/datum/interaction_point/point in pickup_points)
+		remove_hud_for_point(point)
+	for(var/datum/interaction_point/point in dropoff_points)
+		remove_hud_for_point(point)

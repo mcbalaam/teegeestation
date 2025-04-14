@@ -46,6 +46,7 @@ type PointData = {
   filters: string[];
   item_filters: string[];
   filters_status: boolean;
+  filtering_mode: number;
 };
 
 const MasterControls = () => {
@@ -116,6 +117,8 @@ const ConfigRow = (props: ConfigRowProps) => {
   const { label, content, onClick, ...rest } = props;
   const { tooltip = '', selected = false } = rest;
 
+  console.log('ConfigRow render:', { label, content, selected });
+
   return (
     <Table.Row
       className="candystripe"
@@ -180,6 +183,7 @@ const PointSection = (props: {
       index: editingIndex + 1,
       dx: dx,
       dy: dy,
+      is_pickup: title === 'Pickup Points',
     });
   };
 
@@ -196,6 +200,35 @@ const PointSection = (props: {
     const dy = Math.sign(pointY - baseY);
 
     return { dx, dy };
+  };
+
+  const getFilteringModeText = (mode: number) => {
+    switch (mode) {
+      case 1:
+        return 'ITEMS';
+      case 2:
+        return 'CLOSETS';
+      case 3:
+        return 'HUMANS';
+      default:
+        return 'UNKNOWN';
+    }
+  };
+
+  const handleFilteringModeChange = () => {
+    if (!editingPoint || editingIndex === null) return;
+
+    // Обновляем локальное состояние
+    const newMode = (editingPoint.filtering_mode % 3) + 1;
+    setEditingPoint({
+      ...editingPoint,
+      filtering_mode: newMode,
+    });
+
+    // Отправляем изменение на сервер
+    act('change_pickup_type', {
+      index: editingIndex + 1,
+    });
   };
 
   return (
@@ -222,10 +255,7 @@ const PointSection = (props: {
                       <small>Mode: {point.mode.toUpperCase()}</small>
                       <br />
                       <small>
-                        Filters:{' '}
-                        {point.item_filters.length
-                          ? point.item_filters.join(', ')
-                          : 'NONE'}
+                        Filters: {point.filters_status ? 'ACTIVE' : 'INACTIVE'}
                       </small>
                     </Box>
                   </Stack.Item>
@@ -283,9 +313,10 @@ const PointSection = (props: {
                     gridTemplateColumns: '1fr 1fr 1fr',
                     gridTemplateRows: '1fr 1fr 1fr',
                     height: '60px',
-                    width: '67px',
+                    width: '60px',
                     gap: '2px',
                     rowGap: '2px',
+                    marginRight: '10px',
                   }}
                 >
                   {[
@@ -330,7 +361,6 @@ const PointSection = (props: {
                           margin: '0px',
                           textAlign: 'center',
                           padding: '0px',
-                          cursor: 'pointer',
                         }}
                       />
                     );
@@ -343,12 +373,10 @@ const PointSection = (props: {
                     <>
                       <ConfigRow
                         label="Object Type"
-                        content={editingPoint.mode.toUpperCase()}
-                        onClick={() =>
-                          act('change_pickup_type', {
-                            index: editingIndex + 1,
-                          })
-                        }
+                        content={getFilteringModeText(
+                          editingPoint.filtering_mode,
+                        )}
+                        onClick={handleFilteringModeChange}
                         tooltip="Cycle the pickup type"
                       />
                       <ConfigRow
@@ -418,6 +446,7 @@ const PointSection = (props: {
               </Stack.Item>
             </Stack>
           </Section>
+          {editingPoint.filters_status && <Section>something</Section>}
         </Modal>
       )}
     </>
@@ -502,99 +531,6 @@ export const BigManipulator = () => {
             onAdd={() => act('create_dropoff_point')}
             act={act}
           />
-
-          <Section title="Configuration">
-            <Table>
-              <ConfigRow
-                label="Interaction Mode"
-                content={interaction_mode.toUpperCase()}
-                onClick={() => act('change_mode')}
-                tooltip="Cycle through interaction modes"
-              />
-
-              {interaction_mode === 'throw' && (
-                <ConfigRow
-                  label="Throwing Range"
-                  content={`${throw_range} TILE${throw_range > 1 ? 'S' : ''}`}
-                  onClick={() => act('change_throw_range')}
-                  tooltip="Cycle the distance an object will travel when thrown"
-                />
-              )}
-
-              <ConfigRow
-                label="Interaction Filter"
-                content={selected_type.toUpperCase()}
-                onClick={() => act('change_take_item_type')}
-                tooltip="Cycle through types of items to filter"
-              />
-              {interaction_mode === 'use' && (
-                <ConfigRow
-                  label="Worker Interactions"
-                  content={worker_interaction.toUpperCase()}
-                  onClick={() => act('worker_interaction_change')}
-                  tooltip={
-                    worker_interaction === 'normal'
-                      ? 'Interact using the held item'
-                      : worker_interaction === 'single'
-                        ? 'Drop the item after a single cycle'
-                        : 'Interact with an empty hand'
-                  }
-                />
-              )}
-              <ConfigRow
-                label="Item Filter"
-                content={item_as_filter ? item_as_filter : 'NONE'}
-                onClick={() => act('add_filter')}
-                tooltip="Click while holding an item to set filtering type"
-              />
-
-              {interaction_mode !== 'throw' && (
-                <ConfigRow
-                  label="Override List Priority"
-                  content={highest_priority ? 'TRUE' : 'FALSE'}
-                  onClick={() => act('highest_priority_change')}
-                  tooltip="Only interact with the highest dropoff point in the list"
-                  selected={!!highest_priority}
-                />
-              )}
-            </Table>
-          </Section>
-
-          {interaction_mode !== 'throw' && (
-            <Section>
-              <Table>
-                {settings_list.map((setting, index) => (
-                  <Table.Row
-                    key={`${setting.name}-${index}`}
-                    className="candystripe"
-                    style={{
-                      height: '2em',
-                      paddingLeft: '20px',
-                      lineHeight: '2em',
-                    }}
-                  >
-                    <Table.Cell
-                      style={{
-                        paddingLeft: '2px',
-                        width: '2em',
-                      }}
-                    >
-                      <Button
-                        icon="arrow-up"
-                        onClick={() =>
-                          act('change_priority', {
-                            priority: setting.priority_width,
-                          })
-                        }
-                      />
-                    </Table.Cell>
-                    <Table.Cell>{setting.name}</Table.Cell>
-                    <Table.Cell>{setting.priority_width}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table>
-            </Section>
-          )}
         </Box>
       </Window.Content>
     </Window>
