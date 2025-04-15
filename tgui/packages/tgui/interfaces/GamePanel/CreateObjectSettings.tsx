@@ -38,6 +38,8 @@ export function CreateObjectSettings(props) {
   const [cordsType, setCordsType] = useState(1);
   const [spawnLocation, setSpawnLocation] = useState('Current location');
   const [direction, setDirection] = useState(0);
+  const [listType, setListType] = useState('Objects');
+  const [hideMapping, setHideMapping] = useState(false);
 
   return (
     <Stack fill vertical>

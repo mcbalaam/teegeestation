@@ -1,21 +1,27 @@
 import { useEffect, useState } from 'react';
-import { Button, Stack, Tabs } from 'tgui-core/components';
+import { Button, Stack } from 'tgui-core/components';
 import { fetchRetry } from 'tgui-core/http';
 
 import { resolveAsset } from '../../assets';
 import { useBackend } from '../../backend';
 import { Window } from '../../layouts';
 import { logger } from '../../logging';
-import { GamePanelTabs } from './constants';
 import { CreateObject } from './CreateObject';
-import { Data, GamePanelTabName } from './types';
+
+interface CreateObjectData {
+  [key: string]: {
+    [key: string]: {
+      icon: string;
+      icon_state: string;
+      name: string;
+      mapping: boolean;
+    };
+  };
+}
 
 export function GamePanel(props) {
   const { act } = useBackend();
-  const [selectedTab, setSelectedTab] = useState<
-    GamePanelTabName | undefined
-  >();
-  const [data, setData] = useState<Data | undefined>();
+  const [data, setData] = useState<CreateObjectData | undefined>();
 
   useEffect(() => {
     fetchRetry(resolveAsset('gamepanel.json'))
@@ -28,11 +34,9 @@ export function GamePanel(props) {
       });
   }, []);
 
-  const selectedTabData = data && selectedTab && data[selectedTab];
-
   return (
     <Window
-      height={selectedTab ? 500 : 80}
+      height={500}
       title="Spawn Panel"
       width={500}
       theme="admin"
@@ -51,29 +55,8 @@ export function GamePanel(props) {
     >
       <Window.Content>
         <Stack vertical fill>
-          <Stack vertical={false}>
-            <Stack.Item shrink={3} width="100%">
-              <Tabs fluid>
-                {GamePanelTabs.map((tab) => (
-                  <Tabs.Tab
-                    key={tab.name}
-                    onClick={() => setSelectedTab(tab.name)}
-                    selected={selectedTab === tab.name}
-                    icon={tab.icon}
-                  >
-                    {tab.content}
-                  </Tabs.Tab>
-                ))}
-              </Tabs>
-            </Stack.Item>
-          </Stack>
           <Stack.Item grow>
-            {selectedTabData && (
-              <CreateObject
-                objList={selectedTabData}
-                tabName={selectedTab || ''}
-              />
-            )}
+            {data && <CreateObject objList={data.Objects} />}
           </Stack.Item>
         </Stack>
       </Window.Content>

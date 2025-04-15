@@ -14,8 +14,8 @@ ADMIN_VERB(game_panel, R_ADMIN, "Game Panel", "Opens Game Panel (TGUI).", ADMIN_
 /datum/admins
 	var/datum/admins/gamepanel/gamepanel_tgui
 
-// /datum/admins/New(list/datum/admin_rank/ranks, ckey, force_active = FALSE, protected)
-// 	. = ..()
+/datum/admins/New(list/datum/admin_rank/ranks, ckey, force_active = FALSE, protected)
+	. = ..()
 
 /datum/admins/Destroy()
 	. = ..()
@@ -26,8 +26,8 @@ ADMIN_VERB(game_panel, R_ADMIN, "Game Panel", "Opens Game Panel (TGUI).", ADMIN_
 	var/where_dropdown_value = FLOOR_BELOW_MOB
 	var/selected_object = ""
 	/* ICON PREVIEW CODE */
-	// var/selected_object_icon = null
-	// var/selected_object_icon_state = null
+	var/selected_object_icon = null
+	var/selected_object_icon_state = null
 	var/object_count = 1
 	var/object_name
 	var/dir = 1
@@ -99,23 +99,22 @@ ADMIN_VERB(game_panel, R_ADMIN, "Game Panel", "Opens Game Panel (TGUI).", ADMIN_
 				offset_type = offset_type,
 				)
 			)
-		/* ICON PREVIEW CODE */
-		// if("load-new-icon")
-		// 	var/obj/object_path = text2path(selected_object)
-		// 	if(!object_path)
-		// 		return
-		// 	var/temp_object = new object_path()
-		// 	var/obj/temp_temp_object = temp_object
-		// 	selected_object_icon = temp_temp_object.icon || temp_temp_object.icon_preview
-		// 	selected_object_icon_state = temp_temp_object.icon_state || temp_temp_object.icon_state_preview
-		// 	qdel(temp_object);
+		if("load-new-icon")
+			var/obj/object_path = text2path(selected_object)
+			if(!object_path)
+				return
+			var/temp_object = new object_path()
+			var/obj/temp_temp_object = temp_object
+			selected_object_icon = temp_temp_object.icon || temp_temp_object.icon_preview
+			selected_object_icon_state = temp_temp_object.icon_state || temp_temp_object.icon_state_preview
+			qdel(temp_object);
 
 
-// /datum/admins/gamepanel/ui_data(mob/user)
-// 	var/data = list()
-// 	data["icon"] = selected_object_icon
-// 	data["iconState"] = selected_object_icon_state
-// 	return data;
+/datum/admins/gamepanel/ui_data(mob/user)
+	var/data = list()
+	data["icon"] = selected_object_icon
+	data["iconState"] = selected_object_icon_state
+	return data;
 
 /datum/admins/gamepanel/ui_assets(mob/user)
 	return list(

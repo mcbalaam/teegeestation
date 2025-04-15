@@ -10,8 +10,19 @@ import {
 
 import { useBackend } from '../../backend';
 import { SearchBar } from '../common/SearchBar';
+import { listNames, listTypes } from './constants';
 import { CreateObjectSettings } from './CreateObjectSettings';
-import { CreateObjectProps } from './types';
+
+interface CreateObjectProps {
+  objList: {
+    [key: string]: {
+      icon: string;
+      icon_state: string;
+      name: string;
+      mapping: boolean;
+    };
+  };
+}
 
 export function CreateObject(props: CreateObjectProps) {
   const { act } = useBackend();
@@ -19,8 +30,11 @@ export function CreateObject(props: CreateObjectProps) {
   const [tooltipIcon, setTooltipIcon] = useState(false);
   const [selectedObj, setSelectedObj] = useState(-1);
   const [searchBy, setSearchBy] = useState(true);
-  const [sortBy, setSortBy] = useState(true);
-  const { objList, tabName } = props;
+  const [sortBy, setSortBy] = useState(listTypes.Objects);
+  const [hideMapping, setHideMapping] = useState(false);
+  const { objList } = props;
+
+  const currentList = objList;
 
   return (
     <Box>
@@ -44,18 +58,32 @@ export function CreateObject(props: CreateObjectProps) {
               </Stack.Item>
               <Stack.Item>
                 <Button
-                  icon="toggle-off"
-                  onClick={() => setSearchBy(!searchBy)}
-                  tooltip={searchBy ? 'Search by type' : 'Search by name'}
-                  tooltipPosition="top"
+                  icon={hideMapping ? 'toggle-on' : 'toggle-off'}
+                  onClick={() => setHideMapping(!hideMapping)}
+                  tooltip={
+                    hideMapping
+                      ? 'Hide mapping objects'
+                      : 'Show mapping objects'
+                  }
+                  color={hideMapping && 'good'}
                 />
               </Stack.Item>
               <Stack.Item>
                 <Button
-                  icon="cat"
-                  onClick={() => setSearchBy(!searchBy)}
-                  tooltip={searchBy ? 'Search by type' : 'Search by name'}
-                  tooltipPosition="top"
+                  icon={sortBy}
+                  onClick={() => {
+                    const types = Object.values(listTypes);
+                    const currentIndex = types.indexOf(sortBy);
+                    const nextIndex = (currentIndex + 1) % types.length;
+                    setSortBy(types[nextIndex]);
+                  }}
+                  tooltip={
+                    listNames[
+                      Object.keys(listTypes).find(
+                        (key) => listTypes[key] === sortBy,
+                      ) || 'Objects'
+                    ]
+                  }
                 />
               </Stack.Item>
               <Stack.Item>
@@ -63,21 +91,27 @@ export function CreateObject(props: CreateObjectProps) {
                   icon={searchBy ? 'code' : 'font'}
                   onClick={() => setSearchBy(!searchBy)}
                   tooltip={searchBy ? 'Search by type' : 'Search by name'}
-                  tooltipPosition="top"
                 />
               </Stack.Item>
             </Stack>
-            <Stack.Item ml="0.5em">
+            <Stack.Item
+              ml="0.5em"
+              style={{
+                visibility:
+                  Object.keys(currentList).length === 0 ? 'hidden' : 'visible',
+              }}
+            >
               <VirtualList>
-                {Object.keys(objList)
+                {Object.keys(currentList)
                   .filter((obj: string) => {
                     if (searchText === '') return false;
+                    if (hideMapping && currentList[obj].mapping) return false;
                     if (searchBy) {
                       return obj
                         .toLowerCase()
                         .includes(searchText.toLowerCase());
                     }
-                    return objList[obj].name
+                    return currentList[obj].name
                       ?.toLowerCase()
                       .includes(searchText.toLowerCase());
                   })
@@ -88,8 +122,8 @@ export function CreateObject(props: CreateObjectProps) {
                       tooltip={
                         tooltipIcon && (
                           <DmIcon
-                            icon={objList[obj].icon}
-                            icon_state={objList[obj].icon_state}
+                            icon={currentList[obj].icon}
+                            icon_state={currentList[obj].icon_state}
                           />
                         )
                       }
@@ -125,7 +159,7 @@ export function CreateObject(props: CreateObjectProps) {
                         obj
                       ) : (
                         <>
-                          {objList[obj].name}
+                          {currentList[obj].name}
                           <span
                             className="label label-info"
                             style={{
