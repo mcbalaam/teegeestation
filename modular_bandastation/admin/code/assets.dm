@@ -2,7 +2,9 @@
 	name = "gamepanel"
 
 /datum/asset/json/gamepanel/proc/check_mapping(atom/some_atom)
-	return findtext("[some_atom]", "helper|spawner|random") > 0
+	var/atom_text = "[some_atom]"
+	var/is_mapping = findtext(atom_text, "helper") || findtext(atom_text, "spawner") || findtext(atom_text, "random")
+	return is_mapping ? TRUE : FALSE
 
 /datum/asset/json/gamepanel/generate()
 	var/list/data = list()

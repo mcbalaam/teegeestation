@@ -35,6 +35,7 @@ const directionNames = {
 
 export function CreateObjectSettings(props) {
   const { act } = useBackend();
+  const [amount, setAmount] = useState(1);
   const [cordsType, setCordsType] = useState(1);
   const [spawnLocation, setSpawnLocation] = useState('Current location');
   const [direction, setDirection] = useState(0);
@@ -57,10 +58,11 @@ export function CreateObjectSettings(props) {
                   minValue={1}
                   maxValue={150}
                   step={1}
-                  value={1}
-                  onChange={(value) =>
-                    act('number-changed', { newNumber: value })
-                  }
+                  value={amount}
+                  onChange={(value) => {
+                    setAmount(value);
+                    act('number-changed', { newNumber: value });
+                  }}
                   width="100%"
                 />
               </Table.Cell>
