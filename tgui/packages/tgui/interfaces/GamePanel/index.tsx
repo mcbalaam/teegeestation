@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Stack } from 'tgui-core/components';
+import { Stack } from 'tgui-core/components';
 import { fetchRetry } from 'tgui-core/http';
 
 import { resolveAsset } from '../../assets';
@@ -9,7 +9,23 @@ import { logger } from '../../logging';
 import { CreateObject } from './CreateObject';
 
 interface CreateObjectData {
-  [key: string]: {
+  Objects: {
+    [key: string]: {
+      icon: string;
+      icon_state: string;
+      name: string;
+      mapping: boolean;
+    };
+  };
+  Turfs: {
+    [key: string]: {
+      icon: string;
+      icon_state: string;
+      name: string;
+      mapping: boolean;
+    };
+  };
+  Mobs: {
     [key: string]: {
       icon: string;
       icon_state: string;
@@ -35,28 +51,11 @@ export function GamePanel(props) {
   }, []);
 
   return (
-    <Window
-      height={500}
-      title="Spawn Panel"
-      width={500}
-      theme="admin"
-      buttons={
-        <Button
-          height="100%"
-          align="center"
-          verticalAlignContent="middle"
-          fluid
-          onClick={() => act('game-mode-panel')}
-          icon="gamepad"
-        >
-          Game Mode Panel
-        </Button>
-      }
-    >
+    <Window height={500} title="Spawn Panel" width={500} theme="admin">
       <Window.Content>
         <Stack vertical fill>
           <Stack.Item grow>
-            {data && <CreateObject objList={data.Objects} />}
+            {data && <CreateObject objList={data} />}
           </Stack.Item>
         </Stack>
       </Window.Content>

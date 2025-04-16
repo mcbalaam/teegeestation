@@ -12,7 +12,7 @@ export const listTypes = {
 };
 
 export const listNames = {
-  Objects: 'Search objects',
-  Turfs: 'Search turfs',
-  Mobs: 'Search mobs',
+  Objects: 'Objects',
+  Turfs: 'Turfs',
+  Mobs: 'Mobs',
 };

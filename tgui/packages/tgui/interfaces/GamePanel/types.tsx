@@ -42,12 +42,5 @@ export interface CreateObjectData {
 }
 
 export interface CreateObjectProps {
-  objList: {
-    [key: string]: {
-      icon: string;
-      icon_state: string;
-      name: string;
-      mapping: boolean;
-    };
-  };
+  objList: CreateObjectData;
 }
