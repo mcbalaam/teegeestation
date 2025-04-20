@@ -113,10 +113,6 @@
 			return ishuman(target)
 
 		if(TAKE_ITEMS)
-			if(!length(atom_filters))
-				var/obj/machinery/big_manipulator/manipulator = locate() in range(1, interaction_turf)
-				if(manipulator)
-					return manipulator.check_filter(target)
 			return target in atom_filters
 
 	return FALSE

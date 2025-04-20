@@ -2177,6 +2177,7 @@
 #include "code\game\machinery\wishgranter.dm"
 #include "code\game\machinery\big_manipulator\_defines.dm"
 #include "code\game\machinery\big_manipulator\big_manipulator.dm"
+#include "code\game\machinery\big_manipulator\big_manipulator_interactions.dm"
 #include "code\game\machinery\big_manipulator\interaction_points.dm"
 #include "code\game\machinery\big_manipulator\interaction_priorities.dm"
 #include "code\game\machinery\big_manipulator\manipulator_arm.dm"
