@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -195,7 +195,6 @@ const PointSection = (props: {
     const [pointX, pointY] = point.turf.split(',').map(Number);
     const [baseX, baseY] = data.manipulator_position.split(',').map(Number);
 
-    // Определяем относительное положение точки от манипулятора
     const dx = Math.sign(pointX - baseX);
     const dy = Math.sign(pointY - baseY);
 
@@ -218,14 +217,12 @@ const PointSection = (props: {
   const handleFilteringModeChange = () => {
     if (!editingPoint || editingIndex === null) return;
 
-    // Обновляем локальное состояние
     const newMode = (editingPoint.filtering_mode % 3) + 1;
     setEditingPoint({
       ...editingPoint,
       filtering_mode: newMode,
     });
 
-    // Отправляем изменение на сервер
     act('change_pickup_type', {
       index: editingIndex + 1,
     });
@@ -470,6 +467,26 @@ export const BigManipulator = () => {
     dropoff_points,
   } = data;
 
+  // Local state for ProgressBar value management
+  const [progressValue, setProgressValue] = useState(0);
+
+  // Effect to control animation
+  useEffect(() => {
+    const isTaskActive = current_task_type !== 'idle';
+    // Set initial value on task change
+    setProgressValue(0);
+
+    if (isTaskActive) {
+      // Slight delay before setting the final value
+      const timer = setTimeout(() => {
+        setProgressValue(1);
+      }, 20); // 20ms delay
+
+      // Cleanup timer on unmount or task change
+      return () => clearTimeout(timer);
+    }
+  }, [current_task_type]); // Dependency on task type
+
   return (
     <Window title="Manipulator Interface" width={420} height={610}>
       <Window.Content overflowY="auto">
@@ -505,10 +522,13 @@ export const BigManipulator = () => {
 
           <Section>
             <ProgressBar
-              value={1}
+              value={progressValue}
               maxValue={1}
               style={{
-                transitionDuration: `${current_task_duration}s`,
+                transition:
+                  progressValue === 1
+                    ? `width ${current_task_duration}s linear`
+                    : 'none',
               }}
             >
               <Stack lineHeight="1.8em">

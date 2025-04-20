@@ -1655,6 +1655,10 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/station/hallway/primary/central)
+"xW" = (
+/obj/machinery/big_manipulator,
+/turf/open/floor/plating,
+/area/station/construction)
 "xY" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/structure/cable,
@@ -2502,6 +2506,10 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/iron,
 /area/station/hallway/secondary/entry)
+"Tb" = (
+/obj/item/clothing/glasses/hud/diagnostic,
+/turf/open/floor/plating,
+/area/station/construction)
 "Td" = (
 /obj/machinery/light/directional/east,
 /obj/effect/turf_decal/stripes/line{
@@ -6305,9 +6313,9 @@ FA
 Hb
 Es
 dn
+xW
 dn
-dn
-dn
+Tb
 dn
 dn
 dn
@@ -6489,9 +6497,9 @@ bE
 cN
 bV
 dn
+xW
 dn
-dn
-dn
+Tb
 dn
 dn
 dn
@@ -6673,9 +6681,9 @@ hp
 cN
 PB
 qf
+xW
 dn
-dn
-dn
+Tb
 dn
 dn
 dn

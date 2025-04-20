@@ -14,8 +14,9 @@
 #define MIN_ROTATION_MULTIPLIER_TIER_3 0.3
 #define MIN_ROTATION_MULTIPLIER_TIER_4 0.2
 
-#define STATUS_BUSY TRUE
-#define STATUS_IDLE FALSE
+#define STATUS_BUSY "busy"
+#define STATUS_WAITING "waiting"
+#define STATUS_IDLE "idle"
 
 #define WORKER_SINGLE_USE "single"
 #define WORKER_EMPTY_USE "empty"

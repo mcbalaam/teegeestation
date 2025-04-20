@@ -6,7 +6,6 @@
 	wires = list(
 		WIRE_ON,
 		WIRE_DROP,
-		WIRE_ITEM_TYPE,
 		WIRE_CHANGE_MODE,
 		WIRE_ONE_PRIORITY_BUTTON,
 		WIRE_THROW_RANGE
@@ -23,7 +22,6 @@
 	var/list/status = list()
 	status += "The big light bulb [manipulator_big.power_access_wire_cut ? "has went out" : "is glowing [manipulator_big.on ? "green" : "red"]"]."
 	status += "The small red light shows: [isnull(manipulator_big.held_object) ? "empty" : "full"]."
-	status += "Text on the yellow board shows: [manipulator_big.selected_type.name]."
 	status += "There are [manipulator_big.interaction_mode] text on the small blue panel."
 	status += "The purple light is [manipulator_big.override_priority  ? "on" : "off"]."
 	status += "The number on small white panel shows [manipulator_big.manipulator_throw_range]."
@@ -36,8 +34,6 @@
 			manipulator_big.try_press_on(usr)
 		if(WIRE_DROP)
 			manipulator_big.drop_held_object()
-		if(WIRE_ITEM_TYPE)
-			manipulator_big.cycle_pickup_type()
 		if(WIRE_CHANGE_MODE)
 			manipulator_big.change_mode()
 		if(WIRE_ONE_PRIORITY_BUTTON)

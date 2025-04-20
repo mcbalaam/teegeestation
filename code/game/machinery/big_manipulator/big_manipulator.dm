@@ -47,8 +47,6 @@
 	var/manipulator_throw_range = 1
 	/// Overrides the priority selection, only accessing the top priority list element.
 	var/override_priority = FALSE
-	/// The `type` the manipulator will interact with only.
-	var/atom/selected_type
 	/// Is the power access wire cut? Disables the power button if `TRUE`.
 	var/power_access_wire_cut = FALSE
 	/// List where we can set selected type. Taking items by Initialize.
@@ -69,6 +67,8 @@
 	var/list/pickup_points = list()
 	/// List of dropoff points.
 	var/list/dropoff_points = list()
+	/// List of all HUD icons resembling interaction points.
+	var/list/hud_points = list()
 
 /obj/machinery/big_manipulator/proc/update_hud_for_all_points()
 	for(var/datum/interaction_point/point in pickup_points)
@@ -81,12 +81,15 @@
 	if(!is_operational)
 		return
 
-	var/image/holder = hud_list[DIAG_LAUNCHPAD_HUD]
+	// Creating a new HUD element
+	var/image/holder = new
+	hud_list[DIAG_LAUNCHPAD_HUD] = holder
 	var/mutable_appearance/target = mutable_appearance('icons/effects/effects.dmi', point_type == TRANSFER_TYPE_PICKUP ? "launchpad_pull" : "launchpad_launch", ABOVE_NORMAL_TURF_LAYER, src, GAME_PLANE)
 
 	var/target_turf = point.interaction_turf
 	holder.appearance = target
 	holder.loc = target_turf
+	hud_points += holder
 
 /obj/machinery/big_manipulator/proc/find_suitable_turf()
 	var/turf/center = get_turf(src)
@@ -126,7 +129,9 @@
 	if(emagged)
 		new_interaction_point.type_filters += /mob/living
 
-	update_hud_for_point(new_interaction_point, transfer_type)
+	// Обновляем HUD только если манипулятор работает
+	if(is_operational)
+		update_hud_for_point(new_interaction_point, transfer_type)
 	return new_interaction_point
 
 /obj/machinery/big_manipulator/proc/update_all_points_on_emag_act()
@@ -138,7 +143,6 @@
 /// Calculates the next interaction point the manipulator should transfer the item to. If returns `NONE`, awaits one full cycle.
 /obj/machinery/big_manipulator/proc/find_next_point(tasking_type, transfer_type)
 	if(!length(pickup_points) || !length(dropoff_points))
-		balloon_alert(usr, "no points!")
 		return NONE
 
 	if(!tasking_type)
@@ -223,11 +227,10 @@
 	var/num_rotations = abs(angle_diff) / 45
 	var/total_rotation_time = num_rotations * interaction_delay
 
-	start_task("rotate", total_rotation_time)
+	start_task("moving to point", total_rotation_time)
 	animate(manipulator_arm, transform = matrix(angle_diff, MATRIX_ROTATE), time = total_rotation_time)
 	manipulator_arm.dir = target_dir
 
-	addtimer(CALLBACK(src, PROC_REF(end_task)), total_rotation_time)
 	addtimer(CALLBACK(src, callback, target_point), total_rotation_time)
 	return TRUE
 
@@ -238,22 +241,17 @@
 	if(!anchored)
 		return FALSE
 
-	if(status == STATUS_BUSY)
-		return FALSE
-
 	if(!use_energy(active_power_usage, force = FALSE))
 		on = FALSE
 		balloon_alert("not enough power!")
 		return FALSE
 
-	status = STATUS_BUSY
 	try_run_full_cycle()
 
 /obj/machinery/big_manipulator/proc/try_run_full_cycle()
 	var/datum/interaction_point/origin_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
 	if(!origin_point)
-		status = STATUS_IDLE
-		SStgui.update_uis(src)
+		start_task(STATUS_WAITING, CYCLE_SKIP_TIMEOUT)
 		addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
 		return FALSE
 
@@ -265,9 +263,7 @@
 			break
 
 	if(!has_suitable_objects)
-		balloon_alert(usr, "skipping one full cycle")
-		status = STATUS_IDLE
-		SStgui.update_uis(src)
+		start_task(STATUS_WAITING, CYCLE_SKIP_TIMEOUT)
 		addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
 		return FALSE
 
@@ -290,12 +286,12 @@
 		if(INTERACT_THROW)
 			throw_thing(destination_point)
 
-	// После взаимодействия ищем следующую точку
 	var/datum/interaction_point/next_point = find_next_point(pickup_tasking, TRANSFER_TYPE_PICKUP)
 	if(next_point)
 		rotate_to_point(next_point, PROC_REF(try_interact_with_origin_point))
 	else
-		status = STATUS_IDLE
+		start_task(STATUS_WAITING, CYCLE_SKIP_TIMEOUT)
+		addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
 	return TRUE
 
 /obj/machinery/big_manipulator/proc/try_interact_with_origin_point(datum/interaction_point/origin_point, hand_is_empty = FALSE)
@@ -308,9 +304,7 @@
 			start_work(movable_atom, hand_is_empty)
 			return TRUE
 
-	// Если не нашли подходящий объект, ждем следующего цикла
-	balloon_alert(usr, "skipping one full cycle")
-	status = STATUS_IDLE
+	start_task(STATUS_WAITING, CYCLE_SKIP_TIMEOUT)
 	addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
 	return FALSE
 
@@ -319,7 +313,6 @@
 	create_manipulator_arm()
 	RegisterSignal(manipulator_arm, COMSIG_QDELETING, PROC_REF(on_hand_qdel))
 	process_upgrades()
-	selected_type = type_filters[1]
 	if(on)
 		switch_power_state(null)
 	set_wires(new /datum/wires/big_manipulator(src))
@@ -548,15 +541,20 @@
 
 	deconstruct(TRUE)
 
-/// Second take and drop proc from [take and drop procs loop]:
-/// Taking our item and start manipulator hand rotate animation.
 /obj/machinery/big_manipulator/proc/start_work(atom/movable/target, hand_is_empty = FALSE)
 	if(!hand_is_empty)
 		target.forceMove(src)
 		held_object = WEAKREF(target)
 		manipulator_arm.update_claw(held_object)
-	status = STATUS_BUSY
-	try_interact_with_origin_point(target, hand_is_empty)
+	var/datum/interaction_point/destination_point = find_next_point(dropoff_tasking, TRANSFER_TYPE_DROPOFF)
+	if(!destination_point)
+		SStgui.update_uis(src)
+		addtimer(CALLBACK(src, PROC_REF(try_begin_full_cycle)), CYCLE_SKIP_TIMEOUT)
+		start_task(STATUS_WAITING, CYCLE_SKIP_TIMEOUT)
+		return FALSE
+
+	rotate_to_point(destination_point, PROC_REF(try_interact_with_destination_point))
+	return TRUE
 
 /// Drops the item onto the turf.
 /obj/machinery/big_manipulator/proc/try_drop_thing(datum/interaction_point/destination_point)
@@ -692,7 +690,7 @@
 
 /// Completes the work cycle and prepares for the next one
 /obj/machinery/big_manipulator/proc/end_work()
-	status = STATUS_IDLE
+	end_current_task()
 	if(!on)
 		return
 
@@ -703,8 +701,6 @@
 
 /obj/machinery/big_manipulator/proc/check_filter(atom/movable/target)
 	if (target.anchored || HAS_TRAIT(target, TRAIT_NODROP))
-		return FALSE
-	if(!istype(target, selected_type))
 		return FALSE
 	/// We use filter only on items. closets, humans and etc don't need filter check.
 	if(!isitem(target))
@@ -751,6 +747,7 @@
 		drop_held_object()
 		on = new_power_state
 		remove_all_huds()
+		end_current_task()
 		SStgui.update_uis(src)
 
 /obj/machinery/big_manipulator/proc/validate_all_points()
@@ -800,7 +797,6 @@
 /obj/machinery/big_manipulator/ui_data(mob/user)
 	var/list/data = list()
 	data["active"] = on
-	data["selected_type"] = "[selected_type]"
 	data["interaction_mode"] = interaction_mode
 	data["worker_interaction"] = worker_interaction
 	data["highest_priority"] = override_priority
@@ -860,9 +856,6 @@
 			return TRUE
 		if("drop")
 			drop_held_object()
-			return TRUE
-		if("change_take_item_type")
-			cycle_pickup_type()
 			return TRUE
 		if("change_mode")
 			change_mode()
@@ -974,32 +967,37 @@
 	var/list/possible_ranges = list(1, 2, 3, 4, 5, 6, 7)
 	manipulator_throw_range = cycle_value(manipulator_throw_range, possible_ranges)
 
-/obj/machinery/big_manipulator/proc/cycle_pickup_type()
-	selected_type = cycle_value(selected_type, type_filters)
+/// Begins a new task with the specified type and duration
+/obj/machinery/big_manipulator/proc/start_task(task_type, duration)
+	end_current_task() // End any previous task first (momentarily sets IDLE)
+
+	current_task_start_time = world.time
+	current_task_duration = duration / 10 // Duration is in deciseconds for TGUI
+	current_task_type = task_type
+	status = STATUS_BUSY // Set status to BUSY for the new task
 	SStgui.update_uis(src)
 
-/// Начинает новую задачу с указанной длительностью
-/obj/machinery/big_manipulator/proc/start_task(task_type, duration)
-	current_task_start_time = world.time
-	current_task_duration = duration
-	current_task_type = task_type
-
-/// Завершает текущую задачу
-/obj/machinery/big_manipulator/proc/end_task()
+/// Ends the current task
+/obj/machinery/big_manipulator/proc/end_current_task()
 	current_task_start_time = 0
 	current_task_duration = 0
 	current_task_type = "idle"
+	balloon_alert(usr, "idle")
+	status = STATUS_IDLE // Set status to IDLE when a task truly ends
+	SStgui.update_uis(src) // Update UI immediately
 
 /obj/machinery/big_manipulator/proc/remove_hud_for_point(datum/interaction_point/point)
 	if(!point)
 		return
-	var/image/holder = hud_list[DIAG_LAUNCHPAD_HUD]
-	if(holder)
-		qdel(holder)
-		hud_list[DIAG_LAUNCHPAD_HUD] = null
+
+	// Удаляем все HUD-элементы, связанные с этой точкой
+	for(var/image/hud_image in hud_points)
+		if(hud_image.loc == point.interaction_turf)
+			hud_points -= hud_image
+			qdel(hud_image)
+			break
 
 /obj/machinery/big_manipulator/proc/remove_all_huds()
-	for(var/datum/interaction_point/point in pickup_points)
-		remove_hud_for_point(point)
-	for(var/datum/interaction_point/point in dropoff_points)
-		remove_hud_for_point(point)
+	for(var/image/hud_image in hud_points)
+		qdel(hud_image)
+	hud_points.Cut()
