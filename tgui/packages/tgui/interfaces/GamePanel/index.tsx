@@ -7,33 +7,7 @@ import { useBackend } from '../../backend';
 import { Window } from '../../layouts';
 import { logger } from '../../logging';
 import { CreateObject } from './CreateObject';
-
-interface CreateObjectData {
-  Objects: {
-    [key: string]: {
-      icon: string;
-      icon_state: string;
-      name: string;
-      mapping: boolean;
-    };
-  };
-  Turfs: {
-    [key: string]: {
-      icon: string;
-      icon_state: string;
-      name: string;
-      mapping: boolean;
-    };
-  };
-  Mobs: {
-    [key: string]: {
-      icon: string;
-      icon_state: string;
-      name: string;
-      mapping: boolean;
-    };
-  };
-}
+import { CreateObjectData } from './types';
 
 export function GamePanel(props) {
   const { act } = useBackend();

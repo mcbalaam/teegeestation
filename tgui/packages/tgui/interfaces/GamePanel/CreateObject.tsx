@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Button,
   DmIcon,
@@ -6,28 +6,13 @@ import {
   Stack,
   VirtualList,
 } from 'tgui-core/components';
+import { useLocalStorage } from 'usehooks-ts';
 
 import { useBackend } from '../../backend';
 import { SearchBar } from '../common/SearchBar';
 import { listNames, listTypes } from './constants';
 import { CreateObjectSettings } from './CreateObjectSettings';
-
-interface CreateObjectProps {
-  objList: {
-    Objects: Record<
-      string,
-      { icon: string; icon_state: string; name: string; mapping: boolean }
-    >;
-    Turfs: Record<
-      string,
-      { icon: string; icon_state: string; name: string; mapping: boolean }
-    >;
-    Mobs: Record<
-      string,
-      { icon: string; icon_state: string; name: string; mapping: boolean }
-    >;
-  };
-}
+import { CreateObjectProps } from './types';
 
 interface GamePanelData {
   icon: string;
@@ -43,32 +28,29 @@ interface GamePanelData {
 
 export function CreateObject(props: CreateObjectProps) {
   const { act, data } = useBackend<GamePanelData>();
-  const preferences = data.preferences || {
-    hide_icons: false,
-    hide_mappings: false,
-    sort_by: 'Objects',
-    search_text: '',
-    search_by: 'name',
-  };
-
-  const [searchText, setSearchText] = useState(preferences.search_text);
-  const [tooltipIcon, setTooltipIcon] = useState(false);
-  const [selectedObj, setSelectedObj] = useState(-1);
-  const [searchBy, setSearchBy] = useState(preferences.search_by === 'type');
-  const [sortBy, setSortBy] = useState(
-    listTypes[preferences.sort_by] || listTypes.Objects,
-  );
-  const [hideMapping, setHideMapping] = useState(preferences.hide_mappings);
-  const [hideIcons, setHideIcons] = useState(preferences.hide_icons);
   const { objList } = props;
 
-  useEffect(() => {
-    setSearchText(preferences.search_text);
-    setSearchBy(preferences.search_by === 'type');
-    setSortBy(listTypes[preferences.sort_by] || listTypes.Objects);
-    setHideMapping(preferences.hide_mappings);
-    setHideIcons(preferences.hide_icons);
-  }, [preferences]);
+  const [tooltipIcon, setTooltipIcon] = useState(false);
+  const [selectedObj, setSelectedObj] = useState(-1);
+
+  // Используем localStorage для сохранения настроек между сессиями
+  const [searchText, setSearchText] = useLocalStorage(
+    'gamepanel-searchText',
+    '',
+  );
+  const [searchBy, setSearchBy] = useLocalStorage('gamepanel-searchBy', false); // false = search by name
+  const [sortBy, setSortBy] = useLocalStorage(
+    'gamepanel-sortBy',
+    listTypes.Objects,
+  );
+  const [hideMapping, setHideMapping] = useLocalStorage(
+    'gamepanel-hideMapping',
+    false,
+  );
+  const [hideIcons, setHideIcons] = useLocalStorage(
+    'gamepanel-hideIcons',
+    false,
+  );
 
   const currentType =
     Object.entries(listTypes).find(([_, value]) => value === sortBy)?.[0] ||
@@ -76,11 +58,28 @@ export function CreateObject(props: CreateObjectProps) {
 
   const currentList = objList?.[currentType] || {};
 
+  // Функция для отправки предпочтений на бэкенд при создании объекта
+  const sendPreferences = (settings) => {
+    // Конвертируем локальные состояния в формат бэкенда
+    const prefsToSend = {
+      hide_icons: hideIcons,
+      hide_mappings: hideMapping,
+      sort_by:
+        Object.keys(listTypes).find((key) => listTypes[key] === sortBy) ||
+        'Objects',
+      search_text: searchText,
+      search_by: searchBy ? 'type' : 'name',
+      ...settings,
+    };
+
+    act('create-object-action', prefsToSend);
+  };
+
   return (
     <Stack vertical fill>
       <Stack.Item>
         <Section>
-          <CreateObjectSettings />
+          <CreateObjectSettings onCreateObject={sendPreferences} />
         </Section>
       </Stack.Item>
 
@@ -96,12 +95,6 @@ export function CreateObject(props: CreateObjectProps) {
                     const currentIndex = types.indexOf(sortBy);
                     const nextIndex = (currentIndex + 1) % types.length;
                     setSortBy(types[nextIndex]);
-
-                    const nextType =
-                      Object.keys(listTypes).find(
-                        (key) => listTypes[key] === types[nextIndex],
-                      ) || 'Objects';
-                    act('set-sort-by', { new_sort_by: nextType });
                   }}
                 >
                   {
@@ -118,9 +111,6 @@ export function CreateObject(props: CreateObjectProps) {
                   icon={searchBy ? 'code' : 'font'}
                   onClick={() => {
                     setSearchBy(!searchBy);
-                    act('toggle-search-by', {
-                      new_search_by: !searchBy ? 'type' : 'name',
-                    });
                   }}
                 >
                   {searchBy ? 'Search by type' : 'Search by name'}
@@ -130,7 +120,6 @@ export function CreateObject(props: CreateObjectProps) {
                 <Button.Checkbox
                   onClick={() => {
                     setHideMapping(!hideMapping);
-                    act('toggle-hide-mappings');
                   }}
                   color={hideMapping && 'good'}
                   checked={hideMapping}
@@ -142,7 +131,6 @@ export function CreateObject(props: CreateObjectProps) {
                 <Button.Checkbox
                   onClick={() => {
                     setHideIcons(!hideIcons);
-                    act('toggle-hide-icons');
                   }}
                   color={hideIcons && 'good'}
                   checked={hideIcons}
@@ -159,7 +147,6 @@ export function CreateObject(props: CreateObjectProps) {
                   query={searchText}
                   onSearch={(query) => {
                     setSearchText(query);
-                    act('set-search-text', { new_search_text: query });
                   }}
                 />
               </Stack.Item>
@@ -210,9 +197,7 @@ export function CreateObject(props: CreateObjectProps) {
                       if (selectedObj !== -1) {
                         const selectedObject =
                           Object.keys(currentList)[selectedObj];
-                        act('create-object-action', {
-                          object_list: selectedObject,
-                        });
+                        sendPreferences({ object_list: selectedObject });
                       }
                     }}
                     onMouseDown={(e) => {

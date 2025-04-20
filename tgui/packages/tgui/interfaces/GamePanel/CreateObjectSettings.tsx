@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   Button,
   Dropdown,
@@ -8,6 +7,7 @@ import {
   Stack,
   Table,
 } from 'tgui-core/components';
+import { useLocalStorage } from 'usehooks-ts';
 
 import { useBackend } from '../../backend';
 import {
@@ -34,65 +34,53 @@ interface GamePanelData {
     object_name: string;
   };
 }
-export function CreateObjectSettings(props) {
+
+interface CreateObjectSettingsProps {
+  onCreateObject?: (obj: any) => void;
+}
+
+export function CreateObjectSettings(props: CreateObjectSettingsProps) {
+  const { onCreateObject } = props;
   const { act, data } = useBackend<GamePanelData>();
-  const preferences = data.preferences || {
-    object_count: 1,
-    offset_type: 'relative',
-    where_dropdown_value: 'Current location',
-    dir: 1,
-    offset: '',
-    object_name: '',
-  };
 
-  const initialSpawnLocation = () => {
-    const savedValue = data.preferences?.where_dropdown_value;
-    if (savedValue && spawnLocationOptions.includes(savedValue)) {
-      return savedValue;
-    }
-    return 'Current location';
-  };
-
-  const [amount, setAmount] = useState(preferences.object_count || 1);
-  const [cordsType, setCordsType] = useState(
-    preferences.offset_type === 'absolute' ? 1 : 0,
+  // Используем localStorage вместо localState для сохранения настроек между сессиями
+  const [amount, setAmount] = useLocalStorage('gamepanel-object_count', 1);
+  const [cordsType, setCordsType] = useLocalStorage('gamepanel-offset_type', 0); // 0 = relative, 1 = absolute
+  const [spawnLocation, setSpawnLocation] = useLocalStorage(
+    'gamepanel-where_dropdown_value',
+    'Current location',
   );
-  const [spawnLocation, setSpawnLocation] = useState(initialSpawnLocation());
-  const [direction, setDirection] = useState(() => {
-    if (preferences.dir) {
-      return [1, 2, 4, 8].indexOf(preferences.dir);
+  const [direction, setDirection] = useLocalStorage('gamepanel-direction', 0); // 0 = NORTH (1)
+  const [objectName, setObjectName] = useLocalStorage(
+    'gamepanel-object_name',
+    '',
+  );
+  const [offset, setOffset] = useLocalStorage('gamepanel-offset', '');
+  const [preciseMode, setPreciseMode] = useLocalStorage(
+    'gamepanel-precise_mode',
+    'Off',
+  );
+  const handleSpawn = () => {
+    if (onCreateObject) {
+      onCreateObject({
+        object_count: amount,
+        offset_type: cordsType ? 'absolute' : 'relative',
+        where_dropdown_value: spawnLocation,
+        dir: [1, 2, 4, 8][direction],
+        offset,
+        object_name: objectName,
+      });
+    } else {
+      act('create-object-action', {
+        object_count: amount,
+        offset_type: cordsType ? 'absolute' : 'relative',
+        where_dropdown_value: spawnLocation,
+        dir: [1, 2, 4, 8][direction],
+        offset,
+        object_name: objectName,
+      });
     }
-    return 0;
-  });
-  const [objectName, setObjectName] = useState(preferences.object_name || '');
-  const [offset, setOffset] = useState(preferences.offset || '');
-
-  useEffect(() => {
-    if (data.preferences?.object_count) {
-      setAmount(data.preferences.object_count);
-    }
-    if (data.preferences?.offset_type) {
-      const newCordsType = data.preferences.offset_type === 'absolute' ? 1 : 0;
-      if (newCordsType !== cordsType) {
-        setCordsType(newCordsType);
-      }
-    }
-    if (data.preferences?.object_name) {
-      setObjectName(data.preferences.object_name);
-    }
-    if (data.preferences?.dir) {
-      setDirection([1, 2, 4, 8].indexOf(data.preferences.dir));
-    }
-    if (data.preferences?.offset) {
-      setOffset(data.preferences.offset);
-    }
-    if (data.preferences?.where_dropdown_value) {
-      const savedValue = data.preferences.where_dropdown_value;
-      if (spawnLocationOptions.includes(savedValue)) {
-        setSpawnLocation(savedValue);
-      }
-    }
-  }, [data.preferences]);
+  };
 
   return (
     <Stack fill vertical>
@@ -113,10 +101,7 @@ export function CreateObjectSettings(props) {
                   maxValue={150}
                   step={1}
                   value={amount}
-                  onChange={(value) => {
-                    setAmount(value);
-                    act('number-changed', { newNumber: value });
-                  }}
+                  onChange={(value) => setAmount(value)}
                   width="100%"
                 />
               </Table.Cell>
@@ -135,12 +120,9 @@ export function CreateObjectSettings(props) {
                       fontSize="14"
                       onClick={() => {
                         const values = [1, 2, 4, 8];
-                        const currentIndex = values.indexOf(
-                          [1, 2, 4, 8][direction],
-                        );
+                        const currentIndex = values.indexOf(values[direction]);
                         const nextIndex = (currentIndex + 1) % 4;
                         setDirection(nextIndex);
-                        act('cycle_dir');
                       }}
                     />
                   </Stack.Item>
@@ -155,11 +137,7 @@ export function CreateObjectSettings(props) {
                         const values = [1, 2, 4, 8];
                         return values[value].toString();
                       }}
-                      onChange={(e, value) => {
-                        const values = [1, 2, 4, 8];
-                        setDirection(value);
-                        act('dir-changed', { newDir: values[value] });
-                      }}
+                      onChange={(e, value) => setDirection(value)}
                     />
                   </Stack.Item>
                 </Stack>
@@ -179,11 +157,6 @@ export function CreateObjectSettings(props) {
                       onClick={() => {
                         const newCordsType = cordsType ? 0 : 1;
                         setCordsType(newCordsType);
-                        act(
-                          newCordsType
-                            ? 'set-absolute-cords'
-                            : 'set-relative-cords',
-                        );
                       }}
                       tooltip={cordsType ? 'Absolute' : 'Relative'}
                       tooltipPosition="top"
@@ -193,12 +166,7 @@ export function CreateObjectSettings(props) {
                     <Input
                       placeholder="x, y, z"
                       value={offset}
-                      onChange={(e, value) => {
-                        setOffset(value);
-                        value
-                          ? act('offset-changed', { newOffset: value })
-                          : undefined;
-                      }}
+                      onChange={(e, value) => setOffset(value)}
                       width="100%"
                     />
                   </Stack.Item>
@@ -211,10 +179,7 @@ export function CreateObjectSettings(props) {
               </Table.Cell>
               <Table.Cell>
                 <Input
-                  onChange={(e, value) => {
-                    setObjectName(value);
-                    act('name-changed', { newName: value });
-                  }}
+                  onChange={(e, value) => setObjectName(value)}
                   value={objectName}
                   width="100%"
                   placeholder="leave empty for initial"
@@ -223,11 +188,11 @@ export function CreateObjectSettings(props) {
             </Table.Row>
           </Table>
         </Stack.Item>
-        <Stack.Item>
+        <Stack.Item grow>
           <Stack vertical fill>
             <Stack.Item grow>
               <Button
-                onClick={() => act('create-object-action')}
+                onClick={handleSpawn}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -241,17 +206,27 @@ export function CreateObjectSettings(props) {
               </Button>
             </Stack.Item>
             <Stack.Item>
-              <Dropdown
-                width="18em"
-                options={spawnLocationOptions}
-                onSelected={(value) => {
-                  setSpawnLocation(value);
-                  act('where-dropdown-changed', {
-                    newWhere: value,
-                  });
-                }}
-                selected={spawnLocation}
-              />
+              <Stack>
+                <Stack.Item>
+                  <Button
+                    style={{
+                      height: '22px',
+                      width: '22px',
+                      lineHeight: '22px',
+                    }}
+                    icon="eye-dropper"
+                    onClick={() => setPreciseMode('Target')}
+                    disabled={spawnLocation !== 'At a marked object'}
+                  />
+                </Stack.Item>
+                <Stack.Item grow>
+                  <Dropdown
+                    options={spawnLocationOptions}
+                    onSelected={(value) => setSpawnLocation(value)}
+                    selected={spawnLocation}
+                  />
+                </Stack.Item>
+              </Stack>
             </Stack.Item>
           </Stack>
         </Stack.Item>

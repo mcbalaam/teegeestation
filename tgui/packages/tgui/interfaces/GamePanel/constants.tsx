@@ -1,8 +1,11 @@
 export const spawnLocationOptions = [
   'Current location',
-  'Current location via droppod',
+  'Current location (droppod)',
   "In own mob's hand",
   'At a marked object',
+  'Targeted location',
+  'Targeted location (droppod)',
+  "In targeted mob's hand",
 ];
 
 export const listTypes = {
@@ -19,9 +22,12 @@ export const listNames = {
 
 export const spawnLocationIcons = {
   'Current location': 'map-marker',
-  'Current location via droppod': 'parachute-box',
+  'Current location (droppod)': 'parachute-box',
   "In own mob's hand": 'hand-holding',
-  'At a marked object': 'crosshairs',
+  'At a marked object': 'load',
+  'Targeted location': 'crosshairs',
+  'Targeted location (droppod)': 'crosshairs',
+  "In targeted mob's hand": 'crosshairs',
 };
 
 export const directionIcons = {

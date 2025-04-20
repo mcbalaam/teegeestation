@@ -1,7 +1,17 @@
-#define FLOOR_BELOW_MOB "Current location"
-#define SUPPLY_BELOW_MOB "Current location via droppod"
-#define MOB_HAND "In own mob's hand"
-#define MARKED_OBJECT "At a marked object"
+#define WHERE_FLOOR_BELOW_MOB "Current location"
+#define WHERE_SUPPLY_BELOW_MOB "Current location (droppod)"
+#define WHERE_MOB_HAND "In own mob's hand"
+#define WHERE_MARKED_OBJECT "At a marked object"
+
+#define WHERE_TARGETED_LOCATION "Targeted location"
+#define WHERE_TARGETED_LOCATION_POD "Targeted location (droppod)"
+#define WHERE_TARGETED_MOB_HAND "In targeted mob's hand"
+#define WHERE_TARGETED_MARKED_OBJECT "At a marked object"
+
+#define PRECISE_MODE_OFF "Off"
+#define PRECISE_MODE_TARGET "Target"
+#define PRECISE_MODE_MARK "Mark"
+
 #define ABSOLUTE_OFFSET "absolute"
 #define RELATIVE_OFFSET "relative"
 
@@ -24,7 +34,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 
 /datum/admins/gamepanel
 	var/client/user_client
-	var/where_dropdown_value = FLOOR_BELOW_MOB
+	var/where_dropdown_value = WHERE_FLOOR_BELOW_MOB
 	var/selected_object = ""
 	var/selected_object_icon = null
 	var/selected_object_icon_state = null
@@ -40,6 +50,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	var/sort_by = "Objects"
 	var/search_text = ""
 	var/search_by = "type"
+	var/precise_mode = FALSE
 
 /datum/admins/gamepanel/New(user)
 	if(istype(user, /client))
@@ -138,12 +149,12 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		if("create-object-action")
 			spawn_item(list(
 				object_list = selected_object,
-				object_count = object_count,
-				offset = offset,
-				object_dir = dir,
-				object_name = object_name,
-				object_where = get_dropdown_value(where_dropdown_value),
-				offset_type = offset_type,
+				object_count = params["object_count"] ? text2num(params["object_count"]) : object_count,
+				offset = params["offset"] || offset,
+				object_dir = params["dir"] ? text2num(params["dir"]) : dir,
+				object_name = params["object_name"] || object_name,
+				object_where = params["where_dropdown_value"] ? get_dropdown_value(params["where_dropdown_value"]) : get_dropdown_value(where_dropdown_value),
+				offset_type = params["offset_type"] || offset_type,
 				)
 			)
 		if("load-new-icon")
@@ -170,26 +181,62 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		if("toggle-search-by")
 			search_by = params["new_search_by"]
 			return TRUE
+		if("toggle-precise-mode")
+			var/precise_type = params["newPreciseType"]
+			toggle_precise_mode(precise_type)
+			return TRUE
+
+/datum/admins/gamepanel/proc/toggle_precise_mode(precise_type)
+	precise_mode = precise_type
+	updateCursor()
+
+/datum/admins/gamepanel/proc/updateCursor(forceClear = FALSE)
+	var/client/holder = usr.client.holder
+	if (!holder)
+		return
+	if (!forceClear && (precise_mode))
+		holder.mouse_up_icon = 'icons/effects/mouse_pointers/supplypod_pickturf.dmi'
+		holder.mouse_down_icon = 'icons/effects/mouse_pointers/supplypod_pickturf_down.dmi'
+		holder.mouse_override_icon = holder.mouse_up_icon
+		holder.mouse_pointer_icon = holder.mouse_override_icon
+		holder.click_intercept = src
+	else
+		var/mob/holder_mob = holder.mob
+		holder.mouse_up_icon = null
+		holder.mouse_down_icon = null
+		holder.mouse_override_icon = null
+		holder.click_intercept = null
+		holder_mob?.update_mouse_pointer()
+
+/datum/admins/gamepanel/proc/InterceptClickOn(user, params, atom/target)
+	var/list/modifiers = params2list(params)
+	var/left_click = LAZYACCESS(modifiers, LEFT_CLICK)
+	var/right_click = LAZYACCESS(modifiers, RIGHT_CLICK)
+
+	if(right_click)
+		precise_mode = PRECISE_MODE_OFF
+		to_chat(user, span_notice("Precise mode disabled."))
+		return TRUE
+
+	if(left_click)
+		if(istype(target,/atom/movable/screen))
+			return FALSE
+
+		var/location = locate(target)
+
+		switch(precise_mode)
+			if(PRECISE_MODE_TARGET)
+				spawn_item()
+			if(PRECISE_MODE_MARK)
+				usr.client.mark_datum(target)
+
+		return TRUE
 
 /datum/admins/gamepanel/ui_data(mob/user)
 	var/data = list()
 	data["icon"] = selected_object_icon
 	data["iconState"] = selected_object_icon_state
-
-	data["preferences"] = list(
-		"hide_icons" = hide_icons,
-		"hide_mappings" = hide_mappings,
-		"sort_by" = sort_by,
-		"search_text" = search_text,
-		"search_by" = search_by,
-		"where_dropdown_value" = where_dropdown_value,
-		"offset_type" = offset_type,
-		"offset" = offset,
-		"object_count" = object_count,
-		"dir" = dir,
-		"object_name" = object_name
-	)
-
+	data["precise_mode"] = precise_mode
 	return data;
 
 /datum/admins/gamepanel/ui_assets(mob/user)
@@ -199,13 +246,13 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 
 /datum/admins/gamepanel/proc/get_dropdown_value(dropdown_value)
 	switch(dropdown_value)
-		if(FLOOR_BELOW_MOB)
+		if(WHERE_FLOOR_BELOW_MOB)
 			return "onfloor"
-		if(SUPPLY_BELOW_MOB)
+		if(WHERE_SUPPLY_BELOW_MOB)
 			return "frompod"
-		if(MOB_HAND)
+		if(WHERE_MOB_HAND)
 			return "inhand"
-		if(MARKED_OBJECT)
+		if(WHERE_MARKED_OBJECT)
 			return "inmarked"
 	return
 
@@ -365,9 +412,9 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 				message_admins("[key_name_admin(usr)] created [number] instances of [english_list(paths)]")
 				break
 
-#undef MARKED_OBJECT
-#undef MOB_HAND
-#undef SUPPLY_BELOW_MOB
-#undef FLOOR_BELOW_MOB
+#undef WHERE_MARKED_OBJECT
+#undef WHERE_MOB_HAND
+#undef WHERE_SUPPLY_BELOW_MOB
+#undef WHERE_FLOOR_BELOW_MOB
 #undef ABSOLUTE_OFFSET
 #undef RELATIVE_OFFSET
