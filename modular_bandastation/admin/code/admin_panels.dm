@@ -13,6 +13,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 
 /datum/admins
 	var/datum/admins/gamepanel/gamepanel_tgui
+	var/list/gamepanel_preferences
 
 /datum/admins/New(list/datum/admin_rank/ranks, ckey, force_active = FALSE, protected)
 	. = ..()
@@ -25,7 +26,6 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	var/client/user_client
 	var/where_dropdown_value = FLOOR_BELOW_MOB
 	var/selected_object = ""
-	/* ICON PREVIEW CODE */
 	var/selected_object_icon = null
 	var/selected_object_icon_state = null
 	var/object_count = 1
@@ -34,13 +34,46 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	var/offset = ""
 	var/offset_type = "relative"
 
+	// Preferences
+	var/hide_icons = FALSE
+	var/hide_mappings = FALSE
+	var/sort_by = "Objects"
+	var/search_text = ""
+	var/search_by = "type"
+
 /datum/admins/gamepanel/New(user)
 	if(istype(user, /client))
 		var/client/temp_user_client = user
-		user_client = temp_user_client //if its a client, assign it to user_client
+		user_client = temp_user_client
+		if(user_client?.holder?.gamepanel_preferences)
+			var/list/prefs = user_client.holder.gamepanel_preferences
+			hide_icons = prefs["hide_icons"]
+			hide_mappings = prefs["hide_mappings"]
+			sort_by = prefs["sort_by"]
+			search_by = prefs["search_by"]
+			offset_type = prefs["offset_type"]
+			offset = prefs["offset"]
+			object_count = prefs["object_count"]
+			dir = prefs["dir"]
+			object_name = prefs["object_name"]
+			where_dropdown_value = prefs["where_dropdown_value"]
+			selected_object = prefs["selected_object"]
 	else
 		var/mob/user_mob = user
-		user_client = user_mob.client //if its a mob, assign the mob's client to user_client
+		user_client = user_mob.client
+		if(user_client?.holder?.gamepanel_preferences)
+			var/list/prefs = user_client.holder.gamepanel_preferences
+			hide_icons = prefs["hide_icons"]
+			hide_mappings = prefs["hide_mappings"]
+			sort_by = prefs["sort_by"]
+			search_by = prefs["search_by"]
+			offset_type = prefs["offset_type"]
+			offset = prefs["offset"]
+			object_count = prefs["object_count"]
+			dir = prefs["dir"]
+			object_name = prefs["object_name"]
+			where_dropdown_value = prefs["where_dropdown_value"]
+			selected_object = prefs["selected_object"]
 
 /datum/admins/gamepanel/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -48,8 +81,21 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		ui = new(user, src, "GamePanel")
 		ui.open()
 
-/datum/admins/gamepanel/ui_close(mob/user) //Uses the destroy() proc. When the user closes the UI, we clean up variables.
-	// qdel(src)
+/datum/admins/gamepanel/ui_close(mob/user)
+	if(user_client?.holder)
+		user_client.holder.gamepanel_preferences = list(
+			"hide_icons" = hide_icons,
+			"hide_mappings" = hide_mappings,
+			"sort_by" = sort_by,
+			"search_by" = search_by,
+			"offset_type" = offset_type,
+			"offset" = offset,
+			"object_count" = object_count,
+			"dir" = dir,
+			"object_name" = object_name,
+			"where_dropdown_value" = where_dropdown_value,
+			"selected_object" = selected_object
+		)
 	. = ..()
 
 /datum/admins/gamepanel/ui_state(mob/user)
@@ -106,12 +152,47 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 			selected_object_icon = temp_temp_object.icon || temp_temp_object.icon_preview
 			selected_object_icon_state = temp_temp_object.icon_state || temp_temp_object.icon_state_preview
 			qdel(temp_object);
-
+		if("toggle-hide-icons")
+			hide_icons = !hide_icons
+			return TRUE
+		if("toggle-hide-mappings")
+			hide_mappings = !hide_mappings
+			return TRUE
+		if("set-sort-by")
+			sort_by = params["new_sort_by"]
+			return TRUE
+		if("set-search-text")
+			search_text = params["new_search_text"]
+			return TRUE
+		if("toggle-search-by")
+			search_by = params["new_search_by"]
+			return TRUE
+		if("cycle-offset-type")
+			offset_type = offset_type == "absolute" ? "relative" : "absolute"
+			return TRUE
+		if("selected-object-changed")
+			selected_object = params["newObj"]
+			return TRUE
 
 /datum/admins/gamepanel/ui_data(mob/user)
 	var/data = list()
 	data["icon"] = selected_object_icon
 	data["iconState"] = selected_object_icon_state
+
+	data["preferences"] = list(
+		"hide_icons" = hide_icons,
+		"hide_mappings" = hide_mappings,
+		"sort_by" = sort_by,
+		"search_text" = search_text,
+		"search_by" = search_by,
+		"where_dropdown_value" = where_dropdown_value,
+		"offset_type" = offset_type,
+		"offset" = offset,
+		"object_count" = object_count,
+		"dir" = dir,
+		"object_name" = object_name
+	)
+
 	return data;
 
 /datum/admins/gamepanel/ui_assets(mob/user)

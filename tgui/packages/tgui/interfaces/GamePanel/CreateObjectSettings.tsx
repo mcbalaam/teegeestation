@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   Dropdown,
@@ -10,35 +10,86 @@ import {
 } from 'tgui-core/components';
 
 import { useBackend } from '../../backend';
-import { spawnLocationOptions } from './constants';
+import {
+  directionIcons,
+  directionNames,
+  spawnLocationIcons,
+  spawnLocationOptions,
+} from './constants';
 
-const spawnLocationIcons = {
-  'Current location': 'map-marker',
-  'Current location via droppod': 'parachute-box',
-  "In own mob's hand": 'hand-holding',
-  'At a marked object': 'crosshairs',
-};
-
-const directionIcons = {
-  1: 'arrow-up',
-  2: 'arrow-down',
-  4: 'arrow-right',
-  8: 'arrow-left',
-};
-
-const directionNames = {
-  1: 'NORTH',
-  2: 'SOUTH',
-  4: 'EAST',
-  8: 'WEST',
-};
-
+interface GamePanelData {
+  icon: string;
+  iconState: string;
+  preferences?: {
+    hide_icons: boolean;
+    hide_mappings: boolean;
+    sort_by: string;
+    search_text: string;
+    search_by: string;
+    where_dropdown_value: string;
+    offset_type: string;
+    offset: string;
+    object_count: number;
+    dir: number;
+    object_name: string;
+  };
+}
 export function CreateObjectSettings(props) {
-  const { act } = useBackend();
-  const [amount, setAmount] = useState(1);
-  const [cordsType, setCordsType] = useState(1);
-  const [spawnLocation, setSpawnLocation] = useState('Current location');
-  const [direction, setDirection] = useState(0);
+  const { act, data } = useBackend<GamePanelData>();
+  const preferences = data.preferences || {
+    object_count: 1,
+    offset_type: 'relative',
+    where_dropdown_value: 'Current location',
+    dir: 1,
+    offset: '',
+    object_name: '',
+  };
+
+  const initialSpawnLocation = () => {
+    const savedValue = data.preferences?.where_dropdown_value;
+    if (savedValue && spawnLocationOptions.includes(savedValue)) {
+      return savedValue;
+    }
+    return 'Current location';
+  };
+
+  const [amount, setAmount] = useState(preferences.object_count || 1);
+  const [cordsType, setCordsType] = useState(
+    preferences.offset_type === 'absolute' ? 1 : 0,
+  );
+  const [spawnLocation, setSpawnLocation] = useState(initialSpawnLocation());
+  const [direction, setDirection] = useState(() => {
+    if (preferences.dir) {
+      return [1, 2, 4, 8].indexOf(preferences.dir);
+    }
+    return 0;
+  });
+  const [objectName, setObjectName] = useState(preferences.object_name || '');
+  const [offset, setOffset] = useState(preferences.offset || '');
+
+  useEffect(() => {
+    if (data.preferences?.object_count) {
+      setAmount(data.preferences.object_count);
+    }
+    if (data.preferences?.offset_type) {
+      setCordsType(data.preferences.offset_type === 'absolute' ? 1 : 0);
+    }
+    if (data.preferences?.object_name) {
+      setObjectName(data.preferences.object_name);
+    }
+    if (data.preferences?.dir) {
+      setDirection([1, 2, 4, 8].indexOf(data.preferences.dir));
+    }
+    if (data.preferences?.offset) {
+      setOffset(data.preferences.offset);
+    }
+    if (data.preferences?.where_dropdown_value) {
+      const savedValue = data.preferences.where_dropdown_value;
+      if (spawnLocationOptions.includes(savedValue)) {
+        setSpawnLocation(savedValue);
+      }
+    }
+  }, [data.preferences]);
 
   return (
     <Stack fill vertical>
@@ -119,25 +170,33 @@ export function CreateObjectSettings(props) {
                 <Stack>
                   <Stack.Item>
                     <Button
-                      icon={cordsType === 0 ? 'r' : 'a'}
+                      icon={preferences.offset_type === 'absolute' ? 'r' : 'a'}
                       height="19px"
                       fontSize="14"
                       onClick={() => {
-                        setCordsType(cordsType === 0 ? 1 : 0);
-                        act('set-relative-cords');
+                        setCordsType(
+                          preferences.offset_type === 'absolute' ? 1 : 0,
+                        );
+                        act('cycle-offset-type');
                       }}
-                      tooltip={cordsType === 0 ? 'Relative' : 'Absolute'}
+                      tooltip={
+                        preferences.offset_type === 'absolute'
+                          ? 'Absolute'
+                          : 'Relative'
+                      }
                       tooltipPosition="top"
                     />
                   </Stack.Item>
                   <Stack.Item grow>
                     <Input
                       placeholder="x, y, z"
-                      onChange={(e, value) =>
+                      value={offset}
+                      onChange={(e, value) => {
+                        setOffset(value);
                         value
                           ? act('offset-changed', { newOffset: value })
-                          : undefined
-                      }
+                          : undefined;
+                      }}
                       width="100%"
                     />
                   </Stack.Item>
@@ -150,9 +209,11 @@ export function CreateObjectSettings(props) {
               </Table.Cell>
               <Table.Cell>
                 <Input
-                  onChange={(e, value) =>
-                    act('name-changed', { newName: value })
-                  }
+                  onChange={(e, value) => {
+                    setObjectName(value);
+                    act('name-changed', { newName: value });
+                  }}
+                  value={objectName}
                   width="100%"
                   placeholder="leave empty for initial"
                 />

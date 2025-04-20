@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   DmIcon,
@@ -29,15 +29,46 @@ interface CreateObjectProps {
   };
 }
 
+interface GamePanelData {
+  icon: string;
+  iconState: string;
+  preferences?: {
+    hide_icons: boolean;
+    hide_mappings: boolean;
+    sort_by: string;
+    search_text: string;
+    search_by: string;
+  };
+}
+
 export function CreateObject(props: CreateObjectProps) {
-  const { act } = useBackend();
-  const [searchText, setSearchText] = useState('');
+  const { act, data } = useBackend<GamePanelData>();
+  const preferences = data.preferences || {
+    hide_icons: false,
+    hide_mappings: false,
+    sort_by: 'Objects',
+    search_text: '',
+    search_by: 'name',
+  };
+
+  const [searchText, setSearchText] = useState(preferences.search_text);
   const [tooltipIcon, setTooltipIcon] = useState(false);
   const [selectedObj, setSelectedObj] = useState(-1);
-  const [searchBy, setSearchBy] = useState(true);
-  const [sortBy, setSortBy] = useState(listTypes.Objects);
-  const [hideMapping, setHideMapping] = useState(true);
+  const [searchBy, setSearchBy] = useState(preferences.search_by === 'type');
+  const [sortBy, setSortBy] = useState(
+    listTypes[preferences.sort_by] || listTypes.Objects,
+  );
+  const [hideMapping, setHideMapping] = useState(preferences.hide_mappings);
+  const [hideIcons, setHideIcons] = useState(preferences.hide_icons);
   const { objList } = props;
+
+  useEffect(() => {
+    setSearchText(preferences.search_text);
+    setSearchBy(preferences.search_by === 'type');
+    setSortBy(listTypes[preferences.sort_by] || listTypes.Objects);
+    setHideMapping(preferences.hide_mappings);
+    setHideIcons(preferences.hide_icons);
+  }, [preferences]);
 
   const currentType =
     Object.entries(listTypes).find(([_, value]) => value === sortBy)?.[0] ||
@@ -59,11 +90,14 @@ export function CreateObject(props: CreateObjectProps) {
             <Stack>
               <Stack.Item>
                 <Button.Checkbox
-                  onClick={() => setHideMapping(!hideMapping)}
+                  onClick={() => {
+                    setHideMapping(!hideMapping);
+                    act('toggle-hide-mappings');
+                  }}
                   color={hideMapping && 'good'}
                   checked={hideMapping}
                 >
-                  Hide mapping types
+                  Hide mapping
                 </Button.Checkbox>
               </Stack.Item>
               <Stack.Item>
@@ -74,6 +108,12 @@ export function CreateObject(props: CreateObjectProps) {
                     const currentIndex = types.indexOf(sortBy);
                     const nextIndex = (currentIndex + 1) % types.length;
                     setSortBy(types[nextIndex]);
+
+                    const nextType =
+                      Object.keys(listTypes).find(
+                        (key) => listTypes[key] === types[nextIndex],
+                      ) || 'Objects';
+                    act('set-sort-by', { new_sort_by: nextType });
                   }}
                   tooltip={
                     listNames[
@@ -95,10 +135,27 @@ export function CreateObject(props: CreateObjectProps) {
               <Stack.Item>
                 <Button
                   icon={searchBy ? 'code' : 'font'}
-                  onClick={() => setSearchBy(!searchBy)}
+                  onClick={() => {
+                    setSearchBy(!searchBy);
+                    act('toggle-search-by', {
+                      new_search_by: !searchBy ? 'type' : 'name',
+                    });
+                  }}
                 >
                   {searchBy ? 'Search by type' : 'Search by name'}
                 </Button>
+              </Stack.Item>
+              <Stack.Item>
+                <Button.Checkbox
+                  onClick={() => {
+                    setHideIcons(!hideIcons);
+                    act('toggle-hide-icons');
+                  }}
+                  color={hideIcons && 'good'}
+                  checked={hideIcons}
+                >
+                  Icons
+                </Button.Checkbox>
               </Stack.Item>
             </Stack>
             <Stack>
@@ -106,9 +163,10 @@ export function CreateObject(props: CreateObjectProps) {
                 <SearchBar
                   noIcon
                   placeholder={'Search here...'}
-                  query=""
+                  query={searchText}
                   onSearch={(query) => {
                     setSearchText(query);
+                    act('set-search-text', { new_search_text: query });
                   }}
                 />
               </Stack.Item>
@@ -138,7 +196,7 @@ export function CreateObject(props: CreateObjectProps) {
                     key={index}
                     color="transparent"
                     tooltip={
-                      tooltipIcon && (
+                      (hideIcons || tooltipIcon) && (
                         <DmIcon
                           icon={currentList[obj].icon}
                           icon_state={currentList[obj].icon_state}
