@@ -72,7 +72,10 @@ export function CreateObjectSettings(props) {
       setAmount(data.preferences.object_count);
     }
     if (data.preferences?.offset_type) {
-      setCordsType(data.preferences.offset_type === 'absolute' ? 1 : 0);
+      const newCordsType = data.preferences.offset_type === 'absolute' ? 1 : 0;
+      if (newCordsType !== cordsType) {
+        setCordsType(newCordsType);
+      }
     }
     if (data.preferences?.object_name) {
       setObjectName(data.preferences.object_name);
@@ -170,20 +173,19 @@ export function CreateObjectSettings(props) {
                 <Stack>
                   <Stack.Item>
                     <Button
-                      icon={preferences.offset_type === 'absolute' ? 'r' : 'a'}
+                      icon={cordsType ? 'a' : 'r'}
                       height="19px"
                       fontSize="14"
                       onClick={() => {
-                        setCordsType(
-                          preferences.offset_type === 'absolute' ? 1 : 0,
+                        const newCordsType = cordsType ? 0 : 1;
+                        setCordsType(newCordsType);
+                        act(
+                          newCordsType
+                            ? 'set-absolute-cords'
+                            : 'set-relative-cords',
                         );
-                        act('cycle-offset-type');
                       }}
-                      tooltip={
-                        preferences.offset_type === 'absolute'
-                          ? 'Absolute'
-                          : 'Relative'
-                      }
+                      tooltip={cordsType ? 'Absolute' : 'Relative'}
                       tooltipPosition="top"
                     />
                   </Stack.Item>

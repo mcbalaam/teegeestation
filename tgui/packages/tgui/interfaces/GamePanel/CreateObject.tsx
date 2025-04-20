@@ -89,18 +89,6 @@ export function CreateObject(props: CreateObjectProps) {
           <Stack vertical>
             <Stack>
               <Stack.Item>
-                <Button.Checkbox
-                  onClick={() => {
-                    setHideMapping(!hideMapping);
-                    act('toggle-hide-mappings');
-                  }}
-                  color={hideMapping && 'good'}
-                  checked={hideMapping}
-                >
-                  Hide mapping
-                </Button.Checkbox>
-              </Stack.Item>
-              <Stack.Item>
                 <Button
                   icon={sortBy}
                   onClick={() => {
@@ -115,13 +103,6 @@ export function CreateObject(props: CreateObjectProps) {
                       ) || 'Objects';
                     act('set-sort-by', { new_sort_by: nextType });
                   }}
-                  tooltip={
-                    listNames[
-                      Object.keys(listTypes).find(
-                        (key) => listTypes[key] === sortBy,
-                      ) || 'Objects'
-                    ]
-                  }
                 >
                   {
                     listNames[
@@ -144,6 +125,18 @@ export function CreateObject(props: CreateObjectProps) {
                 >
                   {searchBy ? 'Search by type' : 'Search by name'}
                 </Button>
+              </Stack.Item>
+              <Stack.Item>
+                <Button.Checkbox
+                  onClick={() => {
+                    setHideMapping(!hideMapping);
+                    act('toggle-hide-mappings');
+                  }}
+                  color={hideMapping && 'good'}
+                  checked={hideMapping}
+                >
+                  Hide mapping
+                </Button.Checkbox>
               </Stack.Item>
               <Stack.Item>
                 <Button.Checkbox

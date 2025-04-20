@@ -114,6 +114,8 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 			offset_type = ABSOLUTE_OFFSET
 		if("offset-changed")
 			offset = params?["newOffset"]
+		if("cycle-offset-type")
+			offset_type = offset_type == ABSOLUTE_OFFSET ? RELATIVE_OFFSET : ABSOLUTE_OFFSET
 		if("number-changed")
 			object_count = params?["newNumber"]
 		if("dir-changed")
@@ -132,6 +134,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 			object_name = params?["newName"]
 		if("selected-object-changed")
 			selected_object = params?["newObj"]
+			return TRUE
 		if("create-object-action")
 			spawn_item(list(
 				object_list = selected_object,
@@ -166,12 +169,6 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 			return TRUE
 		if("toggle-search-by")
 			search_by = params["new_search_by"]
-			return TRUE
-		if("cycle-offset-type")
-			offset_type = offset_type == "absolute" ? "relative" : "absolute"
-			return TRUE
-		if("selected-object-changed")
-			selected_object = params["newObj"]
 			return TRUE
 
 /datum/admins/gamepanel/ui_data(mob/user)
@@ -219,7 +216,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	if(!spawn_params["object_list"]) //this is the laggiest thing ever
 		return
 
-	var/atom/loc = usr.loc
+	var/atom/spawn_loc = usr.loc
 	var/dirty_paths
 
 	if (istext(spawn_params["object_list"]))
@@ -246,10 +243,27 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		tgui_alert(usr,"Select fewer object types!")
 		return
 
-	var/list/offset = splittext(spawn_params["offset"],",")
-	var/X = offset.len > 0 ? text2num(offset[1]) : 0
-	var/Y = offset.len > 1 ? text2num(offset[2]) : 0
-	var/Z = offset.len > 2 ? text2num(offset[3]) : 0
+	var/offset_raw = spawn_params["offset"]
+	var/list/offset = splittext(offset_raw, ",")
+	var/X = 0
+	var/Y = 0
+	var/Z = 0
+
+	if(offset.len > 0)
+		X = text2num(offset[1])
+		if(isnull(X))
+			X = 0
+
+	if(offset.len > 1)
+		Y = text2num(offset[2])
+		if(isnull(Y))
+			Y = 0
+
+	if(offset.len > 2)
+		Z = text2num(offset[3])
+		if(isnull(Z))
+			Z = 0
+
 	var/obj_dir = text2num(spawn_params["object_dir"])
 	if(obj_dir && !(obj_dir in list(1,2,4,8,5,6,9,10)))
 		obj_dir = null
@@ -269,10 +283,22 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 
 		if("onfloor", "frompod")
 			switch(spawn_params["offset_type"])
-				if ("absolute")
-					target = locate(0 + X,0 + Y,0 + Z)
-				if ("relative")
-					target = locate(loc.x + X,loc.y + Y,loc.z + Z)
+				if(ABSOLUTE_OFFSET)
+					target = locate(X, Y, Z)
+				if(RELATIVE_OFFSET)
+					if(!spawn_loc)
+						target = locate(1, 1, 1)
+					else
+						var/turf/T = get_turf(spawn_loc)
+						if(!T)
+							if(isobserver(usr))
+								var/mob/dead/observer/O = usr
+								T = get_turf(O.client?.eye) || get_turf(O) || get_turf(GLOB.start_landmarks_list[1])
+							else
+								target = locate(1, 1, 1)
+
+						if(T)
+							target = locate(T.x + X, T.y + Y, T.z + Z)
 
 		if("inmarked")
 			if(!marked_datum)
@@ -290,8 +316,8 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		if(where == "frompod")
 			pod = new()
 
-		for (var/path in paths)
-			for (var/i = 0; i < number; i++)
+		for(var/path in paths)
+			for(var/i = 0; i < number; i++)
 				if(path in typesof(/turf))
 					var/turf/O = target
 					var/turf/N = O.ChangeTurf(path)
