@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Button,
   Dropdown,
@@ -33,6 +34,7 @@ interface GamePanelData {
     dir: number;
     object_name: string;
   };
+  precise_mode: string;
 }
 
 interface CreateObjectSettingsProps {
@@ -60,7 +62,45 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
     'gamepanel-precise_mode',
     'Off',
   );
+
+  // Проверяем, является ли текущий режим таргетированным
+  const isTargetMode = spawnLocation === 'Targeted location'
+    || spawnLocation === 'Targeted location (droppod)'
+    || spawnLocation === "In targeted mob's hand";
+
+  // Проверяем, активен ли режим таргетинга
+  const isPreciseModeActive = data?.precise_mode === 'Target';
+
+  // Функция для отключения режима таргетинга
+  const disablePreciseMode = () => {
+    if (isPreciseModeActive) {
+      act('toggle-precise-mode', {
+        newPreciseType: 'Off',
+      });
+    }
+  };
+
   const handleSpawn = () => {
+    // Если это таргетированный режим, управляем режимом таргетинга
+    if (isTargetMode) {
+      if (isPreciseModeActive) {
+        // Если режим таргетинга уже активен, отключаем его
+        act('toggle-precise-mode', {
+          newPreciseType: 'Off',
+        });
+        // Не создаем объект здесь - выходим из функции
+        return;
+      } else {
+        // Иначе включаем режим таргетинга
+        act('toggle-precise-mode', {
+          newPreciseType: 'Target',
+        });
+        // В этом случае не создаем объект - только включаем режим таргетинга
+        return;
+      }
+    }
+
+    // Создаем объект только для нетаргетированных режимов
     if (onCreateObject) {
       onCreateObject({
         object_count: amount,
@@ -81,6 +121,13 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
       });
     }
   };
+
+  // Отключаем режим таргетинга при изменении настроек
+  React.useEffect(() => {
+    if (!isTargetMode && isPreciseModeActive) {
+      disablePreciseMode();
+    }
+  }, [spawnLocation]);
 
   return (
     <Stack fill vertical>
@@ -157,6 +204,10 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                       onClick={() => {
                         const newCordsType = cordsType ? 0 : 1;
                         setCordsType(newCordsType);
+                        // Отключаем режим таргетинга при изменении типа координат
+                        if (isPreciseModeActive) {
+                          disablePreciseMode();
+                        }
                       }}
                       tooltip={cordsType ? 'Absolute' : 'Relative'}
                       tooltipPosition="top"
@@ -201,6 +252,7 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                   alignContent: 'center',
                 }}
                 icon={spawnLocationIcons[spawnLocation]}
+                color={isTargetMode && isPreciseModeActive ? 'good' : undefined}
               >
                 SPAWN
               </Button>
@@ -222,7 +274,13 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                 <Stack.Item grow>
                   <Dropdown
                     options={spawnLocationOptions}
-                    onSelected={(value) => setSpawnLocation(value)}
+                    onSelected={(value) => {
+                      // Сбрасываем режим таргетинга при смене режима
+                      if (isPreciseModeActive) {
+                        disablePreciseMode();
+                      }
+                      setSpawnLocation(value);
+                    }}
                     selected={spawnLocation}
                   />
                 </Stack.Item>

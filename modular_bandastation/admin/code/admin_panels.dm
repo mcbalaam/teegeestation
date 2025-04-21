@@ -190,43 +190,54 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	precise_mode = precise_type
 	updateCursor()
 
-/datum/admins/gamepanel/proc/updateCursor(forceClear = FALSE)
-	var/client/holder = usr.client.holder
-	if (!holder)
+/datum/admins/gamepanel/proc/updateCursor()
+	var/client/admin_client = usr.client
+	if (!admin_client)
 		return
-	if (!forceClear && (precise_mode))
-		holder.mouse_up_icon = 'icons/effects/mouse_pointers/supplypod_pickturf.dmi'
-		holder.mouse_down_icon = 'icons/effects/mouse_pointers/supplypod_pickturf_down.dmi'
-		holder.mouse_override_icon = holder.mouse_up_icon
-		holder.mouse_pointer_icon = holder.mouse_override_icon
-		holder.click_intercept = src
+	if (precise_mode)
+		admin_client.mouse_up_icon = 'icons/effects/mouse_pointers/supplypod_pickturf.dmi'
+		admin_client.mouse_down_icon = 'icons/effects/mouse_pointers/supplypod_pickturf_down.dmi'
+		admin_client.mouse_override_icon = admin_client.mouse_up_icon
+		admin_client.mouse_pointer_icon = admin_client.mouse_override_icon
+		admin_client.click_intercept = src
 	else
-		var/mob/holder_mob = holder.mob
-		holder.mouse_up_icon = null
-		holder.mouse_down_icon = null
-		holder.mouse_override_icon = null
-		holder.click_intercept = null
+		var/mob/holder_mob = admin_client.mob
+		admin_client.mouse_up_icon = null
+		admin_client.mouse_down_icon = null
+		admin_client.mouse_override_icon = null
+		admin_client.click_intercept = null
 		holder_mob?.update_mouse_pointer()
 
 /datum/admins/gamepanel/proc/InterceptClickOn(user, params, atom/target)
 	var/list/modifiers = params2list(params)
 	var/left_click = LAZYACCESS(modifiers, LEFT_CLICK)
-	var/right_click = LAZYACCESS(modifiers, RIGHT_CLICK)
-
-	if(right_click)
-		precise_mode = PRECISE_MODE_OFF
-		to_chat(user, span_notice("Precise mode disabled."))
-		return TRUE
 
 	if(left_click)
 		if(istype(target,/atom/movable/screen))
 			return FALSE
 
-		var/location = locate(target)
+		var/turf/clicked_turf = get_turf(target)
+		if(!clicked_turf)
+			return FALSE
 
 		switch(precise_mode)
 			if(PRECISE_MODE_TARGET)
-				spawn_item()
+				var/list/spawn_params = list(
+					"object_list" = selected_object,
+					"object_count" = object_count,
+					"offset" = "0,0,0",
+					"object_dir" = dir,
+					"object_name" = object_name,
+					"offset_type" = "absolute"
+				)
+
+				spawn_params["object_where"] = get_dropdown_value(where_dropdown_value)
+
+				spawn_params["X"] = clicked_turf.x
+				spawn_params["Y"] = clicked_turf.y
+				spawn_params["Z"] = clicked_turf.z
+
+				spawn_item(spawn_params)
 			if(PRECISE_MODE_MARK)
 				usr.client.mark_datum(target)
 
@@ -254,6 +265,12 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 			return "inhand"
 		if(WHERE_MARKED_OBJECT)
 			return "inmarked"
+		if(WHERE_TARGETED_LOCATION)
+			return "onfloor"
+		if(WHERE_TARGETED_LOCATION_POD)
+			return "frompod"
+		if(WHERE_TARGETED_MOB_HAND)
+			return "inhand"
 	return
 
 /datum/admins/gamepanel/proc/spawn_item(list/spawn_params)
@@ -296,20 +313,24 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	var/Y = 0
 	var/Z = 0
 
-	if(offset.len > 0)
+	if(spawn_params["X"] && spawn_params["Y"] && spawn_params["Z"])
+		X = spawn_params["X"]
+		Y = spawn_params["Y"]
+		Z = spawn_params["Z"]
+	else if(offset.len > 0)
 		X = text2num(offset[1])
 		if(isnull(X))
 			X = 0
 
-	if(offset.len > 1)
-		Y = text2num(offset[2])
-		if(isnull(Y))
-			Y = 0
+		if(offset.len > 1)
+			Y = text2num(offset[2])
+			if(isnull(Y))
+				Y = 0
 
-	if(offset.len > 2)
-		Z = text2num(offset[3])
-		if(isnull(Z))
-			Z = 0
+		if(offset.len > 2)
+			Z = text2num(offset[3])
+			if(isnull(Z))
+				Z = 0
 
 	var/obj_dir = text2num(spawn_params["object_dir"])
 	if(obj_dir && !(obj_dir in list(1,2,4,8,5,6,9,10)))
@@ -331,7 +352,10 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		if("onfloor", "frompod")
 			switch(spawn_params["offset_type"])
 				if(ABSOLUTE_OFFSET)
-					target = locate(X, Y, Z)
+					if(spawn_params["X"] && spawn_params["Y"] && spawn_params["Z"])
+						target = locate(X, Y, Z)
+					else
+						target = locate(X, Y, Z)
 				if(RELATIVE_OFFSET)
 					if(!spawn_loc)
 						target = locate(1, 1, 1)

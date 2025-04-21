@@ -24,7 +24,7 @@ export const spawnLocationIcons = {
   'Current location': 'map-marker',
   'Current location (droppod)': 'parachute-box',
   "In own mob's hand": 'hand-holding',
-  'At a marked object': 'load',
+  'At a marked object': 'floppy-disk',
   'Targeted location': 'crosshairs',
   'Targeted location (droppod)': 'crosshairs',
   "In targeted mob's hand": 'crosshairs',
