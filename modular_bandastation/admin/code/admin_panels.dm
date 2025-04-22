@@ -23,14 +23,20 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 /datum/admins
 	var/datum/admins/gamepanel/gamepanel_tgui
 
-/datum/admins/New(list/datum/admin_rank/ranks, ckey, force_active = FALSE, protected)
-	. = ..()
+/datum/admins/gamepanel/New(user)
+	if(istype(user, /client))
+		var/client/temp_user_client = user
+		user_client = temp_user_client
+	else
+		var/mob/user_mob = user
+		user_client = user_mob.client
 
 /datum/admins/Destroy()
 	. = ..()
 	qdel(gamepanel_tgui)
 
 /datum/admins/gamepanel
+	var/client/user_client
 	var/where_dropdown_value = WHERE_FLOOR_BELOW_MOB
 	var/selected_object = ""
 	var/selected_object_icon = null
@@ -130,12 +136,12 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 			if(PRECISE_MODE_TARGET)
 				var/list/spawn_params = list(
 					"object_list" = selected_object,
-					"object_count" = text2num(params["object_count"]) || 1,
+					"object_count" = object_count,
 					"offset" = "0,0,0",
-					"object_dir" = text2num(params["object_dir"]) || 1,
-					"object_name" = params["object_name"],
+					"object_dir" = dir,
+					"object_name" = object_name,
 					"offset_type" = OFFSET_ABSOLUTE,
-					"object_where" = params["where_dropdown_value"],
+					"object_where" = where_dropdown_value,
 					"object_reference" = target
 				)
 
@@ -167,7 +173,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	)
 
 /datum/admins/gamepanel/proc/spawn_item(list/spawn_params)
-	if(!check_rights(R_ADMIN) || !spawn_params)
+	if(!check_rights_for(user_client, R_ADMIN) || !spawn_params)
 		return
 
 	var/path = text2path(spawn_params["object_list"]) || null
@@ -208,7 +214,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	var/atom/target
 
 	if(where == WHERE_MOB_HAND || where == WHERE_TARGETED_MOB_HAND)
-		var/atom/target_reference = spawn_params["object_reference"]
+		var/atom/target_reference = (where == WHERE_TARGETED_MOB_HAND ?  spawn_params["object_reference"] : usr)
 		if(!target_reference)
 			to_chat(usr, span_warning("No target reference provided. Abandoning spawn."))
 			return
@@ -233,12 +239,24 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 				target = locate(X, Y, Z)
 
 			if(OFFSET_RELATIVE)
-				var/atom/relative_target = usr.loc || locate(1, 1, 1)
-				if(!relative_target)
-					to_chat(usr, span_warning("Something went horribly wrong. Please try again."))
+				var/turf/relative_turf
+				var/atom/user_loc = usr.loc
+
+				if (user_loc)
+					relative_turf = get_turf(user_loc)
+
+				if (!relative_turf)
+					if(isobserver(usr))
+						var/mob/dead/observer/user_observer = usr
+						relative_turf = get_turf(user_observer.client?.eye) || get_turf(user_observer)
+					if (!relative_turf)
+						relative_turf = locate(1, 1, 1)
+
+				if (!relative_turf)
+					to_chat(usr, span_warning("Could not determine a valid relative location."))
 					return
 
-				target = locate(relative_target.x + X, relative_target.y + Y, relative_target.z + Z)
+				target = locate(relative_turf.x + X, relative_turf.y + Y, relative_turf.z + Z)
 
 	if(!target)
 		return

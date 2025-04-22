@@ -80,7 +80,7 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
   const handleSpawn = () => {
     const currentSettings = {
       object_count: amount,
-      offset_type: cordsType ? 'absolute' : 'relative',
+      offset_type: cordsType ? 'Absolute offset' : 'Relative offset',
       where_dropdown_value: spawnLocation,
       dir: [1, 2, 4, 8][direction],
       offset,
