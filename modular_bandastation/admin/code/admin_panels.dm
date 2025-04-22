@@ -118,34 +118,6 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	if(..())
 		return
 	switch(action)
-		if("where-dropdown-changed")
-			where_dropdown_value = params?["newWhere"]
-			to_chat(usr, span_notice("Changed spawn mode to: [where_dropdown_value]"))
-			to_chat(usr, span_notice(debug_spawn_modes()))
-		if("set-relative-cords")
-			offset_type = RELATIVE_OFFSET
-		if("set-absolute-cords")
-			offset_type = ABSOLUTE_OFFSET
-		if("offset-changed")
-			offset = params?["newOffset"]
-		if("cycle-offset-type")
-			offset_type = offset_type == ABSOLUTE_OFFSET ? RELATIVE_OFFSET : ABSOLUTE_OFFSET
-		if("number-changed")
-			object_count = params?["newNumber"]
-		if("dir-changed")
-			dir = params?["newDir"]
-		if("cycle_dir")
-			switch(dir)
-				if(1)
-					dir = 2
-				if(2)
-					dir = 4
-				if(4)
-					dir = 8
-				if(8)
-					dir = 1
-		if("name-changed")
-			object_name = params?["newName"]
 		if("selected-object-changed")
 			selected_object = params?["newObj"]
 			return TRUE
@@ -160,30 +132,15 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 				offset_type = params["offset_type"] || offset_type,
 				)
 			)
-		if("load-new-icon")
-			var/obj/object_path = text2path(selected_object)
-			if(!object_path)
-				return
-			var/temp_object = new object_path()
-			var/obj/temp_temp_object = temp_object
-			selected_object_icon = temp_temp_object.icon || temp_temp_object.icon_preview
-			selected_object_icon_state = temp_temp_object.icon_state || temp_temp_object.icon_state_preview
-			qdel(temp_object);
-		if("toggle-hide-icons")
-			hide_icons = !hide_icons
-			return TRUE
-		if("toggle-hide-mappings")
-			hide_mappings = !hide_mappings
-			return TRUE
-		if("set-sort-by")
-			sort_by = params["new_sort_by"]
-			return TRUE
-		if("set-search-text")
-			search_text = params["new_search_text"]
-			return TRUE
-		if("toggle-search-by")
-			search_by = params["new_search_by"]
-			return TRUE
+		// if("load-new-icon")
+		// 	var/obj/object_path = text2path(selected_object)
+		// 	if(!object_path)
+		// 		return
+		// 	var/temp_object = new object_path()
+		// 	var/obj/temp_temp_object = temp_object
+		// 	selected_object_icon = temp_temp_object.icon || temp_temp_object.icon_preview
+		// 	selected_object_icon_state = temp_temp_object.icon_state || temp_temp_object.icon_state_preview
+		// 	qdel(temp_object);
 		if("toggle-precise-mode")
 			var/precise_type = params["newPreciseType"]
 			if(precise_type == PRECISE_MODE_TARGET && params["where_dropdown_value"])
@@ -234,18 +191,6 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 
 		switch(precise_mode)
 			if(PRECISE_MODE_TARGET)
-				// Режим размещения должен быть один из таргетированных
-				var/spawn_mode
-
-				// Если режим содержит "droppod", то используем дроппод
-				if(findtext(where_dropdown_value, "droppod"))
-					spawn_mode = "Targeted location (droppod)"
-					to_chat(user, span_notice("Using targeted droppod mode"))
-				else
-					// По умолчанию используем обычный таргетированный режим
-					spawn_mode = "Targeted location"
-					to_chat(user, span_notice("Using targeted mode"))
-
 				var/list/spawn_params = list(
 					"object_list" = selected_object,
 					"object_count" = object_count,
@@ -253,12 +198,14 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 					"object_dir" = dir,
 					"object_name" = object_name,
 					"offset_type" = "absolute",
-					"object_where" = spawn_mode
+					"object_where" = where_dropdown_value,
+					"object_reference" = target
 				)
 
-				spawn_params["X"] = clicked_turf.x
-				spawn_params["Y"] = clicked_turf.y
-				spawn_params["Z"] = clicked_turf.z
+				if(where_dropdown_value == WHERE_TARGETED_LOCATION || where_dropdown_value == WHERE_TARGETED_LOCATION_POD)
+					spawn_params["X"] = clicked_turf.x
+					spawn_params["Y"] = clicked_turf.y
+					spawn_params["Z"] = clicked_turf.z
 
 				spawn_item(spawn_params)
 
@@ -286,35 +233,12 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	if(!check_rights_for(user_client, R_ADMIN) || !spawn_params)
 		return
 
-	if(!spawn_params["object_list"]) //this is the laggiest thing ever
+	var/path = text2path(spawn_params["object_list"]) || null
+
+	if(!path || (!ispath(path, /obj) && !ispath(path, /turf) && !ispath(path, /mob)))
 		return
 
-	var/atom/spawn_loc = usr.loc
-	var/dirty_paths
-
-	if (istext(spawn_params["object_list"]))
-		dirty_paths = list(spawn_params["object_list"])
-	else if (istype(spawn_params["object_list"], /list))
-		dirty_paths = spawn_params["object_list"]
-
-	var/paths = list()
-
-	for(var/dirty_path in dirty_paths)
-		var/path = text2path(dirty_path)
-		if(!path)
-			continue
-		else if(!ispath(path, /obj) && !ispath(path, /turf) && !ispath(path, /mob))
-			continue
-		paths += path
-
-	if(!paths)
-		tgui_alert(usr,"The path list you sent is empty.")
-		return
-
-	var/number = clamp(text2num(spawn_params["object_count"]), 1, ADMIN_SPAWN_CAP)
-	if(length(paths) * number > ADMIN_SPAWN_CAP)
-		tgui_alert(usr,"Select fewer object types!")
-		return
+	var/amount = clamp(text2num(spawn_params["object_count"]), 1, ADMIN_SPAWN_CAP)
 
 	var/offset_raw = spawn_params["offset"]
 	var/list/offset = splittext(offset_raw, ",")
@@ -341,129 +265,109 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 			if(isnull(Z))
 				Z = 0
 
-	var/obj_dir = text2num(spawn_params["object_dir"])
-	if(obj_dir && !(obj_dir in list(1,2,4,8,5,6,9,10)))
-		obj_dir = null
-	var/obj_name = sanitize(spawn_params["object_name"])
-
-	var/atom/target // Where the object will be spawned
+	var/obj_dir = text2num(spawn_params["object_dir"]) || 1
+	var/atom_name = sanitize(spawn_params["object_name"])
 	var/where = spawn_params["object_where"]
+	var/atom/target
 
-	// Режимы спавна в руку - сначала проверяем этот случай
-	if(where == "In own mob's hand" || where == "In targeted mob's hand")
-		if (!iscarbon(usr) && !iscyborg(usr))
-			to_chat(usr, "Can only spawn in hand when you're a carbon mob or cyborg.", confidential = TRUE)
-			where = "Current location"
-		target = usr
-	// Режимы спавна к маркеру
-	else if(where == "At a marked object")
+	if(where == WHERE_MOB_HAND || where == WHERE_TARGETED_MOB_HAND)
+		var/atom/target_reference = spawn_params["object_reference"]
+		if(!target_reference)
+			to_chat(usr, span_warning("No target reference provided. Abandoning spawn."))
+			return
+		if(!iscarbon(target_reference) && !iscyborg(target_reference))
+			to_chat(usr, span_warning("Can only spawn in hand when you're a carbon mob or cyborg."))
+			where = WHERE_FLOOR_BELOW_MOB
+		target = target_reference
+
+	else if(where == WHERE_MARKED_OBJECT)
 		if(!usr.client.holder.marked_datum)
-			to_chat(usr, "You don't have any object marked. Abandoning spawn.", confidential = TRUE)
+			to_chat(usr, span_warning("You don't have any object marked. Abandoning spawn."))
 			return
 		else if(!istype(usr.client.holder.marked_datum, /atom))
 			to_chat(usr, "The object you have marked cannot be used as a target. Target must be of type /atom. Abandoning spawn.", confidential = TRUE)
 			return
 		else
-			target = usr.client.holder.marked_datum
-	// Все остальные режимы спавна (на пол или через таргет)
+			target = get_turf(usr.client.holder.marked_datum)
+
 	else
 		switch(spawn_params["offset_type"])
 			if(ABSOLUTE_OFFSET)
-				if(spawn_params["X"] && spawn_params["Y"] && spawn_params["Z"])
-					target = locate(X, Y, Z)
-				else
-					target = locate(X, Y, Z)
-			if(RELATIVE_OFFSET)
-				if(!spawn_loc)
-					target = locate(1, 1, 1)
-				else
-					var/turf/T = get_turf(spawn_loc)
-					if(!T)
-						if(isobserver(usr))
-							var/mob/dead/observer/O = usr
-							T = get_turf(O.client?.eye) || get_turf(O) || get_turf(GLOB.start_landmarks_list[1])
-						else
-							target = locate(1, 1, 1)
+				target = locate(X, Y, Z)
 
-					if(T)
-						target = locate(T.x + X, T.y + Y, T.z + Z)
+			if(RELATIVE_OFFSET)
+				var/atom/relative_target = usr.loc || locate(1, 1, 1)
+				if(!relative_target)
+					to_chat(usr, span_warning("Something went horribly wrong. Please try again."))
+					return
+
+				target = locate(relative_target.x + X, relative_target.y + Y, relative_target.z + Z)
+
+	if(!target)
+		return
+
+	var/use_droppod = where == WHERE_SUPPLY_BELOW_MOB || where == WHERE_TARGETED_LOCATION_POD
 
 	var/obj/structure/closet/supplypod/centcompod/pod
+	if(use_droppod)
+		pod = new()
 
-	if(target)
-		// Проверяем, нужен ли дроппод - это определяется по имени режима
-		var/use_droppod = findtext(where, "droppod")
-		to_chat(usr, span_notice("Debug spawn_item - Checking droppod: where='[where]', use_droppod='[use_droppod]', target='[target]', obj_dir='[obj_dir]'"))
+	for(var/i = 0; i < amount; i++)
+		if(path in typesof(/turf))
+			var/turf/original_turf = target
+			var/turf/created_turf = original_turf.ChangeTurf(path)
+			if(created_turf && atom_name)
+				created_turf.name = atom_name
+			continue
+
+		var/atom/created_atom
 
 		if(use_droppod)
-			pod = new()
+			created_atom = new path(pod)
+		else
+			created_atom = new path(target)
 
-		for(var/path in paths)
-			for(var/i = 0; i < number; i++)
-				if(path in typesof(/turf))
-					var/turf/O = target
-					var/turf/N = O.ChangeTurf(path)
-					if(N && obj_name)
-						N.name = obj_name
-				else
-					var/atom/O
-					if(use_droppod)
-						O = new path(pod)
-					else
-						O = new path(target)
+		if(QDELETED(created_atom))
+			return
 
-					if(!QDELETED(O))
-						O.flags_1 |= ADMIN_SPAWNED_1
-						if(obj_dir)
-							O.setDir(obj_dir)
-						if(obj_name)
-							O.name = obj_name
-							if(ismob(O))
-								var/mob/M = O
-								M.real_name = obj_name
-						if((where == "In own mob's hand" || where == "In targeted mob's hand") && isliving(usr) && isitem(O))
-							var/mob/living/L = usr
-							var/obj/item/I = O
-							L.put_in_hands(I)
-							if(iscyborg(L))
-								var/mob/living/silicon/robot/R = L
-								if(R.model)
-									R.model.add_module(I, TRUE, TRUE)
-									R.activate_module(I)
+		created_atom.flags_1 |= ADMIN_SPAWNED_1
+
+		if(obj_dir)
+			created_atom.setDir(obj_dir)
+
+		if(atom_name)
+			created_atom.name = atom_name
+			if(ismob(created_atom))
+				var/mob/created_mob = created_atom
+				created_mob.real_name = atom_name
+
+		if((where == WHERE_MOB_HAND || where == WHERE_TARGETED_MOB_HAND) && isliving(target) && isitem(created_atom))
+			var/mob/living/living_target = target
+			var/obj/item/created_item = created_atom
+			living_target.put_in_hands(created_item)
+
+			if(iscyborg(living_target))
+				var/mob/living/silicon/robot/target_robot = living_target
+				if(target_robot.model)
+					target_robot.model.add_module(created_item, TRUE, TRUE)
+					target_robot.activate_module(created_item)
 
 	if(pod)
 		new /obj/effect/pod_landingzone(target, pod)
 
-	if (number == 1)
-		log_admin("[key_name(usr)] created an instance of [english_list(paths)]")
-		for(var/path in paths)
-			if(ispath(path, /mob))
-				message_admins("[key_name_admin(usr)] created an instance of [english_list(paths)]")
-				break
-	else
-		log_admin("[key_name(usr)] created [number] instances of [english_list(paths)]")
-		for(var/path in paths)
-			if(ispath(path, /mob))
-				message_admins("[key_name_admin(usr)] created [number] instances of [english_list(paths)]")
-				break
+	log_admin("[key_name(usr)] created [amount == 1 ? "an instance" : "[amount] instances"] of [path]")
+	if(ispath(path, /mob))
+		message_admins("[key_name_admin(usr)] created [amount == 1 ? "an instance" : "[amount] instances"] of [path]")
 
-	to_chat(usr, span_notice("Debug spawn_item - Received Params: [english_list(spawn_params)]"))
-
-/datum/admins/gamepanel/proc/debug_spawn_modes()
-	var/list/result = list()
-	result += "Current mode: [where_dropdown_value]"
-	result += "WHERE_FLOOR_BELOW_MOB: [WHERE_FLOOR_BELOW_MOB]"
-	result += "WHERE_SUPPLY_BELOW_MOB: [WHERE_SUPPLY_BELOW_MOB]"
-	result += "WHERE_MOB_HAND: [WHERE_MOB_HAND]"
-	result += "WHERE_MARKED_OBJECT: [WHERE_MARKED_OBJECT]"
-	result += "WHERE_TARGETED_LOCATION: [WHERE_TARGETED_LOCATION]"
-	result += "WHERE_TARGETED_LOCATION_POD: [WHERE_TARGETED_LOCATION_POD]"
-	result += "WHERE_TARGETED_MOB_HAND: [WHERE_TARGETED_MOB_HAND]"
-	return result.Join("\n")
-
-#undef WHERE_MARKED_OBJECT
-#undef WHERE_MOB_HAND
-#undef WHERE_SUPPLY_BELOW_MOB
 #undef WHERE_FLOOR_BELOW_MOB
+#undef WHERE_SUPPLY_BELOW_MOB
+#undef WHERE_MOB_HAND
+#undef WHERE_MARKED_OBJECT
+#undef WHERE_TARGETED_LOCATION
+#undef WHERE_TARGETED_LOCATION_POD
+#undef WHERE_TARGETED_MOB_HAND
+#undef PRECISE_MODE_OFF
+#undef PRECISE_MODE_TARGET
+#undef PRECISE_MODE_MARK
 #undef ABSOLUTE_OFFSET
 #undef RELATIVE_OFFSET
