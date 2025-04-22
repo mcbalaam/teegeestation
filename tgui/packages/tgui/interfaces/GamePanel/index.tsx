@@ -3,14 +3,12 @@ import { Stack } from 'tgui-core/components';
 import { fetchRetry } from 'tgui-core/http';
 
 import { resolveAsset } from '../../assets';
-import { useBackend } from '../../backend';
 import { Window } from '../../layouts';
 import { logger } from '../../logging';
 import { CreateObject } from './CreateObject';
 import { CreateObjectData } from './types';
 
-export function GamePanel(props) {
-  const { act } = useBackend();
+export function GamePanel() {
   const [data, setData] = useState<CreateObjectData | undefined>();
 
   useEffect(() => {
