@@ -11,8 +11,8 @@
 #define PRECISE_MODE_TARGET "Target"
 #define PRECISE_MODE_MARK "Mark"
 
-#define ABSOLUTE_OFFSET "absolute"
-#define RELATIVE_OFFSET "relative"
+#define OFFSET_ABSOLUTE "Absolute offset"
+#define OFFSET_RELATIVE "Relative offset"
 
 ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMIN_CATEGORY_GAME)
 	if (!usr.client.holder.gamepanel_tgui)
@@ -22,7 +22,6 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 
 /datum/admins
 	var/datum/admins/gamepanel/gamepanel_tgui
-	var/list/gamepanel_preferences
 
 /datum/admins/New(list/datum/admin_rank/ranks, ckey, force_active = FALSE, protected)
 	. = ..()
@@ -32,7 +31,6 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	qdel(gamepanel_tgui)
 
 /datum/admins/gamepanel
-	var/client/user_client
 	var/where_dropdown_value = WHERE_FLOOR_BELOW_MOB
 	var/selected_object = ""
 	var/selected_object_icon = null
@@ -42,48 +40,10 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	var/dir = 1
 	var/offset = ""
 	var/offset_type = "relative"
-
-	// Preferences
-	var/hide_icons = FALSE
-	var/hide_mappings = FALSE
-	var/sort_by = "Objects"
-	var/search_text = ""
-	var/search_by = "type"
 	var/precise_mode = FALSE
 
 /datum/admins/gamepanel/New(user)
-	if(istype(user, /client))
-		var/client/temp_user_client = user
-		user_client = temp_user_client
-		if(user_client?.holder?.gamepanel_preferences)
-			var/list/prefs = user_client.holder.gamepanel_preferences
-			hide_icons = prefs["hide_icons"]
-			hide_mappings = prefs["hide_mappings"]
-			sort_by = prefs["sort_by"]
-			search_by = prefs["search_by"]
-			offset_type = prefs["offset_type"]
-			offset = prefs["offset"]
-			object_count = prefs["object_count"]
-			dir = prefs["dir"]
-			object_name = prefs["object_name"]
-			where_dropdown_value = prefs["where_dropdown_value"]
-			selected_object = prefs["selected_object"]
-	else
-		var/mob/user_mob = user
-		user_client = user_mob.client
-		if(user_client?.holder?.gamepanel_preferences)
-			var/list/prefs = user_client.holder.gamepanel_preferences
-			hide_icons = prefs["hide_icons"]
-			hide_mappings = prefs["hide_mappings"]
-			sort_by = prefs["sort_by"]
-			search_by = prefs["search_by"]
-			offset_type = prefs["offset_type"]
-			offset = prefs["offset"]
-			object_count = prefs["object_count"]
-			dir = prefs["dir"]
-			object_name = prefs["object_name"]
-			where_dropdown_value = prefs["where_dropdown_value"]
-			selected_object = prefs["selected_object"]
+	. = ..()
 
 /datum/admins/gamepanel/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -92,20 +52,6 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		ui.open()
 
 /datum/admins/gamepanel/ui_close(mob/user)
-	if(user_client?.holder)
-		user_client.holder.gamepanel_preferences = list(
-			"hide_icons" = hide_icons,
-			"hide_mappings" = hide_mappings,
-			"sort_by" = sort_by,
-			"search_by" = search_by,
-			"offset_type" = offset_type,
-			"offset" = offset,
-			"object_count" = object_count,
-			"dir" = dir,
-			"object_name" = object_name,
-			"where_dropdown_value" = where_dropdown_value,
-			"selected_object" = selected_object
-		)
 	. = ..()
 	if (precise_mode && precise_mode != PRECISE_MODE_OFF)
 		toggle_precise_mode(PRECISE_MODE_OFF)
@@ -124,23 +70,14 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		if("create-object-action")
 			spawn_item(list(
 				object_list = selected_object,
-				object_count = params["object_count"] ? text2num(params["object_count"]) : object_count,
-				offset = params["offset"] || offset,
-				object_dir = params["dir"] ? text2num(params["dir"]) : dir,
-				object_name = params["object_name"] || object_name,
-				object_where = params["where_dropdown_value"] || where_dropdown_value,
-				offset_type = params["offset_type"] || offset_type,
+				object_count = text2num(params["object_count"]) || 1,
+				offset = params["offset"],
+				object_dir = text2num(params["dir"]) || 1,
+				object_name = params["object_name"],
+				object_where = params["where_dropdown_value"] || WHERE_FLOOR_BELOW_MOB,
+				offset_type = params["offset_type"] || OFFSET_RELATIVE,
 				)
 			)
-		// if("load-new-icon")
-		// 	var/obj/object_path = text2path(selected_object)
-		// 	if(!object_path)
-		// 		return
-		// 	var/temp_object = new object_path()
-		// 	var/obj/temp_temp_object = temp_object
-		// 	selected_object_icon = temp_temp_object.icon || temp_temp_object.icon_preview
-		// 	selected_object_icon_state = temp_temp_object.icon_state || temp_temp_object.icon_state_preview
-		// 	qdel(temp_object);
 		if("toggle-precise-mode")
 			var/precise_type = params["newPreciseType"]
 			if(precise_type == PRECISE_MODE_TARGET && params["where_dropdown_value"])
@@ -193,12 +130,12 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 			if(PRECISE_MODE_TARGET)
 				var/list/spawn_params = list(
 					"object_list" = selected_object,
-					"object_count" = object_count,
+					"object_count" = text2num(params["object_count"]) || 1,
 					"offset" = "0,0,0",
-					"object_dir" = dir,
-					"object_name" = object_name,
-					"offset_type" = "absolute",
-					"object_where" = where_dropdown_value,
+					"object_dir" = text2num(params["object_dir"]) || 1,
+					"object_name" = params["object_name"],
+					"offset_type" = OFFSET_ABSOLUTE,
+					"object_where" = params["where_dropdown_value"],
 					"object_reference" = target
 				)
 
@@ -211,7 +148,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 
 			if(PRECISE_MODE_MARK)
 				usr.client.mark_datum(target)
-				to_chat(usr, span_notice("Marked object: [icon2html(target, usr)] [target]"))
+				to_chat(usr, span_notice("Marked object: [icon2html(target, usr)] [span_bold("[target]")]"))
 				toggle_precise_mode(PRECISE_MODE_OFF)
 				SStgui.update_uis(src)
 
@@ -230,7 +167,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	)
 
 /datum/admins/gamepanel/proc/spawn_item(list/spawn_params)
-	if(!check_rights_for(user_client, R_ADMIN) || !spawn_params)
+	if(!check_rights(R_ADMIN) || !spawn_params)
 		return
 
 	var/path = text2path(spawn_params["object_list"]) || null
@@ -292,10 +229,10 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 
 	else
 		switch(spawn_params["offset_type"])
-			if(ABSOLUTE_OFFSET)
+			if(OFFSET_ABSOLUTE)
 				target = locate(X, Y, Z)
 
-			if(RELATIVE_OFFSET)
+			if(OFFSET_RELATIVE)
 				var/atom/relative_target = usr.loc || locate(1, 1, 1)
 				if(!relative_target)
 					to_chat(usr, span_warning("Something went horribly wrong. Please try again."))
@@ -369,5 +306,5 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 #undef PRECISE_MODE_OFF
 #undef PRECISE_MODE_TARGET
 #undef PRECISE_MODE_MARK
-#undef ABSOLUTE_OFFSET
-#undef RELATIVE_OFFSET
+#undef OFFSET_ABSOLUTE
+#undef OFFSET_RELATIVE
