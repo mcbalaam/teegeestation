@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Button,
   Dropdown,
@@ -63,10 +63,37 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
     'Off',
   );
 
+  // Отправляем обновления на сервер, если точный режим активен
+  useEffect(() => {
+    // Проверяем, активен ли точный режим (Target или Mark)
+    if (data?.precise_mode && data.precise_mode !== 'Off') {
+      act('update-settings', {
+        object_count: amount,
+        offset_type: cordsType ? 'absolute' : 'relative',
+        where_dropdown_value: spawnLocation,
+        // Конвертируем индекс слайдера в значение направления
+        dir: [1, 2, 4, 8][direction],
+        offset,
+        object_name: objectName,
+      });
+    }
+    // Зависимости: все состояния настроек и статус точного режима от бэкенда
+  }, [
+    amount,
+    cordsType,
+    spawnLocation,
+    direction,
+    offset,
+    objectName,
+    data?.precise_mode,
+    act,
+  ]);
+
   // Проверяем, является ли текущий режим таргетированным
-  const isTargetMode = spawnLocation === 'Targeted location'
-    || spawnLocation === 'Targeted location (droppod)'
-    || spawnLocation === "In targeted mob's hand";
+  const isTargetMode =
+    spawnLocation === 'Targeted location' ||
+    spawnLocation === 'Targeted location (droppod)' ||
+    spawnLocation === "In targeted mob's hand";
 
   // Проверяем, активен ли режим таргетинга
   const isPreciseModeActive = data?.precise_mode === 'Target';
@@ -94,6 +121,7 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
         // Иначе включаем режим таргетинга
         act('toggle-precise-mode', {
           newPreciseType: 'Target',
+          where_dropdown_value: spawnLocation,
         });
         // В этом случае не создаем объект - только включаем режим таргетинга
         return;
@@ -171,6 +199,7 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                         const nextIndex = (currentIndex + 1) % 4;
                         setDirection(nextIndex);
                       }}
+                      disabled={isTargetMode}
                     />
                   </Stack.Item>
                   <Stack.Item grow>
@@ -185,6 +214,7 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                         return values[value].toString();
                       }}
                       onChange={(e, value) => setDirection(value)}
+                      disabled={isTargetMode}
                     />
                   </Stack.Item>
                 </Stack>
@@ -267,7 +297,11 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                       lineHeight: '22px',
                     }}
                     icon="eye-dropper"
-                    onClick={() => setPreciseMode('Target')}
+                    onClick={() => {
+                      act('toggle-precise-mode', {
+                        newPreciseType: 'Mark',
+                      });
+                    }}
                     disabled={spawnLocation !== 'At a marked object'}
                   />
                 </Stack.Item>
@@ -276,8 +310,10 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                     options={spawnLocationOptions}
                     onSelected={(value) => {
                       // Сбрасываем режим таргетинга при смене режима
-                      if (isPreciseModeActive) {
-                        disablePreciseMode();
+                      if (data?.precise_mode && data.precise_mode !== 'Off') {
+                        act('toggle-precise-mode', {
+                          newPreciseType: 'Off',
+                        });
                       }
                       setSpawnLocation(value);
                     }}
