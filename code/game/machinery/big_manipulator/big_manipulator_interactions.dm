@@ -168,23 +168,47 @@
 		return FALSE
 
 	var/target_dir = get_dir(get_turf(src), target_point.interaction_turf)
-	var/current_dir = manipulator_arm.dir
-	var/angle_diff = dir2angle(target_dir) - dir2angle(current_dir)
+	var/target_angle = dir2angle(target_dir)
+	var/current_angle = manipulator_arm.transform.get_angle()
+	var/angle_diff = closer_angle_difference(current_angle, target_angle)
 
-	if(angle_diff > 180)
-		angle_diff -= 360
-	if(angle_diff < -180)
-		angle_diff += 360
-
-	var/num_rotations = abs(angle_diff) / 45
+	var/num_rotations = round(abs(angle_diff) / 45)
 	var/total_rotation_time = num_rotations * interaction_delay
 
 	start_task("moving to point", total_rotation_time)
-	animate(manipulator_arm, transform = matrix().Turn(angle_diff), time = total_rotation_time)
-	manipulator_arm.dir = target_dir
 
-	addtimer(CALLBACK(src, callback, target_point), total_rotation_time)
+	// Если нет необходимости вращаться
+	if(num_rotations == 0)
+		addtimer(CALLBACK(src, callback, target_point), 0)
+		return TRUE
+
+	// Разбиваем вращение на шаги по 45 градусов
+	var/rotation_step = 45 * SIGN(angle_diff)
+	do_step_rotation(target_point, callback, current_angle, target_angle, rotation_step, 0, total_rotation_time)
+
 	return TRUE
+
+/// Выполняет вращение манипулятора на один шаг
+/obj/machinery/big_manipulator/proc/do_step_rotation(datum/interaction_point/target_point, callback, current_angle, target_angle, rotation_step, elapsed_time, total_time)
+	// Проверяем, нужно ли еще вращаться
+	var/angle_diff = closer_angle_difference(current_angle, target_angle)
+	if(abs(angle_diff) < abs(rotation_step))
+		// Последний шаг - поворачиваем точно на целевой угол
+		var/matrix/final_matrix = matrix()
+		final_matrix.Turn(target_angle)
+		animate(manipulator_arm, transform = final_matrix, time = interaction_delay)
+		addtimer(CALLBACK(src, callback, target_point), interaction_delay)
+		return
+
+	// Вращаем на один шаг
+	var/next_angle = current_angle + rotation_step
+	var/matrix/next_matrix = matrix()
+	next_matrix.Turn(next_angle)
+	animate(manipulator_arm, transform = next_matrix, time = interaction_delay)
+
+	// Рекурсивно планируем следующий шаг
+	elapsed_time += interaction_delay
+	addtimer(CALLBACK(src, PROC_REF(do_step_rotation), target_point, callback, next_angle, target_angle, rotation_step, elapsed_time, total_time), interaction_delay)
 
 /*
   ___         _   _           _   _            ___     _     _
