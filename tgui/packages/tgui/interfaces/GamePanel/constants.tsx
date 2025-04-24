@@ -15,9 +15,9 @@ export const listTypes = {
 };
 
 export const listNames = {
-  Objects: 'Search for objects',
-  Turfs: 'Search for turfs',
-  Mobs: 'Search for mobs',
+  Objects: 'Search objects',
+  Turfs: 'Search turfs',
+  Mobs: 'Search mobs',
 };
 
 export const spawnLocationIcons = {

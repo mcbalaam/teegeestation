@@ -117,12 +117,24 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 		admin_client.mouse_pointer_icon = admin_client.mouse_override_icon
 		admin_client.click_intercept = src
 
+		winset(admin_client, "mapwindow.map", "right-click=false")
+
+	else
+
+		winset(admin_client, "mapwindow.map", "right-click=true")
+
 	var/mob/holder_mob = admin_client.mob
 	holder_mob?.update_mouse_pointer()
 
 /datum/admins/gamepanel/proc/InterceptClickOn(user, params, atom/target)
 	var/list/modifiers = params2list(params)
 	var/left_click = LAZYACCESS(modifiers, LEFT_CLICK)
+	var/right_click = LAZYACCESS(modifiers, RIGHT_CLICK)
+
+	if(right_click)
+		toggle_precise_mode(PRECISE_MODE_OFF)
+		SStgui.update_uis(src)
+		return TRUE
 
 	if(left_click)
 		if(istype(target,/atom/movable/screen))

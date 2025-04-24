@@ -31,7 +31,7 @@ export function CreateObject(props: CreateObjectProps) {
   const { objList } = props;
 
   const [tooltipIcon, setTooltipIcon] = useState(false);
-  const [selectedObj, setSelectedObj] = useState(-1);
+  const [selectedObj, setSelectedObj] = useState<string | null>(null);
 
   // Используем localStorage для сохранения настроек между сессиями
   const [searchText, setSearchText] = useLocalStorage(
@@ -47,22 +47,23 @@ export function CreateObject(props: CreateObjectProps) {
     'gamepanel-hideMapping',
     false,
   );
-  const [hideIcons, setHideIcons] = useLocalStorage(
-    'gamepanel-hideIcons',
+  const [showIcons, setshowIcons] = useLocalStorage(
+    'gamepanel-showIcons',
     false,
   );
-
+  const [showPreview, setshowPreview] = useLocalStorage(
+    'gamepanel-showPreview',
+    false,
+  );
   const currentType =
     Object.entries(listTypes).find(([_, value]) => value === sortBy)?.[0] ||
     'Objects';
 
   const currentList = objList?.[currentType] || {};
 
-  // Функция для отправки предпочтений на бэкенд при создании объекта
   const sendPreferences = (settings) => {
-    // Конвертируем локальные состояния в формат бэкенда
     const prefsToSend = {
-      hide_icons: hideIcons,
+      hide_icons: showIcons,
       hide_mappings: hideMapping,
       sort_by:
         Object.keys(listTypes).find((key) => listTypes[key] === sortBy) ||
@@ -82,6 +83,43 @@ export function CreateObject(props: CreateObjectProps) {
           <CreateObjectSettings onCreateObject={sendPreferences} />
         </Section>
       </Stack.Item>
+
+      {showPreview && selectedObj && currentList[selectedObj] && (
+        <Stack.Item>
+          <Section style={{
+            height: '6em',
+          }}>
+            <Stack>
+              <Stack.Item>
+                <Button width="5em" height="4.8em" mb="-3px" color="transparent" ml="1px" style={{
+                  alignContent: "center",
+                }}>
+                  <DmIcon width="4em"
+                  mt="2px"
+                    icon={currentList[selectedObj].icon}
+                    icon_state={currentList[selectedObj].icon_state}
+                  />
+                </Button>
+              </Stack.Item>
+              <Stack.Item grow
+                style={{
+                  maxHeight: "4.8em",
+                  overflowY: "auto",
+                }}
+              >
+                <Stack vertical>
+                  <Stack.Item>
+                    <b>{currentList[selectedObj].name}</b>
+                  </Stack.Item>
+                  <Stack.Item grow>
+                    <i style={{ color: 'rgba(200, 200, 200, 0.7)' }}>{currentList[selectedObj].description || "no description"}</i>
+                  </Stack.Item>
+                </Stack>
+              </Stack.Item>
+            </Stack>
+          </Section>
+        </Stack.Item>
+      )}
 
       <Stack.Item>
         <Section>
@@ -113,7 +151,7 @@ export function CreateObject(props: CreateObjectProps) {
                     setSearchBy(!searchBy);
                   }}
                 >
-                  {searchBy ? 'Search by type' : 'Search by name'}
+                  {searchBy ? 'By type' : 'By name'}
                 </Button>
               </Stack.Item>
               <Stack.Item>
@@ -121,21 +159,32 @@ export function CreateObject(props: CreateObjectProps) {
                   onClick={() => {
                     setHideMapping(!hideMapping);
                   }}
-                  color={hideMapping && 'good'}
-                  checked={hideMapping}
+                  color={!hideMapping && 'good'}
+                  checked={!hideMapping}
                 >
-                  Hide mapping
+                  Mapping
                 </Button.Checkbox>
               </Stack.Item>
               <Stack.Item>
                 <Button.Checkbox
                   onClick={() => {
-                    setHideIcons(!hideIcons);
+                    setshowIcons(!showIcons);
                   }}
-                  color={hideIcons && 'good'}
-                  checked={hideIcons}
+                  color={showIcons && 'good'}
+                  checked={showIcons}
                 >
                   Icons
+                </Button.Checkbox>
+              </Stack.Item>
+              <Stack.Item>
+                <Button.Checkbox
+                  onClick={() => {
+                    setshowPreview(!showPreview);
+                  }}
+                  color={showPreview && 'good'}
+                  checked={showPreview}
+                >
+                  Preview
                 </Button.Checkbox>
               </Stack.Item>
             </Stack>
@@ -161,7 +210,7 @@ export function CreateObject(props: CreateObjectProps) {
             <VirtualList>
               {Object.keys(currentList)
                 .filter((obj: string) => {
-                  if (hideMapping && Boolean(currentList[obj].mapping)) {
+                  if (!hideMapping && Boolean(currentList[obj].mapping)) {
                     return false;
                   }
                   if (searchBy) {
@@ -176,7 +225,7 @@ export function CreateObject(props: CreateObjectProps) {
                     key={index}
                     color="transparent"
                     tooltip={
-                      (hideIcons || tooltipIcon) && (
+                      (showIcons || tooltipIcon) && (
                         <DmIcon
                           icon={currentList[obj].icon}
                           icon_state={currentList[obj].icon_state}
@@ -185,19 +234,17 @@ export function CreateObject(props: CreateObjectProps) {
                     }
                     tooltipPosition="top-start"
                     fluid
-                    selected={selectedObj === index}
+                    selected={selectedObj === obj}
                     style={{
                       backgroundColor:
-                        selectedObj === index
+                        selectedObj === obj
                           ? 'rgba(255, 255, 255, 0.1)'
                           : undefined,
-                      color: selectedObj === index ? '#fff' : undefined,
+                      color: selectedObj === obj ? '#fff' : undefined,
                     }}
                     onDoubleClick={() => {
-                      if (selectedObj !== -1) {
-                        const selectedObject =
-                          Object.keys(currentList)[selectedObj];
-                        sendPreferences({ object_list: selectedObject });
+                      if (selectedObj) {
+                        sendPreferences({ object_list: selectedObj });
                       }
                     }}
                     onMouseDown={(e) => {
@@ -211,7 +258,7 @@ export function CreateObject(props: CreateObjectProps) {
                       }
                     }}
                     onClick={() => {
-                      setSelectedObj(index);
+                      setSelectedObj(obj);
                       act('selected-object-changed', {
                         newObj: obj,
                       });

@@ -3,7 +3,7 @@
 
 /datum/asset/json/gamepanel/proc/check_mapping(atom/some_atom)
 	var/atom_text = "[some_atom]"
-	var/is_mapping = findtext(atom_text, "helper") || findtext(atom_text, "spawner") || findtext(atom_text, "random")
+	var/is_mapping = findtext(atom_text, "helper") || findtext(atom_text, "spawner") || findtext(atom_text, "random") || findtext(atom_text, "landmark")
 	return is_mapping ? TRUE : FALSE
 
 /datum/asset/json/gamepanel/generate()
@@ -22,6 +22,7 @@
 			"icon" = temp?.icon || "none",
 			"icon_state" = temp?.icon_state || "none",
 			"name" = temp.name,
+			"description" = temp.desc,
 			"mapping" = check_mapping(item)
 		)
 
@@ -31,6 +32,7 @@
 			"icon" = temp?.icon || "noneturf",
 			"icon_state" = temp?.icon_state || "noneturf",
 			"name" = temp.name,
+			"description" = temp.desc,
 			"mapping" = check_mapping(item)
 		)
 
@@ -40,6 +42,7 @@
 			"icon" = temp?.icon || "nonemob",
 			"icon_state" = temp?.icon_state || "nonemob",
 			"name" = temp.name,
+			"description" = temp.desc,
 			"mapping" = check_mapping(item)
 		)
 

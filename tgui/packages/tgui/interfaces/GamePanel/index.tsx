@@ -23,7 +23,7 @@ export function GamePanel() {
   }, []);
 
   return (
-    <Window height={500} title="Spawn Panel" width={500} theme="admin">
+    <Window height={550} title="Spawn Panel" width={500} theme="admin">
       <Window.Content>
         <Stack vertical fill>
           <Stack.Item grow>
