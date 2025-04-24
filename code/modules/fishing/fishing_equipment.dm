@@ -23,8 +23,9 @@
 	name = "reinforced fishing line reel"
 	desc = "Essential for fishing in extreme environments."
 	icon_state = "reel_green"
-	line_color = "#2b9c2b"
+	line_color = "#2aae34"
 	wiki_desc = "Allows you to fish in lava and plasma rivers and lakes."
+	resistance_flags = FIRE_PROOF | LAVA_PROOF
 
 /obj/item/fishing_line/reinforced/Initialize(mapload)
 	. = ..()
@@ -44,7 +45,7 @@
 	desc = "Even harder to notice than the common variety."
 	icon_state = "reel_white"
 	fishing_line_traits = FISHING_LINE_CLOAKED
-	line_color = "#82cfdd"
+	line_color = "#82cfdd20" //low alpha channel value, harder to see.
 	wiki_desc = "Fishing anxious and wary fish will be easier with this equipped."
 
 /obj/item/fishing_line/bouncy
@@ -52,7 +53,7 @@
 	desc = "This specialized line is much harder to snap."
 	icon_state = "reel_red"
 	fishing_line_traits = FISHING_LINE_BOUNCY
-	line_color = "#99313f"
+	line_color = "#af221f"
 	wiki_desc = "It reduces the progression loss during the fishing minigame."
 
 /obj/item/fishing_line/sinew
@@ -62,6 +63,7 @@
 	fishing_line_traits = FISHING_LINE_STIFF
 	line_color = "#d1cca3"
 	wiki_desc = "Crafted from sinew. It allows you to fish in lava and plasma like the reinforced line, but it'll make the minigame harder."
+	resistance_flags = FIRE_PROOF | LAVA_PROOF
 
 /obj/item/fishing_line/sinew/Initialize(mapload)
 	. = ..()
@@ -87,8 +89,8 @@
 	icon_state = "reel_auto"
 	fishing_line_traits = FISHING_LINE_AUTOREEL
 	line_color = "#F88414"
-	wiki_desc = "Automatically starts the minigame once the fish bites the bait. It also spin fishing lures for you without needing an input. \
-		It can also be used to snag in objects from a distance more rapidly.<br>\
+	wiki_desc = "Automatically starts the minigame and helps guide the bait a little. It also spin fishing lures for you without need of an input. \
+		It can also be used to snag in objects from a distance and throw them in your direction.<br>\
 		<b>It requires the Advanced Fishing Technology Node to be researched to be printed.</b>"
 
 /obj/item/fishing_line/auto_reel/Initialize(mapload)
@@ -104,29 +106,30 @@
 	SIGNAL_HANDLER
 	UnregisterSignal(rod, COMSIG_FISHING_ROD_HOOKED_ITEM)
 
-/obj/item/fishing_line/auto_reel/proc/on_hooked_item(obj/item/fishing_rod/source, atom/target, mob/living/user)
+/obj/item/fishing_line/auto_reel/proc/on_hooked_item(obj/item/fishing_rod/source, atom/movable/target, mob/living/user)
 	SIGNAL_HANDLER
-	if(!ismovable(target))
+
+	if(!istype(target) || target.anchored || target.move_resist >= MOVE_FORCE_STRONG)
 		return
-	var/atom/movable/movable_target = target
 	var/please_be_gentle = FALSE
 	var/atom/destination
 	var/datum/callback/throw_callback
-	if(isliving(movable_target) || !isitem(movable_target))
+	if(isliving(target) || !isitem(target))
 		destination = get_step_towards(user, target)
 		please_be_gentle = TRUE
 	else
 		destination = user
-		throw_callback = CALLBACK(src, PROC_REF(clear_hitby_signal), movable_target)
-		RegisterSignal(movable_target, COMSIG_MOVABLE_PRE_IMPACT, PROC_REF(catch_it_chucklenut))
+		throw_callback = CALLBACK(src, PROC_REF(clear_hitby_signal), target)
+		RegisterSignal(target, COMSIG_MOVABLE_PRE_IMPACT, PROC_REF(catch_it_chucklenut))
 
-	if(!movable_target.safe_throw_at(destination, source.cast_range, 2, callback = throw_callback, gentle = please_be_gentle))
-		UnregisterSignal(movable_target, COMSIG_MOVABLE_PRE_IMPACT)
+	if(!target.safe_throw_at(destination, source.cast_range, 2, callback = throw_callback, gentle = please_be_gentle))
+		UnregisterSignal(target, COMSIG_MOVABLE_PRE_IMPACT)
 	else
 		playsound(src, 'sound/items/weapons/batonextend.ogg', 50, TRUE)
 
 /obj/item/fishing_line/auto_reel/proc/catch_it_chucklenut(obj/item/source, atom/hit_atom, datum/thrownthing/throwingdatum)
 	SIGNAL_HANDLER
+
 	var/mob/living/user = throwingdatum.initial_target.resolve()
 	if(QDELETED(user) || hit_atom != user)
 		return NONE
@@ -324,20 +327,18 @@
 /obj/item/storage/toolbox/fishing
 	name = "fishing toolbox"
 	desc = "Contains everything you need for your fishing trip."
-	icon_state = "fishing"
-	inhand_icon_state = "artistic_toolbox"
+	icon_state = "teal"
+	inhand_icon_state = "toolbox_teal"
 	material_flags = NONE
 	custom_price = PAYCHECK_CREW * 3
+	storage_type = /datum/storage/toolbox/fishing
+
 	///How much holding this affects fishing difficulty
 	var/fishing_modifier = -4
 
 /obj/item/storage/toolbox/fishing/Initialize(mapload)
 	. = ..()
-	// Can hold fishing rod despite the size
-	var/static/list/exception_cache = typecacheof(list(
-		/obj/item/fishing_rod,
-	))
-	atom_storage.exception_hold = exception_cache
+
 	AddComponent(/datum/component/adjust_fishing_difficulty, fishing_modifier, ITEM_SLOT_HANDS)
 
 /obj/item/storage/toolbox/fishing/PopulateContents()
@@ -353,10 +354,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	force = 5
 	throwforce = 5
-
-/obj/item/storage/toolbox/fishing/small/Initialize(mapload)
-	. = ..()
-	atom_storage.max_specific_storage = WEIGHT_CLASS_SMALL //It can still hold a fishing rod
+	storage_type = /datum/storage/toolbox/fishing/small
 
 /obj/item/storage/toolbox/fishing/small/PopulateContents()
 	new /obj/item/fishing_rod/unslotted(src)
@@ -413,14 +411,6 @@
 	. = ..()
 	new /obj/item/fishing_line/auto_reel(src)
 
-/obj/item/storage/box/fish_debug
-	name = "box full of fish"
-	illustration = "fish"
-
-/obj/item/storage/box/fish_debug/PopulateContents()
-	for(var/fish_type in subtypesof(/obj/item/fish))
-		new fish_type(src)
-
 ///Used to give the average player info about fishing stuff that's unknown to many.
 /obj/item/paper/paperslip/fishing_tip
 	name = "fishing tip"
@@ -450,16 +440,13 @@
 	foldable_result = null
 	illustration = "fish"
 	custom_price = PAYCHECK_CREW * 9
+	storage_type = /datum/storage/box/fishing_lures
 
 /obj/item/storage/box/fishing_lures/PopulateContents()
 	new /obj/item/paper/lures_instructions(src)
 	var/list/typesof = typesof(/obj/item/fishing_lure)
 	for(var/type in typesof)
 		new type (src)
-	atom_storage.set_holdable(/obj/item/fishing_lure) //can only hold lures
-	//adds an extra slot, so we can put back the lures even if we didn't take out the instructions.
-	atom_storage.max_slots = length(typesof) + 1
-	atom_storage.max_total_storage = WEIGHT_CLASS_SMALL * (atom_storage.max_slots + 1)
 
 /obj/item/paper/lures_instructions
 	name = "instructions paper"
@@ -579,3 +566,31 @@
 
 #undef MAGNET_HOOK_BONUS_MULTIPLIER
 #undef RESCUE_HOOK_FISH_MULTIPLIER
+
+/obj/item/storage/bag/fishing
+	name = "fishing bag"
+	desc = "A vibrant bag for storing caught fish."
+	icon = 'icons/obj/fishing.dmi'
+	icon_state = "fishing_bag"
+	worn_icon_state = "fishing_bag"
+	resistance_flags = FLAMMABLE
+	custom_price = PAYCHECK_CREW * 3
+	storage_type = /datum/storage/bag/fishing
+
+	///How much holding this affects fishing difficulty
+	var/fishing_modifier = -2
+
+/obj/item/storage/bag/fishing/Initialize(mapload)
+	. = ..()
+
+	AddComponent(/datum/component/adjust_fishing_difficulty, fishing_modifier, ITEM_SLOT_HANDS)
+
+/obj/item/storage/bag/fishing/carpskin
+	name = "carpskin fishing bag"
+	desc = "A dapper fishing bag made from carpskin. You can store quite a lot of fishing gear in the small pockets formed by larger scales."
+	icon_state = "fishing_bag_carpskin"
+	worn_icon_state = "fishing_bag_carpskin"
+	resistance_flags = ACID_PROOF
+	storage_type = /datum/storage/carpskin_bag
+	fishing_modifier = -4
+

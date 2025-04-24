@@ -499,11 +499,7 @@
 	icon_state = "skubpack"
 	illustration = "label_skub"
 	w_class = WEIGHT_CLASS_SMALL
-
-/obj/item/storage/box/stickers/skub/Initialize(mapload)
-	. = ..()
-	atom_storage.max_slots = 3
-	atom_storage.exception_hold = typecacheof(list(/obj/item/skub, /obj/item/clothing/suit/costume/wellworn_shirt/skub))
+	storage_type = /datum/storage/box/skub
 
 /obj/item/storage/box/stickers/skub/PopulateContents()
 	new /obj/item/skub(src)
@@ -515,10 +511,7 @@
 	desc = "The enemy may have been given a skub and a shirt, but I've got more stickers! Plus the pack can hold my anti-skub shirt."
 	icon_state = "skubpack"
 	illustration = "label_anti_skub"
-
-/obj/item/storage/box/stickers/anti_skub/Initialize(mapload)
-	. = ..()
-	atom_storage.exception_hold = typecacheof(list(/obj/item/clothing/suit/costume/wellworn_shirt/skub))
+	storage_type = /datum/storage/box/anti_skub
 
 /obj/item/storage/box/stickers/anti_skub/PopulateContents()
 	for(var/i in 1 to 4)
@@ -585,3 +578,15 @@
 
 /datum/station_trait/pet_day/proc/on_lobby_button_update_overlays(atom/movable/screen/lobby/button/sign_up/lobby_button, list/overlays)
 	overlays += "select_pet"
+
+/// We're pulling a Jim Kramer with this one boys
+/datum/station_trait/gmm_spotlight
+	name = "GMM Economic Spotlight"
+	report_message = "This shift, the Galactic Mineral Market is doing a showcase on your crew's affulence! Every paycheck, the station newscasters will alert the crew who has the most credits."
+	trait_type = STATION_TRAIT_NEUTRAL
+	trait_to_give = STATION_TRAIT_ECONOMY_ALERTS
+	weight = 2
+	cost = STATION_TRAIT_COST_LOW
+	show_in_report = TRUE
+
+	dynamic_threat_id = "GMM Econ Spotlight"
