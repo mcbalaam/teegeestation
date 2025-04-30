@@ -34,12 +34,11 @@ export function CreateObject(props: CreateObjectProps) {
   const [tooltipIcon, setTooltipIcon] = useState(false);
   const [selectedObj, setSelectedObj] = useState<string | null>(null);
 
-  // Используем localStorage для сохранения настроек между сессиями
   const [searchText, setSearchText] = useLocalStorage(
     'gamepanel-searchText',
     '',
   );
-  const [searchBy, setSearchBy] = useLocalStorage('gamepanel-searchBy', false); // false = search by name
+  const [searchBy, setSearchBy] = useLocalStorage('gamepanel-searchBy', false);
   const [sortBy, setSortBy] = useLocalStorage(
     'gamepanel-sortBy',
     listTypes.Objects,
