@@ -1,5 +1,5 @@
 import { useLocalStorage } from '@uidotdev/usehooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   DmIcon,
@@ -17,6 +17,7 @@ import { CreateObjectProps } from './types';
 interface GamePanelData {
   icon: string;
   iconState: string;
+  selected_object?: string;
   preferences?: {
     hide_icons: boolean;
     hide_mappings: boolean;
@@ -61,6 +62,14 @@ export function CreateObject(props: CreateObjectProps) {
 
   const currentList = objList?.[currentType] || {};
 
+  useEffect(() => {
+    if (data.selected_object) {
+      setSelectedObj(data.selected_object);
+      setSearchText(data.selected_object);
+      setSearchBy(true);
+    }
+  }, [data.selected_object]);
+
   const sendPreferences = (settings) => {
     const prefsToSend = {
       hide_icons: showIcons,
@@ -86,25 +95,36 @@ export function CreateObject(props: CreateObjectProps) {
 
       {showPreview && selectedObj && currentList[selectedObj] && (
         <Stack.Item>
-          <Section style={{
-            height: '6em',
-          }}>
+          <Section
+            style={{
+              height: '6em',
+            }}
+          >
             <Stack>
               <Stack.Item>
-                <Button width="5em" height="4.8em" mb="-3px" color="transparent" ml="1px" style={{
-                  alignContent: "center",
-                }}>
-                  <DmIcon width="4em"
-                  mt="2px"
+                <Button
+                  width="5em"
+                  height="4.8em"
+                  mb="-3px"
+                  color="transparent"
+                  ml="1px"
+                  style={{
+                    alignContent: 'center',
+                  }}
+                >
+                  <DmIcon
+                    width="4em"
+                    mt="2px"
                     icon={currentList[selectedObj].icon}
                     icon_state={currentList[selectedObj].icon_state}
                   />
                 </Button>
               </Stack.Item>
-              <Stack.Item grow
+              <Stack.Item
+                grow
                 style={{
-                  maxHeight: "4.8em",
-                  overflowY: "auto",
+                  maxHeight: '4.8em',
+                  overflowY: 'auto',
                 }}
               >
                 <Stack vertical>
@@ -112,7 +132,9 @@ export function CreateObject(props: CreateObjectProps) {
                     <b>{currentList[selectedObj].name}</b>
                   </Stack.Item>
                   <Stack.Item grow>
-                    <i style={{ color: 'rgba(200, 200, 200, 0.7)' }}>{currentList[selectedObj].description || "no description"}</i>
+                    <i style={{ color: 'rgba(200, 200, 200, 0.7)' }}>
+                      {currentList[selectedObj].description || 'no description'}
+                    </i>
                   </Stack.Item>
                 </Stack>
               </Stack.Item>

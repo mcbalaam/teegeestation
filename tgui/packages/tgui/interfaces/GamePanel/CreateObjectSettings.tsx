@@ -65,6 +65,7 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
 
   const isPreciseModeActive = data?.precise_mode === 'Target';
   const isMarkModeActive = data?.precise_mode === 'Mark';
+  const isCopyModeActive = data?.precise_mode === 'Copy';
 
   const disablePreciseMode = () => {
     if (isPreciseModeActive) {
@@ -115,27 +116,21 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
               paddingLeft: '5px',
             }}
           >
-            <Table.Row className="candystripe" lineHeight="25px">
-              <Table.Cell pl={1} width="80px">
-                Amount:
-              </Table.Cell>
-              <Table.Cell>
-                <NumberInput
-                  minValue={1}
-                  maxValue={100}
-                  step={1}
-                  value={amount}
-                  onChange={(value) => setAmount(value)}
-                  width="100%"
-                />
-              </Table.Cell>
-            </Table.Row>
-            <Table.Row className="candystripe" lineHeight="25px">
-              <Table.Cell pl={1} width="80px">
-                Direction:
-              </Table.Cell>
+            <Table.Row className="candystripe" lineHeight="26px">
+              <Table.Cell pl={1}>Amnt.:</Table.Cell>
               <Table.Cell>
                 <Stack>
+                  <Stack.Item>
+                    <NumberInput
+                      width="45px"
+                      minValue={1}
+                      maxValue={100}
+                      step={1}
+                      value={amount}
+                      onChange={(value) => setAmount(value)}
+                    />
+                  </Stack.Item>
+                  <Stack.Item>Dir:</Stack.Item>
                   <Stack.Item>
                     <Button
                       icon={directionIcons[[1, 2, 4, 8][direction]]}
@@ -167,11 +162,9 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                 </Stack>
               </Table.Cell>
             </Table.Row>
-            <Table.Row className="candystripe" lineHeight="25px">
-              <Table.Cell pl={1} width="80px">
-                Offset:
-              </Table.Cell>
-              <Table.Cell>
+            <Table.Row className="candystripe" lineHeight="26px">
+              <Table.Cell pl={1}>Offset:</Table.Cell>
+              <Table.Cell width="1200px">
                 <Stack>
                   <Stack.Item>
                     <Button
@@ -202,7 +195,7 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                 </Stack>
               </Table.Cell>
             </Table.Row>
-            <Table.Row className="candystripe" lineHeight="25px">
+            <Table.Row className="candystripe" lineHeight="26px">
               <Table.Cell pl={1} width="80px">
                 Name:
               </Table.Cell>
@@ -218,25 +211,33 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
           </Table>
         </Stack.Item>
         <Stack.Item grow>
-          <Stack vertical fill>
-            <Stack.Item grow>
-              <Button
-                onClick={handleSpawn}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  textAlign: 'center',
-                  fontSize: '20px',
-                  alignContent: 'center',
-                }}
-                icon={spawnLocationIcons[spawnLocation]}
-                selected={isTargetMode && isPreciseModeActive}
-              >
-                SPAWN
-              </Button>
-            </Stack.Item>
+          <Stack fill>
             <Stack.Item>
-              <Stack>
+              <Stack vertical>
+                <Stack.Item>
+                  <Button
+                    icon="gear"
+                    style={{
+                      height: '22px',
+                      width: '22px',
+                      lineHeight: '22px',
+                    }}
+                    tooltip="Advanced settings"
+                    tooltipPosition="top"
+                  />
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon="trash"
+                    style={{
+                      height: '22px',
+                      width: '22px',
+                      lineHeight: '22px',
+                    }}
+                    tooltip="Reset advanced settings"
+                    tooltipPosition="top"
+                  />
+                </Stack.Item>
                 <Stack.Item>
                   <Button
                     style={{
@@ -247,14 +248,44 @@ export function CreateObjectSettings(props: CreateObjectSettingsProps) {
                     icon="eye-dropper"
                     onClick={() => {
                       act('toggle-precise-mode', {
-                        newPreciseType: isMarkModeActive ? 'Off' : 'Mark',
+                        newPreciseType:
+                          isMarkModeActive || isCopyModeActive
+                            ? 'Off'
+                            : spawnLocation === 'At a marked object'
+                              ? 'Mark'
+                              : 'Copy',
                       });
                     }}
-                    disabled={spawnLocation !== 'At a marked object'}
-                    selected={isMarkModeActive}
+                    selected={isMarkModeActive || isCopyModeActive}
+                    tooltip={
+                      spawnLocation === 'At a marked object'
+                        ? 'Mark atom'
+                        : 'Copy atom path'
+                    }
+                    tooltipPosition="top"
                   />
                 </Stack.Item>
+              </Stack>
+            </Stack.Item>
+            <Stack.Item grow>
+              <Stack vertical fill>
                 <Stack.Item grow>
+                  <Button
+                    onClick={handleSpawn}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      textAlign: 'center',
+                      fontSize: '20px',
+                      alignContent: 'center',
+                    }}
+                    icon={spawnLocationIcons[spawnLocation]}
+                    selected={isTargetMode && isPreciseModeActive}
+                  >
+                    SPAWN
+                  </Button>
+                </Stack.Item>
+                <Stack.Item>
                   <Dropdown
                     options={spawnLocationOptions}
                     onSelected={(value) => {

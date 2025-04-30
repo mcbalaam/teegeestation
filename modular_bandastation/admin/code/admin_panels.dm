@@ -10,6 +10,7 @@
 #define PRECISE_MODE_OFF "Off"
 #define PRECISE_MODE_TARGET "Target"
 #define PRECISE_MODE_MARK "Mark"
+#define PRECISE_MODE_COPY "Copy"
 
 #define OFFSET_ABSOLUTE "Absolute offset"
 #define OFFSET_RELATIVE "Relative offset"
@@ -43,6 +44,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	var/selected_object_icon_state = null
 	var/object_count = 1
 	var/object_name
+	var/object_desc
 	var/dir = 1
 	var/offset = ""
 	var/offset_type = "relative"
@@ -110,7 +112,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	admin_client.mouse_override_icon = null
 	admin_client.click_intercept = null
 
-	if (precise_mode == PRECISE_MODE_TARGET || precise_mode == PRECISE_MODE_MARK)
+	if (precise_mode != PRECISE_MODE_OFF)
 		admin_client.mouse_up_icon = 'icons/effects/mouse_pointers/supplypod_pickturf.dmi'
 		admin_client.mouse_down_icon = 'icons/effects/mouse_pointers/supplypod_pickturf_down.dmi'
 		admin_client.mouse_override_icon = admin_client.mouse_up_icon
@@ -152,9 +154,13 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 					"offset" = "0,0,0",
 					"object_dir" = dir,
 					"object_name" = object_name,
+					"object_desc" = object_desc,
 					"offset_type" = OFFSET_ABSOLUTE,
 					"object_where" = where_dropdown_value,
-					"object_reference" = target
+					"object_reference" = target,
+					"object_icon" = null,
+					"object_icon_state" = null,
+					"object_icon_size" = null
 				)
 
 				if(where_dropdown_value == WHERE_TARGETED_LOCATION || where_dropdown_value == WHERE_TARGETED_LOCATION_POD)
@@ -170,6 +176,12 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 				toggle_precise_mode(PRECISE_MODE_OFF)
 				SStgui.update_uis(src)
 
+			if(PRECISE_MODE_COPY)
+				var/copied_type = target.type
+				to_chat(usr, span_notice("Picked object: [icon2html(target, usr)] [span_bold("[target]")]"))
+				selected_object = "[copied_type]"
+				toggle_precise_mode(PRECISE_MODE_OFF)
+
 		return TRUE
 
 /datum/admins/gamepanel/ui_data(mob/user)
@@ -177,6 +189,7 @@ ADMIN_VERB(game_panel, R_ADMIN, "Spawn Panel", "Opens Spawn Panel (TGUI).", ADMI
 	data["icon"] = selected_object_icon
 	data["iconState"] = selected_object_icon_state
 	data["precise_mode"] = precise_mode
+	data["selected_object"] = selected_object
 	return data;
 
 /datum/admins/gamepanel/ui_assets(mob/user)
