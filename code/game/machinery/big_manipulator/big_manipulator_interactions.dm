@@ -2,9 +2,6 @@
 
 /// Calculates the next interaction point the manipulator should transfer the item to.
 /obj/machinery/big_manipulator/proc/find_next_point(tasking_type, transfer_type)
-	if(!length(pickup_points) || !length(dropoff_points))
-		return NONE
-
 	if(!tasking_type)
 		tasking_type = TASKING_PREFER_FIRST
 
@@ -12,6 +9,9 @@
 		return NONE
 
 	var/list/interaction_points = transfer_type == TRANSFER_TYPE_DROPOFF ? dropoff_points : pickup_points
+	if(!length(interaction_points))
+		return NONE
+
 	var/roundrobin_history = transfer_type == TRANSFER_TYPE_DROPOFF ? roundrobin_history_dropoff : roundrobin_history_pickup
 
 	switch(tasking_type)
