@@ -179,6 +179,7 @@ GLOBAL_VAR_INIT(disposals_animals_spawned, 0)
 /obj/machinery/disposal/proc/place_item_in_disposal(obj/item/disposing_item, mob/user)
 	if(!user.transferItemToLoc(disposing_item, newloc = src))
 		return FALSE
+
 	user.visible_message(
 		span_notice("[user.name] places \the [disposing_item] into \the [src]."),
 		span_notice("You place \the [disposing_item] into \the [src]."),
@@ -747,6 +748,24 @@ GLOBAL_VAR_INIT(disposals_animals_spawned, 0)
 
 /obj/vehicle/sealed/mecha/CanEnterDisposals()
 	return
+
+/obj/machinery/disposal/bin/wallmount
+	name = "wallmount disposal bin"
+	desc = "A pneumatic waste disposal unit. This one seems to have a smaller trunk."
+
+/obj/machinery/disposal/bin/wallmount/place_item_in_disposal(obj/item/disposing_item, mob/user)
+	if(disposing_item.w_class > WEIGHT_CLASS_NORMAL)
+		to_chat(user, span_alert("This won't fit!"))
+		return FALSE
+
+	..()
+
+/obj/machinery/disposal/bin/wallmount/stuff_mob_in(mob/living/target, mob/living/user)
+	if(target.mob_size > MOB_SIZE_TINY)
+		to_chat(user, span_alert("This won't fit!"))
+		return FALSE
+
+	..()
 
 #undef SEND_PRESSURE
 #undef CONTAINS_ANIMAL_CHANCE
