@@ -9,7 +9,7 @@ import {
   Stack,
   Table,
 } from 'tgui-core/components';
-import { BooleanLike } from 'tgui-core/react';
+import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
@@ -19,6 +19,9 @@ type ManipulatorData = {
   interaction_delay: number;
   worker_interaction: string;
   highest_priority: BooleanLike;
+  worker_combat_mode: BooleanLike;
+  worker_alt_mode: BooleanLike;
+  has_worker: BooleanLike;
   interaction_mode: string;
   settings_list: PrioritySettings[];
   throw_range: number;
@@ -75,7 +78,7 @@ const MasterControls = () => {
           minValue={min_delay}
           maxValue={max_delay}
           unit="sec."
-          onDrag={(e, value) =>
+          onChange={(e, value) =>
             act('changeDelay', {
               new_delay: value,
             })
@@ -456,7 +459,10 @@ export const BigManipulator = () => {
     active,
     interaction_mode,
     settings_list,
+    has_worker,
     worker_interaction,
+    worker_combat_mode,
+    worker_alt_mode,
     highest_priority,
     throw_range,
     item_as_filter,
@@ -488,6 +494,38 @@ export const BigManipulator = () => {
   }, [current_task_type]); // Dependency on task type
 
   return (
+    <Window title="Manipulator Interface" width={320} height={410}>
+      <Window.Content>
+        <Section
+          title="Action Panel"
+          buttons={
+            <>
+              <Button
+                icon="power-off"
+                selected={active}
+                onClick={() => act('on')}
+              >
+                {active ? 'On' : 'Off'}
+              </Button>
+              <Button
+                tooltip="Eject the monkey worker."
+                disabled={!has_worker}
+                onClick={() => act('eject_worker')}
+              >
+                {has_worker ? 'Eject monkey' : 'No monkey worker'}
+              </Button>
+            </>
+          }
+        >
+          <Box
+            style={{
+              lineHeight: '1.8em',
+              marginBottom: '-5px',
+            }}
+          >
+            <MasterControls />
+          </Box>
+        </Section>
     <Window title="Manipulator Interface" width={420} height={610}>
       <Window.Content overflowY="auto">
         <Box
@@ -520,6 +558,64 @@ export const BigManipulator = () => {
             </Box>
           </Section>
 
+        <Section title="Configuration">
+          <Table>
+            <ConfigRow
+              label="Interaction Mode"
+              content={interaction_mode.toUpperCase()}
+              onClick={() => act('change_mode')}
+              tooltip="Cycle through interaction modes"
+            />
+
+            {interaction_mode === 'throw' && (
+              <ConfigRow
+                label="Throwing Range"
+                content={`${throw_range} TILE${throw_range > 1 ? 'S' : ''}`}
+                onClick={() => act('change_throw_range')}
+                tooltip="Cycle the distance an object will travel when thrown"
+              />
+            )}
+
+            <ConfigRow
+              label="Interaction Filter"
+              content={selected_type.toUpperCase()}
+              onClick={() => act('change_take_item_type')}
+              tooltip="Cycle through types of items to filter"
+            />
+            {interaction_mode === 'use' && (
+              <ConfigRow
+                label="Worker Interactions"
+                content={worker_interaction.toUpperCase()}
+                onClick={() => act('worker_interaction_change')}
+                tooltip={
+                  worker_interaction === 'normal'
+                    ? 'Interact using the held item'
+                    : worker_interaction === 'single'
+                      ? 'Drop the item after a single cycle'
+                      : 'Interact with an empty hand'
+                }
+              />
+            )}
+            <ConfigRow
+              label="Item Filter"
+              content={item_as_filter ? item_as_filter : 'NONE'}
+              onClick={() => act('add_filter')}
+              tooltip="Click while holding an item to set filtering type"
+            />
+
+            {interaction_mode !== 'throw' && (
+              <ConfigRow
+                label="Override List Priority"
+                content={highest_priority ? 'TRUE' : 'FALSE'}
+                onClick={() => act('highest_priority_change')}
+                tooltip="Only interact with the highest dropoff point in the list"
+                selected={!!highest_priority}
+              />
+            )}
+          </Table>
+        </Section>
+
+        {interaction_mode !== 'throw' && (
           <Section>
             <ProgressBar
               value={progressValue}
