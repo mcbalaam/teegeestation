@@ -494,38 +494,6 @@ export const BigManipulator = () => {
   }, [current_task_type]); // Dependency on task type
 
   return (
-    <Window title="Manipulator Interface" width={320} height={410}>
-      <Window.Content>
-        <Section
-          title="Action Panel"
-          buttons={
-            <>
-              <Button
-                icon="power-off"
-                selected={active}
-                onClick={() => act('on')}
-              >
-                {active ? 'On' : 'Off'}
-              </Button>
-              <Button
-                tooltip="Eject the monkey worker."
-                disabled={!has_worker}
-                onClick={() => act('eject_worker')}
-              >
-                {has_worker ? 'Eject monkey' : 'No monkey worker'}
-              </Button>
-            </>
-          }
-        >
-          <Box
-            style={{
-              lineHeight: '1.8em',
-              marginBottom: '-5px',
-            }}
-          >
-            <MasterControls />
-          </Box>
-        </Section>
     <Window title="Manipulator Interface" width={420} height={610}>
       <Window.Content overflowY="auto">
         <Box
@@ -558,95 +526,100 @@ export const BigManipulator = () => {
             </Box>
           </Section>
 
-        <Section title="Configuration">
-          <Table>
-            <ConfigRow
-              label="Interaction Mode"
-              content={interaction_mode.toUpperCase()}
-              onClick={() => act('change_mode')}
-              tooltip="Cycle through interaction modes"
-            />
-
-            {interaction_mode === 'throw' && (
+          <Section title="Configuration">
+            <Table>
               <ConfigRow
-                label="Throwing Range"
-                content={`${throw_range} TILE${throw_range > 1 ? 'S' : ''}`}
-                onClick={() => act('change_throw_range')}
-                tooltip="Cycle the distance an object will travel when thrown"
+                label="Interaction Mode"
+                content={interaction_mode.toUpperCase()}
+                onClick={() => act('change_mode')}
+                tooltip="Cycle through interaction modes"
               />
-            )}
 
-            <ConfigRow
-              label="Interaction Filter"
-              content={selected_type.toUpperCase()}
-              onClick={() => act('change_take_item_type')}
-              tooltip="Cycle through types of items to filter"
-            />
-            {interaction_mode === 'use' && (
+              {interaction_mode === 'throw' && (
+                <ConfigRow
+                  label="Throwing Range"
+                  content={`${throw_range} TILE${throw_range > 1 ? 'S' : ''}`}
+                  onClick={() => act('change_throw_range')}
+                  tooltip="Cycle the distance an object will travel when thrown"
+                />
+              )}
+
               <ConfigRow
-                label="Worker Interactions"
-                content={worker_interaction.toUpperCase()}
-                onClick={() => act('worker_interaction_change')}
-                tooltip={
-                  worker_interaction === 'normal'
-                    ? 'Interact using the held item'
-                    : worker_interaction === 'single'
-                      ? 'Drop the item after a single cycle'
-                      : 'Interact with an empty hand'
-                }
+                label="Interaction Filter"
+                content={selected_type.toUpperCase()}
+                onClick={() => act('change_take_item_type')}
+                tooltip="Cycle through types of items to filter"
               />
-            )}
-            <ConfigRow
-              label="Item Filter"
-              content={item_as_filter ? item_as_filter : 'NONE'}
-              onClick={() => act('add_filter')}
-              tooltip="Click while holding an item to set filtering type"
-            />
-
-            {interaction_mode !== 'throw' && (
+              {interaction_mode === 'use' && (
+                <ConfigRow
+                  label="Worker Interactions"
+                  content={worker_interaction.toUpperCase()}
+                  onClick={() => act('worker_interaction_change')}
+                  tooltip={
+                    worker_interaction === 'normal'
+                      ? 'Interact using the held item'
+                      : worker_interaction === 'single'
+                        ? 'Drop the item after a single cycle'
+                        : 'Interact with an empty hand'
+                  }
+                />
+              )}
               <ConfigRow
-                label="Override List Priority"
-                content={highest_priority ? 'TRUE' : 'FALSE'}
-                onClick={() => act('highest_priority_change')}
-                tooltip="Only interact with the highest dropoff point in the list"
-                selected={!!highest_priority}
+                label="Item Filter"
+                content={item_as_filter ? item_as_filter : 'NONE'}
+                onClick={() => act('add_filter')}
+                tooltip="Click while holding an item to set filtering type"
               />
-            )}
-          </Table>
-        </Section>
 
-        {interaction_mode !== 'throw' && (
-          <Section>
-            <ProgressBar
-              value={progressValue}
-              maxValue={1}
-              style={{
-                transition:
-                  progressValue === 1
-                    ? `width ${current_task_duration}s linear`
-                    : 'none',
-              }}
-            >
-              <Stack lineHeight="1.8em">
-                <Stack.Item ml="-2px">Current task:</Stack.Item>
-                <Stack.Item grow>{current_task_type.toUpperCase()}</Stack.Item>
-              </Stack>
-            </ProgressBar>
+              {interaction_mode !== 'throw' && (
+                <ConfigRow
+                  label="Override List Priority"
+                  content={highest_priority ? 'TRUE' : 'FALSE'}
+                  onClick={() => act('highest_priority_change')}
+                  tooltip="Only interact with the highest dropoff point in the list"
+                  selected={!!highest_priority}
+                />
+              )}
+            </Table>
           </Section>
 
-          <PointSection
-            title="Pickup Points"
-            points={pickup_points}
-            onAdd={() => act('create_pickup_point')}
-            act={act}
-          />
+          {interaction_mode !== 'throw' && (
+            <>
+              <Section>
+                <ProgressBar
+                  value={progressValue}
+                  maxValue={1}
+                  style={{
+                    transition:
+                      progressValue === 1
+                        ? `width ${current_task_duration}s linear`
+                        : 'none',
+                  }}
+                >
+                  <Stack lineHeight="1.8em">
+                    <Stack.Item ml="-2px">Current task:</Stack.Item>
+                    <Stack.Item grow>
+                      {current_task_type.toUpperCase()}
+                    </Stack.Item>
+                  </Stack>
+                </ProgressBar>
+              </Section>
 
-          <PointSection
-            title="Dropoff Points"
-            points={dropoff_points}
-            onAdd={() => act('create_dropoff_point')}
-            act={act}
-          />
+              <PointSection
+                title="Pickup Points"
+                points={pickup_points}
+                onAdd={() => act('create_pickup_point')}
+                act={act}
+              />
+
+              <PointSection
+                title="Dropoff Points"
+                points={dropoff_points}
+                onAdd={() => act('create_dropoff_point')}
+                act={act}
+              />
+            </>
+          )}
         </Box>
       </Window.Content>
     </Window>
