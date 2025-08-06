@@ -475,6 +475,18 @@ GLOBAL_VAR_INIT(disposals_animals_spawned, 0)
 
 /obj/machinery/disposal/bin/attack_hand_secondary(mob/user, list/modifiers)
 	. = ..()
+	to_chat(user, span_notice("You pull the lever on the [src]."))
+	playsound(src, 'sound/machines/click.ogg', 30)
+
+	if(machine_stat & BROKEN)
+		return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
+
+	flush = TRUE
+	update_appearance()
+	return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
+
+/obj/machinery/disposal/bin/click_alt(mob/user)
+	. = ..()
 	if(!mounted_tagger)
 		balloon_alert(user, "no destination tagger!")
 		return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
@@ -494,7 +506,7 @@ GLOBAL_VAR_INIT(disposals_animals_spawned, 0)
 	if(isnull(mounted_tagger))
 		. += span_notice("The destination tagger mount is empty.")
 	else
-		. += span_notice("\The [mounted_tagger] is hanging on the side. Right Click to remove.")
+		. += span_notice("\The [mounted_tagger] is hanging on the side.")
 
 /obj/machinery/disposal/bin/Destroy()
 	if(!isnull(mounted_tagger))
@@ -749,9 +761,12 @@ GLOBAL_VAR_INIT(disposals_animals_spawned, 0)
 /obj/vehicle/sealed/mecha/CanEnterDisposals()
 	return
 
+// Wallmount disposal bins. Passthrough, but smaller, which means you can't put large stuff in
+
 /obj/machinery/disposal/bin/wallmount
 	name = "wallmount disposal bin"
 	desc = "A pneumatic waste disposal unit. This one seems to have a smaller trunk."
+	icon_state = "disposal_wall"
 
 /obj/machinery/disposal/bin/wallmount/place_item_in_disposal(obj/item/disposing_item, mob/user)
 	if(disposing_item.w_class > WEIGHT_CLASS_NORMAL)
@@ -766,6 +781,10 @@ GLOBAL_VAR_INIT(disposals_animals_spawned, 0)
 		return FALSE
 
 	..()
+
+/obj/machinery/disposal/bin/wallmount/stuff_bodybag_in(obj/structure/closet/body_bag/bag, mob/living/user)
+	to_chat(user, span_alert("This won't fit!"))
+	return FALSE
 
 #undef SEND_PRESSURE
 #undef CONTAINS_ANIMAL_CHANCE
