@@ -5,7 +5,6 @@
 	icon_state = "secbot"
 	light_color = "#f56275"
 	light_power = 0.8
-	gender = MALE
 	density = FALSE
 	anchored = FALSE
 	health = 25
@@ -270,7 +269,7 @@
 
 	return ..()
 
-/mob/living/simple_animal/bot/secbot/attackby(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
+/mob/living/simple_animal/bot/secbot/attackby(obj/item/attacking_item, mob/living/user, params)
 	..()
 	if(!(bot_mode_flags & BOT_MODE_ON)) // Bots won't remember if you hit them while they're off.
 		return
@@ -327,7 +326,7 @@
 /mob/living/simple_animal/bot/secbot/hitby(atom/movable/hitting_atom, skipcatch = FALSE, hitpush = TRUE, blocked = FALSE, datum/thrownthing/throwingdatum)
 	if(isitem(hitting_atom))
 		var/obj/item/item_hitby = hitting_atom
-		var/mob/thrown_by = throwingdatum?.get_thrower()
+		var/mob/thrown_by = item_hitby.thrownby?.resolve()
 		if(item_hitby.throwforce < src.health && thrown_by && ishuman(thrown_by))
 			var/mob/living/carbon/human/human_throwee = thrown_by
 			retaliate(human_throwee)
@@ -551,7 +550,7 @@
 			new /obj/item/assembly/prox_sensor(Tsec)
 			drop_part(baton_type, Tsec)
 
-	new /obj/effect/decal/cleanable/blood/oil(loc)
+	new /obj/effect/decal/cleanable/oil(loc)
 	return ..()
 
 /mob/living/simple_animal/bot/secbot/attack_alien(mob/living/carbon/alien/user, list/modifiers)

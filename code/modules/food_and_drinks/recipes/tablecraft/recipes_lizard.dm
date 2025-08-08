@@ -32,6 +32,7 @@
 	blacklist = list(
 		/obj/item/organ/lungs/cybernetic,
 	)
+
 	result = /obj/item/food/shredded_lungs
 	added_foodtypes = MEAT|GORE
 	category = CAT_LIZARD
@@ -374,7 +375,6 @@
 	)
 	result = /obj/item/food/honey_roll
 	category = CAT_LIZARD
-	crafting_flags = CRAFT_CLEARS_REAGENTS
 
 /datum/crafting_recipe/food/black_eggs
 	name = "Black scrambled eggs"

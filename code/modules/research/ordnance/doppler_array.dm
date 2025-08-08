@@ -48,7 +48,7 @@
 	. = ..()
 	. += span_notice("It is currently facing [dir2text(dir)]")
 
-/obj/machinery/doppler_array/attackby(obj/item/item, mob/user, list/modifiers, list/attack_modifiers)
+/obj/machinery/doppler_array/attackby(obj/item/item, mob/user, params)
 	if(istype(item, /obj/item/computer_disk))
 		var/obj/item/computer_disk/disk = item
 		eject_disk(user)
@@ -207,10 +207,10 @@
 /obj/machinery/doppler_array/proc/eject_disk(mob/user)
 	if(!inserted_disk)
 		return FALSE
-	if(!user || !Adjacent(user))
-		inserted_disk.forceMove(drop_location())
-	else
+	if(user)
 		user.put_in_hands(inserted_disk)
+	else
+		inserted_disk.forceMove(drop_location())
 	playsound(src, 'sound/machines/card_slide.ogg', 50)
 	return TRUE
 

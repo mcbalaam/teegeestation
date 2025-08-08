@@ -23,10 +23,12 @@
 		return FALSE
 	if(!istype(export, /obj/item/reagent_containers || !export.reagents || !export.reagents.reagent_list))
 		return FALSE
-	for(var/datum/reagent/reagent as anything in export.reagents.reagent_list)
-		for(var/datum/disease/advance/virus in reagent.data?["viruses"])
-			if(accepts_virus(virus))
-				return TRUE
+	var/datum/reagent/blood/blud = locate() in export.reagents.reagent_list
+	if(!blud)
+		return FALSE
+	for(var/datum/disease/advance/virus in blud.get_diseases())
+		if(accepts_virus(virus))
+			return TRUE
 	return FALSE
 
 /datum/bounty/virus/ship(obj/export)

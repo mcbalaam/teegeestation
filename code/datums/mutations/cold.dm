@@ -1,4 +1,4 @@
-/datum/mutation/geladikinesis
+/datum/mutation/human/geladikinesis
 	name = "Geladikinesis"
 	desc = "Allows the user to concentrate moisture and sub-zero forces into snow."
 	quality = POSITIVE
@@ -20,7 +20,7 @@
 	delete_old = FALSE
 	delete_on_failure = FALSE
 
-/datum/mutation/cryokinesis
+/datum/mutation/human/cryokinesis
 	name = "Cryokinesis"
 	desc = "Draws negative energy from the sub-zero void to freeze surrounding temperatures at subject's will."
 	quality = POSITIVE //upsides and downsides

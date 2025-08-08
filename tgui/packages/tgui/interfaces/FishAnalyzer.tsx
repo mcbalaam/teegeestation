@@ -10,7 +10,7 @@ import {
   Section,
   Stack,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 import { createSearch } from 'tgui-core/string';
 
 import { useBackend } from '../backend';
@@ -84,10 +84,14 @@ export const FishAnalyzer = (props) => {
                   autoFocus
                   position="relative"
                   mt={0.5}
+                  bottom="5%"
                   height="20px"
+                  width="150px"
                   placeholder="Search Fish..."
                   value={searchText}
-                  onChange={setSearchText}
+                  onInput={(e, value) => {
+                    setSearchText(value);
+                  }}
                   fluid
                 />
               </Section>

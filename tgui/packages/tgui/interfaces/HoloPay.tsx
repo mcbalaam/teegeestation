@@ -134,7 +134,7 @@ const TerminalDisplay = (props) => {
               content={
                 <>
                   <Icon name="coins" />
-                  Pay {`${force_fee} cr`}
+                  Pay {force_fee + ' cr'}
                 </>
               }
               disabled={cannot_pay}
@@ -174,8 +174,6 @@ const SetupDisplay = (props) => {
   const { available_logos = [], force_fee, max_fee, name, shop_logo } = data;
   const { onClick } = props;
 
-  const [isValid, setIsValid] = useState(true);
-
   return (
     <Section
       buttons={
@@ -213,7 +211,7 @@ const SetupDisplay = (props) => {
             fluid
             height="3rem"
             maxLength={42}
-            onBlur={(value) => {
+            onChange={(_, value) => {
               value?.length > 3 && act('rename', { name: value });
             }}
             placeholder={decodeHtmlEntities(name)}
@@ -227,8 +225,7 @@ const SetupDisplay = (props) => {
             <RestrictedInput
               fluid
               maxValue={max_fee}
-              onEnter={(value) => isValid && act('fee', { amount: value })}
-              onValidationChange={setIsValid}
+              onChange={(_, value) => act('fee', { amount: value })}
               value={force_fee}
             />
           </Tooltip>

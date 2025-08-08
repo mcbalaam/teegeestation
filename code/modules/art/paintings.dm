@@ -15,11 +15,12 @@
 	var/obj/item/canvas/painting = null
 
 //Adding canvases
-/obj/structure/easel/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
+/obj/structure/easel/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/canvas))
 		var/obj/item/canvas/canvas = I
-		user.transfer_item_to_turf(canvas, get_turf(src), silent = FALSE)
+		user.dropItemToGround(canvas)
 		painting = canvas
+		canvas.forceMove(get_turf(src))
 		canvas.layer = layer+0.1
 		user.visible_message(span_notice("[user] puts \the [canvas] on \the [src]."),span_notice("You place \the [canvas] on \the [src]."))
 	else
@@ -134,7 +135,7 @@
 		ui = new(user, src, "Canvas", name)
 		ui.open()
 
-/obj/item/canvas/attackby(obj/item/I, mob/living/user, list/modifiers, list/attack_modifiers)
+/obj/item/canvas/attackby(obj/item/I, mob/living/user, params)
 	if(!user.combat_mode)
 		ui_interact(user)
 	else
@@ -175,9 +176,8 @@
 	if(.)
 		return
 	var/mob/user = usr
-	//this is here to allow observers and viewers to zoom in and out regardless of adjacency.
-	//observers need this special check because we allow them to operate the UI in ui_state
-	if((action != "zoom_in" && action != "zoom_out") && (isobserver(user) || !can_interact(user)))
+	///this is here to allow observers and viewers to zoom in and out regardless of adjacency.
+	if(action != "zoom_in" && action != "zoom_out" && !can_interact(user))
 		return
 	switch(action)
 		if("paint", "fill")
@@ -411,7 +411,7 @@
 	else if(istype(painting_implement, /obj/item/pen))
 		var/obj/item/pen/pen = painting_implement
 		return pen.colour
-	else if(istype(painting_implement, /obj/item/soap) || istype(painting_implement, /obj/item/rag))
+	else if(istype(painting_implement, /obj/item/soap) || istype(painting_implement, /obj/item/reagent_containers/cup/rag))
 		return canvas_color
 
 /// Generates medium description
@@ -426,7 +426,7 @@
 		return "Crayon on canvas"
 	else if(istype(painting_implement, /obj/item/pen))
 		return "Ink on canvas"
-	else if(istype(painting_implement, /obj/item/soap) || istype(painting_implement, /obj/item/rag))
+	else if(istype(painting_implement, /obj/item/soap) || istype(painting_implement, /obj/item/reagent_containers/cup/rag))
 		return //These are just for cleaning, ignore them
 	else
 		return "Unknown medium"
@@ -706,9 +706,6 @@
 	/// the type of wallframe it 'disassembles' into
 	var/wallframe_type = /obj/item/wallframe/painting
 
-/obj/structure/sign/painting/get_save_vars()
-	return ..() - NAMEOF(src, icon)
-
 /obj/structure/sign/painting/Initialize(mapload, dir, building)
 	. = ..()
 	SSpersistent_paintings.painting_frames += src
@@ -719,7 +716,7 @@
 	. = ..()
 	SSpersistent_paintings.painting_frames -= src
 
-/obj/structure/sign/painting/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
+/obj/structure/sign/painting/attackby(obj/item/I, mob/user, params)
 	if(!current_canvas && istype(I, /obj/item/canvas))
 		frame_canvas(user,I)
 	else if(current_canvas && current_canvas.painting_metadata.title == initial(current_canvas.painting_metadata.title) && istype(I,/obj/item/pen))

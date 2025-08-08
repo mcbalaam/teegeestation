@@ -58,7 +58,7 @@
 			context[SCREENTIP_CONTEXT_RMB] = "Rotate"
 	return CONTEXTUAL_SCREENTIP_SET
 
-/obj/machinery/atmospherics/components/binary/crystallizer/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
+/obj/machinery/atmospherics/components/binary/crystallizer/attackby(obj/item/I, mob/user, params)
 	if(!on)
 		if(default_deconstruction_screwdriver(user, "[base_icon_state]-open", "[base_icon_state]-off", I))
 			return
@@ -93,9 +93,10 @@
 	if(panel_open)
 		balloon_alert(user, "close panel!")
 		return CLICK_ACTION_BLOCKING
-	set_on(!on)
+	on = !on
 	balloon_alert(user, "turned [on ? "on" : "off"]")
 	investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+	update_icon()
 	return CLICK_ACTION_SUCCESS
 
 ///Checks if the reaction temperature is inside the range of temperature + a little deviation
@@ -304,7 +305,7 @@
 		return
 	switch(action)
 		if("power")
-			set_on(!on)
+			on = !on
 			investigate_log("was turned [on ? "on" : "off"] by [key_name(usr)]", INVESTIGATE_ATMOS)
 			. = TRUE
 		if("recipe")

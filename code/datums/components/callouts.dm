@@ -61,10 +61,7 @@
 /datum/component/callouts/proc/on_ctrl_click(datum/source, mob/living/user)
 	SIGNAL_HANDLER
 
-	if (!isitem(parent))
-		return
-
-	if (user.incapacitated)
+	if(!isitem(parent))
 		return
 
 	var/obj/item/item_parent = parent
@@ -97,9 +94,6 @@
 	SIGNAL_HANDLER
 
 	if (!LAZYACCESS(modifiers, SHIFT_CLICK) || !LAZYACCESS(modifiers, MIDDLE_CLICK))
-		return
-
-	if (user.incapacitated)
 		return
 
 	if (!active)

@@ -1,5 +1,4 @@
-import { sortBy } from 'es-toolkit';
-import { map } from 'es-toolkit/compat';
+import { map, sortBy } from 'common/collections';
 import {
   Box,
   Button,
@@ -77,7 +76,7 @@ const SearchAndDisplay = (props) => {
       // Generate a unique id
       key: i,
     })),
-    [(record) => record.key],
+    (record) => record.key,
   );
   return (
     <Section>
@@ -90,7 +89,7 @@ const SearchAndDisplay = (props) => {
                 placeholder={book_id === null ? 'ID' : book_id}
                 mt={0.5}
                 width="70px"
-                onBlur={(value) =>
+                onChange={(e, value) =>
                   act('set_search_id', {
                     id: value,
                   })
@@ -113,7 +112,7 @@ const SearchAndDisplay = (props) => {
                 value={title}
                 placeholder={title || 'Title'}
                 mt={0.5}
-                onBlur={(value) =>
+                onChange={(e, value) =>
                   act('set_search_title', {
                     title: value,
                   })
@@ -125,7 +124,7 @@ const SearchAndDisplay = (props) => {
                 value={author}
                 placeholder={author || 'Author'}
                 mt={0.5}
-                onBlur={(value) =>
+                onChange={(e, value) =>
                   act('set_search_author', {
                     author: value,
                   })

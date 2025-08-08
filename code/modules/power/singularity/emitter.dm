@@ -62,6 +62,7 @@
 	. = ..()
 	//Add to the early process queue to prioritize power draw
 	SSmachines.processing_early += src
+	RefreshParts()
 	set_wires(new /datum/wires/emitter(src))
 	if(welded)
 		if(!anchored)
@@ -334,7 +335,7 @@
 	locked = !locked
 	to_chat(user, span_notice("You [src.locked ? "lock" : "unlock"] the controls."))
 
-/obj/machinery/power/emitter/attackby(obj/item/item, mob/user, list/modifiers, list/attack_modifiers)
+/obj/machinery/power/emitter/attackby(obj/item/item, mob/user, params)
 	if(item.GetID())
 		togglelock(user)
 		return
@@ -352,9 +353,6 @@
 	if(!istype(energy_gun, /obj/item/gun/energy))
 		return
 	if(!user.transferItemToLoc(energy_gun, src))
-		return
-	if(energy_gun.gun_flags & TURRET_INCOMPATIBLE)
-		user.balloon_alert(user, "[energy_gun] won't fit!")
 		return
 	gun = energy_gun
 	gun_properties = gun.get_turret_properties()

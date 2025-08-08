@@ -13,7 +13,7 @@ import {
   Stack,
 } from 'tgui-core/components';
 
-import type { LibraryConsoleData } from '../types';
+import { LibraryConsoleData } from '../types';
 import { useLibraryContext } from '../useLibraryContext';
 
 export function Upload(props) {
@@ -72,7 +72,7 @@ export function Upload(props) {
                     placeholder={cache_title || 'Title'}
                     mt={0.5}
                     width={22}
-                    onBlur={(value) =>
+                    onChange={(e, value) =>
                       act('set_cache_title', {
                         title: value,
                       })
@@ -90,7 +90,7 @@ export function Upload(props) {
                     value={cache_author}
                     placeholder={cache_author || 'Author'}
                     mt={0.5}
-                    onBlur={(value) =>
+                    onChange={(e, value) =>
                       act('set_cache_author', {
                         author: value,
                       })

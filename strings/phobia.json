@@ -506,7 +506,12 @@
 		"web"
 	],
 
-	"strangers": ["as (unknown)", "unidentified", "unknown", "stranger"],
+	"strangers": [
+		"as (unknown)",
+		"unidentified",
+		"unknown",
+		"stranger"
+	],
 
 	"the supernatural": [
 		"cult",

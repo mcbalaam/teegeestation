@@ -10,25 +10,8 @@
 	icon_state = "smokewhite"
 	inhand_icon_state = "smoke"
 	slot_flags = ITEM_SLOT_BELT
-	///List of words we take randomly every time we're examined. It's extremely important to keep this list up to date,
-	///It helps to generate the insightful description of the smokebomb
-	var/static/list/bruh_moment = list(
-		"Dank",
-		"Hip",
-		"Lit",
-		"Based",
-		"Robust",
-		"Bruh",
-		"Gamer",
-		"Sigma",
-		"Blud",
-		"Fanum",
-		"Gyatt",
-		"Looksmaxxing",
-		"Mewing",
-		"Aura",
-		"Crashout",
-	)
+	///It's extremely important to keep this list up to date. It helps to generate the insightful description of the smokebomb
+	var/static/list/bruh_moment = list("Dank", "Hip", "Lit", "Based", "Robust", "Bruh", "Gamer")
 
 ///Here we generate the extremely insightful description.
 /obj/item/grenade/smokebomb/Initialize(mapload)

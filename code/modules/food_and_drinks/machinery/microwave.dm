@@ -552,7 +552,7 @@
 
 	dirty = 0
 	update_appearance()
-	. |= COMPONENT_CLEANED|COMPONENT_CLEANED_GAIN_XP
+	return . || TRUE
 
 /obj/machinery/microwave/proc/eject()
 	var/atom/drop_loc = drop_location()
@@ -612,7 +612,7 @@
 		if(istype(potential_fooditem, /obj/item/modular_computer) && prob(75))
 			pda_failure = TRUE
 			notify_ghosts(
-				"[cooker.real_name] has overheated their PDA!",
+				"[cooker] has overheated their PDA!",
 				source = src,
 				notify_flags = NOTIFY_CATEGORY_NOFLASH,
 				header = "Hunger Games: Catching Fire",

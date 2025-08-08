@@ -5,8 +5,12 @@
 	"starting_qualities": {
 		"Confusion": 0
 	},
-	"required_site_traits": ["in space"],
-	"loot_categories": ["research"],
+	"required_site_traits": [
+		"in space"
+	],
+	"loot_categories": [
+		"research"
+	],
 	"scan_band_mods": {
 		"Exotic Radiation": 10
 	},

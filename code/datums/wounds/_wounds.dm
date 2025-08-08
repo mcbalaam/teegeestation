@@ -190,13 +190,11 @@
 		qdel(src)
 		return FALSE
 
-	if(isatom(wound_source))
-		var/atom/wound_atom = wound_source
-		src.wound_source = wound_atom.name
-	else if(istext(wound_source))
-		src.wound_source = wound_source
+	if(isitem(wound_source))
+		var/obj/item/wound_item = wound_source
+		src.wound_source = wound_item.name
 	else
-		src.wound_source = "Unknown"
+		src.wound_source = wound_source
 
 	set_victim(L.owner)
 	set_limb(L, replacing)

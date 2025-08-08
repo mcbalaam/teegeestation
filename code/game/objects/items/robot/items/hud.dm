@@ -1,21 +1,6 @@
 /obj/item/borg/sight
-	icon = 'icons/obj/clothing/glasses.dmi'
-	///Define to a sight mode that we give to a cyborg while this item is equipped.
 	var/sight_mode = null
-
-/obj/item/borg/sight/equipped(mob/living/silicon/robot/user, slot, initial = FALSE)
-	. = ..()
-	if(!iscyborg(user))
-		return .
-	user.sight_mode |= sight_mode
-	user.update_sight()
-
-/obj/item/borg/sight/dropped(mob/living/silicon/robot/user, silent)
-	if(!iscyborg(user))
-		return ..()
-	user.sight_mode &= ~sight_mode
-	user.update_sight()
-	return ..()
+	icon = 'icons/obj/clothing/glasses.dmi'
 
 /obj/item/borg/sight/xray
 	name = "\proper X-ray vision"

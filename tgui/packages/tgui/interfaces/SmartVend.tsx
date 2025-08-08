@@ -8,7 +8,7 @@ import {
   Section,
   Stack,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 import { createSearch } from 'tgui-core/string';
 
 import { useBackend } from '../backend';
@@ -62,10 +62,9 @@ export const SmartVend = (props) => {
                   <Stack.Item>
                     <Input
                       autoFocus
-                      placeholder="Search..."
+                      placeholder={'Search...'}
                       value={searchText}
-                      onChange={setSearchText}
-                      expensive
+                      onInput={(e, value) => setSearchText(value)}
                     />
                   </Stack.Item>
                   <LayoutToggle state={displayMode} setState={setDisplayMode} />

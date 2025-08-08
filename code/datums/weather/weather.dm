@@ -114,8 +114,8 @@
 	var/turf_iteration = 0
 	/// The weather thunder counter to keep track of how much thunder we have processed so far
 	var/thunder_iteration = 0
-	/// Index of the current section our weather subsystem is processing from our subsystem_tasks
-	var/task_index = 1
+	/// The current section our weather subsystem is processing
+	var/currentpart
 	/// The list of allowed tasks our weather subsystem is allowed to process (determined by weather_flags)
 	var/list/subsystem_tasks = list()
 
@@ -164,6 +164,9 @@
 		subsystem_tasks += SSWEATHER_TURFS
 	if(weather_flags & (WEATHER_THUNDER))
 		subsystem_tasks += SSWEATHER_THUNDER
+
+	if(length(subsystem_tasks))
+		currentpart = subsystem_tasks[1]
 
 	setup_weather_areas()
 	setup_weather_turfs()
@@ -329,21 +332,19 @@
 	if(!(mob_turf.z in impacted_z_levels))
 		return
 
-	if(!(mob_turf.loc in impacted_areas))
+	if((immunity_type && HAS_TRAIT(mob_to_check, immunity_type)) || HAS_TRAIT(mob_to_check, TRAIT_WEATHER_IMMUNE))
 		return
 
-	var/atom/to_check = mob_to_check
-	while(!isturf(to_check))
-		if(recursive_weather_protection_check(to_check))
+	var/atom/loc_to_check = mob_to_check.loc
+	while(loc_to_check != mob_turf)
+		if((immunity_type && HAS_TRAIT(loc_to_check, immunity_type)) || HAS_TRAIT(loc_to_check, TRAIT_WEATHER_IMMUNE))
 			return
-		to_check = to_check.loc
-	return TRUE
+		loc_to_check = loc_to_check.loc
 
-/**
- * Returns TRUE if the atom should protect itself or its contents from weather
- */
-/datum/weather/proc/recursive_weather_protection_check(atom/to_check)
-	return HAS_TRAIT(to_check, TRAIT_WEATHER_IMMUNE) || (immunity_type && HAS_TRAIT(to_check, immunity_type))
+	if(!(get_area(mob_to_check) in impacted_areas))
+		return
+
+	return TRUE
 
 /**
  * Returns TRUE if the turf can be affected by the weather
@@ -428,14 +429,6 @@
 		hit_mob.electrocute_act(50, "thunder", flags = SHOCK_TESLA|SHOCK_NOGLOVES)
 
 	for(var/obj/hit_thing in weather_turf)
-		if(QDELETED(hit_thing)) // stop, it's already dead
-			continue
-		if(!hit_thing.uses_integrity)
-			continue
-		if(hit_thing.invisibility != INVISIBILITY_NONE)
-			continue
-		if(HAS_TRAIT(hit_thing, TRAIT_UNDERFLOOR))
-			continue
 		hit_thing.take_damage(20, BURN, ENERGY, FALSE)
 	playsound(weather_turf, 'sound/effects/magic/lightningbolt.ogg', 100, extrarange = 10, falloff_distance = 10)
 	weather_turf.visible_message(span_danger("A thunderbolt strikes [weather_turf]!"))

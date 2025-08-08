@@ -11,7 +11,7 @@ import { capitalize } from 'tgui-core/string';
 import { useBackend } from '../../backend';
 import { Window } from '../../layouts';
 import { useModifyState } from './hooks';
-import { type LibraryAdminData, ModifyTypes } from './types';
+import { LibraryAdminData, ModifyTypes } from './types';
 
 function getActionColor(reason: string) {
   switch (reason) {
@@ -82,7 +82,7 @@ export function ModifyPage(props) {
         width="100%"
         backgroundColor="black"
         textColor="white"
-        onChange={setReason}
+        onChange={(e, value) => setReason(value)}
       />
       <Stack justify="center" align="center" pt={1} pb={1}>
         <Stack.Item>

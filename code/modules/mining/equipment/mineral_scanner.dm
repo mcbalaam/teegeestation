@@ -49,9 +49,8 @@
 	/// The range of the scanner in tiles.
 	var/range = 7
 
-//get no effects from the t-ray scanner, which auto-shuts off.
-/obj/item/t_scanner/adv_mining_scanner/cyborg_unequip(mob/user)
-	return
+/obj/item/t_scanner/adv_mining_scanner/cyborg
+	shut_off_on_unequip = FALSE
 
 /obj/item/t_scanner/adv_mining_scanner/cyborg/Initialize(mapload)
 	. = ..()

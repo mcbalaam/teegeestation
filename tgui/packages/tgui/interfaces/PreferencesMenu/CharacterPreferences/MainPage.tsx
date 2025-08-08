@@ -1,7 +1,6 @@
-import { sortBy } from 'es-toolkit';
-import { filter, map } from 'es-toolkit/compat';
-import { type ReactNode, useState } from 'react';
-import { type sendAct, useBackend } from 'tgui/backend';
+import { filter, map, sortBy } from 'common/collections';
+import { ReactNode, useState } from 'react';
+import { sendAct, useBackend } from 'tgui/backend';
 import {
   Box,
   Button,
@@ -18,15 +17,15 @@ import { CharacterPreview } from '../../common/CharacterPreview';
 import { RandomizationButton } from '../components/RandomizationButton';
 import { features } from '../preferences/features';
 import {
-  type FeatureChoicedServerData,
+  FeatureChoicedServerData,
   FeatureValueInput,
 } from '../preferences/features/base';
 import { Gender, GENDERS } from '../preferences/gender';
 import {
   createSetPreference,
-  type PreferencesMenuData,
+  PreferencesMenuData,
   RandomSetting,
-  type ServerData,
+  ServerData,
 } from '../types';
 import { useRandomToggleState } from '../useRandomToggleState';
 import { useServerPrefs } from '../useServerPrefs';
@@ -108,7 +107,7 @@ type ChoicedSelectionProps = {
 
 function ChoicedSelection(props: ChoicedSelectionProps) {
   const { catalog, supplementalFeature, supplementalValue } = props;
-  const [searchText, setSearchText] = useState('');
+  const [getSearchText, searchTextSet] = useState('');
 
   if (!catalog.icons) {
     return <Box color="red">Provided catalog had no icons!</Box>;
@@ -142,16 +141,16 @@ function ChoicedSelection(props: ChoicedSelectionProps) {
           >
             <Input
               autoFocus
-              fluid
+              width="100%"
               placeholder="Search..."
-              onChange={setSearchText}
+              onInput={(_, value) => searchTextSet(value)}
             />
           </Section>
         </Stack.Item>
         <Stack.Item grow>
           <Section fill scrollable noTopPadding>
             <Stack wrap>
-              {searchInCatalog(searchText, catalog.icons).map(
+              {searchInCatalog(getSearchText, catalog.icons).map(
                 ([name, image], index) => {
                   return (
                     <Button
@@ -173,10 +172,6 @@ function ChoicedSelection(props: ChoicedSelectionProps) {
                           image,
                           'centered-image',
                         ])}
-                        style={{
-                          transform:
-                            'translateX(-50%) translateY(-50%) scale(0.8)',
-                        }}
                       />
                     </Button>
                   );
@@ -345,7 +340,10 @@ const createSetRandomization =
   };
 
 function sortPreferences(array: [string, unknown][]) {
-  return sortBy(array, [([featureId]) => features[featureId]?.name]);
+  return sortBy(array, ([featureId, _]) => {
+    const feature = features[featureId];
+    return feature?.name;
+  });
 }
 
 type PreferenceListProps = {
@@ -463,7 +461,7 @@ export function MainPage(props: MainPageProps) {
   const serverData = useServerPrefs();
 
   const currentSpeciesData =
-    serverData?.species[data.character_preferences.misc.species];
+    serverData && serverData.species[data.character_preferences.misc.species];
 
   const contextualPreferences =
     data.character_preferences.secondary_features || [];
@@ -488,12 +486,12 @@ export function MainPage(props: MainPageProps) {
   };
 
   if (randomBodyEnabled) {
-    nonContextualPreferences.random_species =
-      data.character_preferences.randomization.species;
+    nonContextualPreferences['random_species'] =
+      data.character_preferences.randomization['species'];
   } else {
     // We can't use random_name/is_accessible because the
     // server doesn't know whether the random toggle is on.
-    delete nonContextualPreferences.random_name;
+    delete nonContextualPreferences['random_name'];
   }
 
   return (

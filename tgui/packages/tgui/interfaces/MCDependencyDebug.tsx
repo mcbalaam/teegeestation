@@ -5,11 +5,7 @@ import { classes } from 'tgui-core/react';
 import { resolveAsset } from '../assets';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
-import {
-  type Connection,
-  Connections,
-  ConnectionStyle,
-} from './common/Connections';
+import { Connection, Connections, ConnectionStyle } from './common/Connections';
 import { ABSOLUTE_Y_OFFSET } from './IntegratedCircuit/constants';
 
 type Coord = {
@@ -83,6 +79,7 @@ function GraphNode(props: GraphNodeProps) {
               style={{
                 width: '100%',
                 height: '100%',
+                position: 'absolute',
               }}
               viewBox="0, 0, 100, 100"
             >
@@ -113,6 +110,7 @@ function GraphNode(props: GraphNodeProps) {
               style={{
                 width: '100%',
                 height: '100%',
+                position: 'absolute',
               }}
               viewBox="0, 0, 100, 100"
             >
@@ -215,9 +213,7 @@ export function MCDependencyDebug(props) {
     const subsystemLayer: SubsystemLayer = {};
     for (let i = 0; i < subsystemsGraph.length; i++) {
       const subsystem = subsystemsGraph[i];
-      if (subsystem.dependents.length === 0) {
-        evaluateSubsystemLayer(subsystem, 1, subsystemLayer);
-      }
+      evaluateSubsystemLayer(subsystem, 1, subsystemLayer);
     }
     return subsystemLayer;
   }, [subsystems]);

@@ -9,7 +9,7 @@ import {
   Section,
   Stack,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
@@ -69,14 +69,15 @@ export const MineBot = (props) => {
               title={bot_name}
               buttons={
                 <Button.Input
-                  buttonText="Rename"
                   color="transparent"
-                  onCommit={(value) =>
+                  onCommit={(e, value) =>
                     act('set_name', {
                       chosen_name: value,
                     })
                   }
-                />
+                >
+                  Rename
+                </Button.Input>
               }
             >
               <Stack vertical>

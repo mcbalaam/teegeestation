@@ -5,7 +5,7 @@ import {
   LabeledList,
   Section,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
@@ -50,7 +50,7 @@ export function AiVoiceChanger(props) {
           <LabeledList.Item label="Verb">
             <Input
               value={say_verb}
-              onBlur={(value) =>
+              onChange={(e, value) =>
                 act('verb', {
                   verb: value,
                 })
@@ -69,7 +69,7 @@ export function AiVoiceChanger(props) {
           <LabeledList.Item label="Fake name">
             <Input
               value={name}
-              onBlur={(value) =>
+              onChange={(e, value) =>
                 act('name', {
                   name: value,
                 })

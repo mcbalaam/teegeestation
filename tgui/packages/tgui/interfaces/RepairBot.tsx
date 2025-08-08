@@ -1,3 +1,4 @@
+import React from 'react';
 import { useBackend } from 'tgui/backend';
 import { BotControl, BotSettings } from 'tgui/interfaces/SimpleBot';
 import { Window } from 'tgui/layouts';
@@ -9,7 +10,7 @@ import {
   Section,
   Stack,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 
 type Data = {
   can_hack: BooleanLike;

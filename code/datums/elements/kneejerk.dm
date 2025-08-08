@@ -14,8 +14,10 @@
 
 	UnregisterSignal(source, COMSIG_ITEM_ATTACK)
 
-/datum/element/kneejerk/proc/on_item_attack(datum/source, mob/living/target, mob/living/user, list/modifiers)
+/datum/element/kneejerk/proc/on_item_attack(datum/source, mob/living/target, mob/living/user, params)
 	SIGNAL_HANDLER
+
+	var/list/modifiers = params2list(params)
 
 	if((user.zone_selected == BODY_ZONE_L_LEG || user.zone_selected == BODY_ZONE_R_LEG) && LAZYACCESS(modifiers, RIGHT_CLICK) && target.buckled)
 		tap_knee(source, target, user)

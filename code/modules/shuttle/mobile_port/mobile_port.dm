@@ -295,9 +295,6 @@
 	if(mode == SHUTTLE_IGNITING && destination == destination_port)
 		return
 
-	if(!canMove())
-		return
-
 	switch(mode)
 		if(SHUTTLE_CALL)
 			if(destination_port == destination)

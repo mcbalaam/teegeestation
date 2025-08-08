@@ -1,4 +1,5 @@
 {
+
 	"crustacean": {
 		"simp": "shrimp",
 		"problem": "prawnblem",
@@ -10,7 +11,7 @@
 		"fuck": "shuck",
 		"brilliant": "gilliant",
 		"totally": "turtally",
-		"confu": "conchfu",
+		"confu" : "conchfu",
 		"kungfu": "conchfu",
 		"kung fu": "conch fu",
 		" mull": " mullet",
@@ -51,7 +52,7 @@
 		"hell": "eel",
 		"whole": "whale",
 		"muscle": "mussel",
-		"cracking": "kraken",
+		"cracking" : "kraken",
 		"crackin": "kraken",
 		"opinion": "octopinion",
 		"utter": "otter",
@@ -75,7 +76,7 @@
 		"ballock": "pollock",
 		"fist": "fish",
 		"place": "plaice",
-		"definitively": "dolphinitely",
+		"definitively" : "dolphinitely",
 		"enemy": "anemony",
 		"enemies": "anemones",
 		" mob": " lob",
@@ -86,8 +87,8 @@
 		"admin": "adminnow",
 		"better": "betta",
 		" ass ": " wrasse ",
-		"asshole": "wrassehole",
-		"bond": "pond",
+		"asshole" : "wrassehole",
+		"bond" : "pond",
 		"inc": "ink",
 		"anything": "anyfin",
 		"something": "somefin",
@@ -130,11 +131,30 @@
 		"quintessen": "squiddessen",
 		"clos": "claws",
 		"absol": "crabsol",
-		"crap": ["carp", "crab"],
-		"kill": ["krill", "gill"],
-		"fanta": ["manta", "finta"],
-		"billion": ["bill-ion", "krillion"],
-		"click": ["click", "clack"],
-		"snap": ["snip", "snap"]
+		"crap": [
+			"carp",
+			"crab"
+		],
+		"kill": [
+			"krill",
+			"gill"
+		],
+		"fanta": [
+			"manta",
+			"finta"
+		],
+		"billion": [
+			"bill-ion",
+			"krillion"
+		],
+		"click": [
+			"click",
+			"clack"
+		],
+		"snap": [
+			"snip",
+			"snap"
+		]
 	}
+
 }

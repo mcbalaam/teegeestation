@@ -204,7 +204,7 @@
 	cost = CARGO_CRATE_VALUE * 2
 	contains = list(
 		/mob/living/basic/axolotl,
-		/obj/effect/spawner/random/frog,
+		/mob/living/basic/frog,
 	)
 	crate_name = "amphibian crate"
 

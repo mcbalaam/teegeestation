@@ -43,7 +43,7 @@
 	else
 		. += span_warning("The implant is missing.")
 
-/obj/item/mod/module/pathfinder/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
+/obj/item/mod/module/pathfinder/attack(mob/living/target, mob/living/user, params)
 	if(!ishuman(target) || !implant)
 		return
 	if(!do_after(user, 1.5 SECONDS, target = target))

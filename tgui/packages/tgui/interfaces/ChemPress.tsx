@@ -103,7 +103,8 @@ export const ChemPress = (props) => {
             <LabeledList.Item label="Name">
               <Input
                 value={product_name}
-                onBlur={(value) =>
+                placeholder={product_name}
+                onChange={(e, value) =>
                   act('change_product_name', {
                     name: value,
                   })

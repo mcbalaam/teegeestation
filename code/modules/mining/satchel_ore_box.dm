@@ -55,7 +55,7 @@
 		deconstruct(TRUE)
 		return ITEM_INTERACT_SUCCESS
 
-/obj/structure/ore_box/attackby(obj/item/weapon, mob/user, list/modifiers, list/attack_modifiers)
+/obj/structure/ore_box/attackby(obj/item/weapon, mob/user, params)
 	if(istype(weapon, /obj/item/stack/ore) || istype(weapon, /obj/item/boulder))
 		user.transferItemToLoc(weapon, src)
 		return TRUE

@@ -1,6 +1,6 @@
-/obj/structure/altar
-	name = "\improper Altar"
-	desc = "A religious structure. You could lie on it if you wanted to."
+/obj/structure/altar_of_gods
+	name = "\improper Altar of the Gods"
+	desc = "An altar which allows the head of the church to choose a sect of religious teachings as well as provide sacrifices to earn favor."
 	icon = 'icons/obj/service/hand_of_god_structures.dmi'
 	icon_state = "convertaltar"
 	density = TRUE
@@ -9,21 +9,29 @@
 	pass_flags_self = PASSSTRUCTURE | PASSTABLE | LETPASSTHROW
 	can_buckle = TRUE
 	buckle_lying = 90 //we turn to you!
-	/// Do we have lit candles?
-	var/lit_candles = TRUE
+	///Avoids having to check global everytime by referencing it locally.
+	var/datum/religion_sect/sect_to_altar
 
-/obj/structure/altar/Initialize(mapload)
+/obj/structure/altar_of_gods/Initialize(mapload)
 	. = ..()
+	AddComponent(/datum/component/religious_tool, ALL, FALSE, CALLBACK(src, PROC_REF(reflect_sect_in_icons)))
+	reflect_sect_in_icons()
+	GLOB.chaplain_altars += src
 	AddElement(/datum/element/climbable)
 	AddElement(/datum/element/elevation, pixel_shift = 12)
-	update_appearance(UPDATE_OVERLAYS)
 
-/obj/structure/altar/update_overlays()
-	. = ..()
-	if (lit_candles)
-		. += "convertaltarcandle"
+/obj/structure/altar_of_gods/Destroy()
+	GLOB.chaplain_altars -= src
+	return ..()
 
-/obj/structure/altar/attack_hand(mob/living/user, list/modifiers)
+/obj/structure/altar_of_gods/update_overlays()
+	var/list/new_overlays = ..()
+	if(GLOB.religious_sect)
+		return new_overlays
+	new_overlays += "convertaltarcandle"
+	return new_overlays
+
+/obj/structure/altar_of_gods/attack_hand(mob/living/user, list/modifiers)
 	if(!Adjacent(user) || !user.pulling)
 		return ..()
 	if(!isliving(user.pulling))
@@ -38,24 +46,7 @@
 	pushed_mob.forceMove(loc)
 	return ..()
 
-/// This one actually has relevance to chaplains
-/obj/structure/altar/of_gods
-	name = "\improper Altar of the Gods"
-	desc = "An altar which allows the head of the church to choose a sect of religious teachings as well as provide sacrifices to earn favor."
-	///Avoids having to check global everytime by referencing it locally.
-	var/datum/religion_sect/sect_to_altar
-
-/obj/structure/altar/of_gods/Initialize(mapload)
-	. = ..()
-	AddComponent(/datum/component/religious_tool, ALL, FALSE, CALLBACK(src, PROC_REF(reflect_sect_in_icons)))
-	reflect_sect_in_icons()
-	GLOB.chaplain_altars += src
-
-/obj/structure/altar/of_gods/Destroy()
-	GLOB.chaplain_altars -= src
-	return ..()
-
-/obj/structure/altar/of_gods/examine_more(mob/user)
+/obj/structure/altar_of_gods/examine_more(mob/user)
 	if(!isobserver(user))
 		return ..()
 	. = list(span_notice("<i>You examine [src] closer, and note the following...</i>"))
@@ -70,21 +61,19 @@
 	if(isAdminObserver(user) && chaplains)
 		. += list(span_notice("Chaplains: [chaplains]."))
 
-/obj/structure/altar/of_gods/proc/reflect_sect_in_icons()
+/obj/structure/altar_of_gods/proc/reflect_sect_in_icons()
 	if(isnull(GLOB.religious_sect))
-		lit_candles = FALSE
 		icon = initial(icon)
 		icon_state = initial(icon_state)
 	else
-		lit_candles = TRUE
 		sect_to_altar = GLOB.religious_sect
 		if(sect_to_altar.altar_icon)
 			icon = sect_to_altar.altar_icon
 		if(sect_to_altar.altar_icon_state)
 			icon_state = sect_to_altar.altar_icon_state
-	update_appearance(UPDATE_OVERLAYS) //Light the candles!
+	update_appearance() //Light the candles!
 
-/obj/structure/altar/of_gods/proc/get_chaplains()
+/obj/structure/altar_of_gods/proc/get_chaplains()
 	var/chaplain_string = ""
 	for(var/mob/living/carbon/human/potential_chap in GLOB.player_list)
 		if(potential_chap.key && is_chaplain_job(potential_chap.mind?.assigned_role))

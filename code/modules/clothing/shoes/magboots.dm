@@ -69,7 +69,7 @@
 		else if(magpulse_fishing_modifier != fishing_modifier)
 			qdel(GetComponent(/datum/component/adjust_fishing_difficulty))
 		detach_clothing_traits(active_traits)
-		slowdown -= slowdown_active
+		slowdown = max(initial(slowdown), slowdown - slowdown_active) // Just in case, for speed pot shenanigans
 
 	update_appearance()
 	balloon_alert(user, "mag-pulse [magpulse ? "enabled" : "disabled"]")
@@ -89,7 +89,7 @@
 	desc = "Advanced magnetic boots that have a lighter magnetic pull, placing less burden on the wearer."
 	icon_state = "advmag0"
 	base_icon_state = "advmag"
-	slowdown_active = 0 // ZERO active slowdown
+	slowdown_active = SHOES_SLOWDOWN // ZERO active slowdown
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	magpulse_fishing_modifier = 3
 	fishing_modifier = 0

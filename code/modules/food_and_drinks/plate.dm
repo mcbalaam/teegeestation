@@ -24,7 +24,7 @@
 	if(fragile)
 		AddElement(/datum/element/can_shatter)
 
-/obj/item/plate/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
+/obj/item/plate/attackby(obj/item/I, mob/user, params)
 	if(!IS_EDIBLE(I))
 		balloon_alert(user, "not food!")
 		return
@@ -34,6 +34,7 @@
 	if(contents.len >= max_items)
 		balloon_alert(user, "can't fit!")
 		return
+	var/list/modifiers = params2list(params)
 	//Center the icon where the user clicked.
 	if(!LAZYACCESS(modifiers, ICON_X) || !LAZYACCESS(modifiers, ICON_Y))
 		return
@@ -45,13 +46,13 @@
 	else
 		return ..()
 
-/obj/item/plate/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(!iscarbon(target))
+/obj/item/plate/pre_attack(atom/A, mob/living/user, params)
+	if(!iscarbon(A))
 		return
 	if(!contents.len)
 		return
 	var/obj/item/object_to_eat = contents[1]
-	target.attackby(object_to_eat, user)
+	A.attackby(object_to_eat, user)
 	return TRUE //No normal attack
 
 ///This proc adds the food to viscontents and makes sure it can deregister if this changes.

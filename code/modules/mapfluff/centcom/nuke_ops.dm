@@ -23,12 +23,6 @@
 	color = "#636363"
 	puzzle_id = "syndicate_fridge"
 
-/obj/item/keycard/syndicate_custodial
-	name = "Custodial Closet Access Card"
-	desc = "A purple keycard with an image of a mop. Using this will allow you to gain access to the Custodial Closet, containing janitorial equipment and a canister of water vapour."
-	color = "#9705b4"
-	puzzle_id = "syndicate_custodial"
-
 //keycard doors
 /obj/machinery/door/puzzle/keycard/syndicate_bomb
 	name = "Syndicate Ordinance Laboratory"
@@ -49,8 +43,3 @@
 	name = "The Walk-In Fridge"
 	desc = "Locked. Lopez sure runs a tight galley."
 	puzzle_id = "syndicate_fridge"
-
-/obj/machinery/door/puzzle/keycard/syndicate_custodial
-	name = "Syndicate Custodial Closet"
-	desc = "Locked. Looks like you'll need a special access key to get in"
-	puzzle_id = "syndicate_custodial"

@@ -17,7 +17,7 @@ import { clearChat, saveChatToDisk } from '../chat/actions';
 import { THEMES } from '../themes';
 import { exportSettings, updateSettings } from './actions';
 import { FONTS } from './constants';
-import { resetPaneSplitters, setEditPaneSplitters } from './scaling';
+import { setEditPaneSplitters } from './scaling';
 import { selectSettings } from './selectors';
 import { importChatSettings } from './settingsImExport';
 
@@ -51,27 +51,18 @@ export function SettingsGeneral(props) {
           ))}
         </LabeledList.Item>
         <LabeledList.Item label="UI sizes">
-          <Stack>
-            <Stack.Item>
-              <Button
-                onClick={() =>
-                  setEditingPanes((val) => {
-                    setEditPaneSplitters(!val);
-                    return !val;
-                  })
-                }
-                color={editingPanes ? 'red' : undefined}
-                icon={editingPanes ? 'save' : undefined}
-              >
-                {editingPanes ? 'Save' : 'Adjust UI Sizes'}
-              </Button>
-            </Stack.Item>
-            <Stack.Item>
-              <Button onClick={resetPaneSplitters} icon="refresh" color="red">
-                Reset
-              </Button>
-            </Stack.Item>
-          </Stack>
+          <Button
+            onClick={() =>
+              setEditingPanes((val) => {
+                setEditPaneSplitters(!val);
+                return !val;
+              })
+            }
+            color={editingPanes ? 'red' : undefined}
+            icon={editingPanes ? 'save' : undefined}
+          >
+            {editingPanes ? 'Save' : 'Adjust UI Sizes'}
+          </Button>
         </LabeledList.Item>
         <LabeledList.Item label="Font style">
           <Stack.Item>
@@ -112,9 +103,9 @@ export function SettingsGeneral(props) {
             ) : (
               <Stack>
                 <Input
-                  fluid
+                  width={'100%'}
                   value={fontFamily}
-                  onBlur={(value) =>
+                  onChange={(e, value) =>
                     dispatch(
                       updateSettings({
                         fontFamily: value,
@@ -163,7 +154,7 @@ export function SettingsGeneral(props) {
             maxValue={5}
             value={lineHeight}
             format={(value) => toFixed(value, 2)}
-            onChange={(e, value) =>
+            onDrag={(e, value) =>
               dispatch(
                 updateSettings({
                   lineHeight: value,

@@ -159,7 +159,7 @@ GLOBAL_DATUM_INIT(acid_overlay, /mutable_appearance, mutable_appearance('icons/e
 	var/applied_targets = 0
 	for(var/atom/movable/target_movable as anything in target_turf)
 		// Don't apply acid to things under the turf
-		if(HAS_TRAIT(target_movable, TRAIT_UNDERFLOOR))
+		if(target_turf.underfloor_accessibility < UNDERFLOOR_INTERACTABLE && HAS_TRAIT(target_movable, TRAIT_T_RAY_VISIBLE))
 			continue
 		// Ignore mobs if turf_acid_ignores_mobs is TRUE
 		if(turf_acid_ignores_mobs && ismob(target_movable))
@@ -223,7 +223,7 @@ GLOBAL_DATUM_INIT(acid_overlay, /mutable_appearance, mutable_appearance('icons/e
 	if(!(clean_types & CLEAN_TYPE_ACID))
 		return NONE
 	qdel(src)
-	return COMPONENT_CLEANED|COMPONENT_CLEANED_GAIN_XP
+	return COMPONENT_CLEANED
 
 /// Handles water diluting the acid on the object.
 /datum/component/acid/proc/on_expose_reagent(atom/parent_atom, datum/reagent/exposing_reagent, reac_volume, methods)

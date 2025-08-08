@@ -77,7 +77,7 @@
 	to_chat(user, span_notice("New activation threshold is now [activation_volume]."))
 	return
 
-/obj/machinery/plumbing/buffer/attackby(obj/item/item, mob/user, list/modifiers, list/attack_modifiers)
+/obj/machinery/plumbing/buffer/attackby(obj/item/item, mob/user, params)
 	if(item.tool_behaviour == TOOL_SCREWDRIVER)
 		to_chat(user, span_notice("You reset the automatic buffer."))
 

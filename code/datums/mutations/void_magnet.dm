@@ -1,4 +1,4 @@
-/datum/mutation/void
+/datum/mutation/human/void
 	name = "Void Magnet"
 	desc = "A rare genome that attracts odd forces not usually observed."
 	quality = MINOR_NEGATIVE //upsides and downsides
@@ -8,7 +8,7 @@
 	energy_coeff = 1
 	synchronizer_coeff = 1
 
-/datum/mutation/void/setup()
+/datum/mutation/human/void/modify()
 	. = ..()
 	var/datum/action/cooldown/spell/void/cursed/to_modify = .
 	if(!istype(to_modify)) // null or invalid

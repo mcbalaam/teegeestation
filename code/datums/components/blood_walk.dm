@@ -17,8 +17,6 @@
 	var/target_dir_change
 	///Should we transfer the parent's blood DNA to created blood decal
 	var/transfer_blood_dna
-	///List of additional blood DNA we're adding to the decal
-	var/list/blood_dna_info
 
 /datum/component/blood_walk/Initialize(
 	blood_type = /obj/effect/decal/cleanable/blood,
@@ -28,7 +26,6 @@
 	target_dir_change = FALSE,
 	transfer_blood_dna = FALSE,
 	max_blood = INFINITY,
-	list/blood_dna_info = list("meaty DNA" = get_blood_type(BLOOD_TYPE_MEAT))
 )
 
 	if(!ismovable(parent))
@@ -40,7 +37,6 @@
 	src.blood_spawn_chance = blood_spawn_chance
 	src.target_dir_change = target_dir_change
 	src.transfer_blood_dna = transfer_blood_dna
-	src.blood_dna_info = blood_dna_info.Copy()
 
 	blood_remaining = max_blood
 
@@ -73,34 +69,26 @@
 	blood_remaining += max_blood
 
 ///Spawns blood (if possible) under the source, and plays a sound effect (if any)
-/datum/component/blood_walk/proc/spread_blood(atom/movable/source)
+/datum/component/blood_walk/proc/spread_blood(datum/source)
 	SIGNAL_HANDLER
 
-	var/turf/current_turf = source.loc
+	var/atom/movable/movable_source = source
+	var/turf/current_turf = movable_source.loc
 	if(!isturf(current_turf) || isclosedturf(current_turf) || isgroundlessturf(current_turf))
 		return
-
 	if(!prob(blood_spawn_chance))
 		return
 
-	var/list/blood_DNA = blood_dna_info.Copy()
-	if(transfer_blood_dna && GET_ATOM_BLOOD_DNA_LENGTH(source))
-		blood_DNA = GET_ATOM_BLOOD_DNA(source) | blood_DNA
-
-	if(!has_blood_flag(blood_DNA, BLOOD_COVER_TURFS))
-		if (has_blood_flag(blood_DNA, BLOOD_ADD_DNA))
-			current_turf.add_blood_DNA(blood_DNA)
-		return
-
-	var/obj/effect/decal/cleanable/blood/blood = new blood_type(current_turf, null, blood_DNA)
-
+	var/obj/effect/decal/cleanable/blood/blood = new blood_type(current_turf)
 	if(QDELETED(blood)) // Our blood was placed on somewhere it shouldn't be and qdeleted in init.
 		return
 
 	if(target_dir_change)
-		blood.setDir(source.dir)
+		blood.setDir(movable_source.dir)
+	if(transfer_blood_dna)
+		blood.add_blood_DNA(GET_ATOM_BLOOD_DNA(movable_source))
 	if(!isnull(sound_played))
-		playsound(source, sound_played, sound_volume, TRUE, 2, TRUE)
+		playsound(movable_source, sound_played, sound_volume, TRUE, 2, TRUE)
 
 	blood_remaining = max(blood_remaining - 1, 0)
 	if(blood_remaining <= 0)

@@ -262,7 +262,6 @@
 		/obj/item/food/pie/plain = 1,
 		/obj/item/stock_parts/power_store/cell = 2,
 	)
-	requirements_mats_blacklist = list(/obj/item/stock_parts/power_store/cell)
 	result = /obj/item/food/pie/bacid_pie
 	added_foodtypes = TOXIC
 	category = CAT_PIE

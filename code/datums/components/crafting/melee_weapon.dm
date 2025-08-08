@@ -98,6 +98,7 @@
 		/obj/item/shard = 1,
 		/obj/item/stack/rods = 1,
 	)
+	parts = list(/obj/item/shard = 1)
 	time = 4 SECONDS
 	category = CAT_WEAPON_MELEE
 

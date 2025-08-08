@@ -109,8 +109,8 @@
 	if(!safety && emagged_state)
 		. += emagged_state
 
-/obj/item/defibrillator/on_craft_completion(list/components, datum/crafting_recipe/current_recipe, atom/crafter)
-	. = ..()
+/obj/item/defibrillator/CheckParts(list/parts_list)
+	..()
 	cell = locate(/obj/item/stock_parts/power_store) in contents
 	update_power()
 
@@ -421,14 +421,14 @@
 	return ..()
 
 /obj/item/shockpaddles/dropped(mob/user)
-	if(!req_defib)
-		return ..()
+	. = ..()
 	UnregisterSignal(defib, COMSIG_MOVABLE_MOVED)
 	if(user)
 		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
-		to_chat(user, span_notice("The paddles snap back into the main unit."))
-	snap_back()
-	return ..()
+	if(req_defib)
+		if(user)
+			to_chat(user, span_notice("The paddles snap back into the main unit."))
+		snap_back()
 
 /obj/item/shockpaddles/proc/snap_back()
 	if(!defib)
@@ -437,7 +437,7 @@
 	forceMove(defib)
 	defib.update_power()
 
-/obj/item/shockpaddles/attack(mob/M, mob/living/user, list/modifiers, list/attack_modifiers)
+/obj/item/shockpaddles/attack(mob/M, mob/living/user, params)
 	if(busy)
 		return
 	defib?.update_power()
@@ -458,6 +458,7 @@
 			to_chat(user, span_warning("[src] are recharging!"))
 		return
 
+	var/list/modifiers = params2list(params)
 	if(LAZYACCESS(modifiers, RIGHT_CLICK))
 		do_disarm(M, user)
 		return

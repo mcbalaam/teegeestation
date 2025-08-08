@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Flex, Modal, TextArea } from 'tgui-core/components';
 
 import { useBackend } from '../../backend';
-import type { CommsConsoleData } from './types';
+import { CommsConsoleData } from './types';
 
 type Props = {
   buttonText: string;
@@ -36,7 +36,7 @@ export function MessageModal(props: Props) {
             fluid
             height="20vh"
             maxLength={maxMessageLength}
-            onChange={setInput}
+            onInput={(_, value) => setInput(value)}
             placeholder={label}
             value={input}
             width="80vw"

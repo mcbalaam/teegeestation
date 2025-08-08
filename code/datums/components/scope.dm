@@ -74,7 +74,7 @@
 		return
 	stop_zooming(tracker.owner)
 
-/datum/component/scope/proc/do_secondary_zoom(datum/source, mob/user, atom/target, list/modifiers)
+/datum/component/scope/proc/do_secondary_zoom(datum/source, mob/user, atom/target, click_parameters)
 	SIGNAL_HANDLER
 
 	if(tracker)

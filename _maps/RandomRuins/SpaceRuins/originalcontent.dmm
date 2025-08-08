@@ -840,7 +840,7 @@
 /obj/structure/fluff/paper{
 	dir = 10
 	},
-/obj/machinery/photocopier/prebuilt,
+/obj/machinery/photocopier,
 /turf/open/indestructible/paper,
 /area/ruin/space/has_grav/powered)
 "cq" = (

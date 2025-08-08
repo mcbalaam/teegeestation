@@ -1,5 +1,5 @@
 import { TabBay, TabDrop, TabPod } from './Tabs';
-import type { PodDelay, PodEffect } from './types';
+import { PodDelay, PodEffect } from './types';
 
 export const POD_GREY = {
   color: 'grey',
@@ -108,7 +108,7 @@ export const SOUNDS = [
   {
     title: 'Fall',
     act: 'fallingSound',
-    tooltip: 'Plays during fall, ends on land',
+    tooltip: 'Plays while pod falls, timed\nto end when pod lands',
   },
   {
     title: 'Land',

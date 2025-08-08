@@ -53,9 +53,6 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 	/// The list of strains the blob can reroll for.
 	var/list/strain_choices
 
-	///The HUD given to blobs with their power
-	var/atom/movable/screen/blob_power_display/blob_power_hud
-
 /mob/eye/blob/Initialize(mapload, starting_points = OVERMIND_STARTING_POINTS)
 	ADD_TRAIT(src, TRAIT_BLOB_ALLY, INNATE_TRAIT)
 	validate_location()
@@ -76,14 +73,6 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 	. = ..()
 	START_PROCESSING(SSobj, src)
 	GLOB.blob_telepathy_mobs |= src
-
-/mob/eye/blob/create_mob_hud()
-	. = ..()
-	if(!.)
-		return
-	blob_power_hud = new(null, src)
-	hud_used.infodisplay += blob_power_hud
-	hud_used.show_hud(hud_used.hud_version)
 
 /mob/eye/blob/proc/validate_location()
 	var/turf/T = get_turf(src)
@@ -179,12 +168,23 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 /// Create a blob spore and link it to us
 /mob/eye/blob/proc/create_spore(turf/spore_turf, spore_type = /mob/living/basic/blob_minion/spore/minion)
 	var/mob/living/basic/blob_minion/spore/spore = new spore_type(spore_turf)
-	spore.AddComponent(/datum/component/blob_minion, src)
+	assume_direct_control(spore)
 	return spore
+
+/// Give our new minion the properties of a minion
+/mob/eye/blob/proc/assume_direct_control(mob/living/minion)
+	minion.AddComponent(/datum/component/blob_minion, src)
 
 /// Add something to our list of mobs and wait for it to die
 /mob/eye/blob/proc/register_new_minion(mob/living/minion)
 	blob_mobs |= minion
+	if (!istype(minion, /mob/living/basic/blob_minion/blobbernaut))
+		RegisterSignal(minion, COMSIG_LIVING_DEATH, PROC_REF(on_minion_death))
+
+/// When a spore (or zombie) dies then we do this
+/mob/eye/blob/proc/on_minion_death(mob/living/spore)
+	SIGNAL_HANDLER
+	blobstrain.on_sporedeath(spore)
 
 /mob/eye/blob/proc/victory()
 	sound_to_playing_players('sound/announcer/alarm/nuke_alarm.ogg', 70)
@@ -233,7 +233,6 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 
 /mob/eye/blob/Destroy()
 	QDEL_NULL(blobstrain)
-	QDEL_NULL(blob_power_hud)
 	for(var/BL in GLOB.blobs)
 		var/obj/structure/blob/B = BL
 		if(B && B.overmind == src)
@@ -275,16 +274,16 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 	if(!blob_core)
 		return FALSE
 	var/current_health = round((blob_core.get_integrity() / blob_core.max_integrity) * 100)
-	var/new_maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='#82ed00'>[current_health]%</font></div>")
-	hud_used.healths.maptext = new_maptext
+	hud_used.healths.maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='#82ed00'>[current_health]%</font></div>")
 	for(var/mob/living/basic/blob_minion/blobbernaut/blobbernaut in blob_mobs)
-		if(isnull(blobbernaut.overmind_hud))
+		var/datum/hud/using_hud = blobbernaut.hud_used
+		if(!using_hud?.blobpwrdisplay)
 			continue
-		blobbernaut.overmind_hud.maptext = new_maptext
+		using_hud.blobpwrdisplay.maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='#82ed00'>[current_health]%</font></div>")
 
 /mob/eye/blob/proc/add_points(points)
 	blob_points = clamp(blob_points + points, 0, max_blob_points)
-	blob_power_hud.maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='#e36600'>[round(blob_points)]</font></div>")
+	hud_used.blobpwrdisplay.maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='#e36600'>[round(blob_points)]</font></div>")
 
 /mob/eye/blob/say(
 	message,

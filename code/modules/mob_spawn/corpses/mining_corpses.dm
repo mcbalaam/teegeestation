@@ -14,16 +14,6 @@
 	spawned_human.gender = NEUTER
 	//don't need to set the human's body type (neuter)
 
-/obj/effect/mob_spawn/corpse/human/charredskeleton/dragoon
-	outfit = /datum/outfit/dragoon_gear
-
-/datum/outfit/dragoon_gear
-	name = "Dragoon"
-
-	suit = /obj/item/clothing/suit/armor/dragoon
-	head = /obj/item/clothing/head/helmet/dragoon
-	suit_store = /obj/item/spear/skybulge
-
 //Legion infested mobs
 
 /// Mob spawner used by Legion to spawn costumed bodies
@@ -77,7 +67,7 @@
 
 /obj/effect/mob_spawn/corpse/human/legioninfested/dwarf/special(mob/living/carbon/human/spawned_human)
 	. = ..()
-	spawned_human.dna.add_mutation(/datum/mutation/dwarfism, MUTATION_SOURCE_MUTATOR)
+	spawned_human.dna.add_mutation(/datum/mutation/human/dwarfism)
 
 /// Corpse spawner used by snow legions with alternate costumes
 /obj/effect/mob_spawn/corpse/human/legioninfested/snow
@@ -379,6 +369,7 @@
 	back = /obj/item/storage/backpack/cultpack
 	backpack_contents = list(
 		/obj/item/cult_shift = 1,
+		/obj/item/flashlight/flare/culttorch = 1,
 		/obj/item/reagent_containers/cup/beaker/unholywater = 1,
 		/obj/item/stack/sheet/runed_metal = 15,
 		)
@@ -405,3 +396,4 @@
 			/obj/item/knife/combat/survival = 2,
 		))
 		backpack_contents += backpack_loot
+

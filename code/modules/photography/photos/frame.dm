@@ -147,7 +147,7 @@
 	return ITEM_INTERACT_SUCCESS
 
 
-/obj/structure/sign/picture_frame/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
+/obj/structure/sign/picture_frame/attackby(obj/item/I, mob/user, params)
 
 	if(istype(I, /obj/item/photo))
 		if(framed)

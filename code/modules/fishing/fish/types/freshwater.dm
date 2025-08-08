@@ -188,7 +188,7 @@
 	average_weight = 10
 	sprite_width = 3
 	sprite_height = 1
-	max_integrity = 100
+	health = 50
 	feeding_frequency = 1.5 MINUTES
 	required_temperature_min = MIN_AQUARIUM_TEMP+15
 	required_temperature_max = MIN_AQUARIUM_TEMP+20
@@ -201,8 +201,7 @@
 
 /obj/item/fish/tadpole/Initialize(mapload, apply_qualities = TRUE)
 	. = ..()
-	var/output_path = prob(99) ? /mob/living/basic/frog : /mob/living/basic/frog/rare
-	AddComponent(/datum/component/fish_growth, output_path, rand(2 MINUTES, 3 MINUTES))
+	AddComponent(/datum/component/fish_growth, /mob/living/basic/frog, rand(2 MINUTES, 3 MINUTES))
 	RegisterSignal(src, COMSIG_FISH_BEFORE_GROWING, PROC_REF(growth_checks))
 	RegisterSignal(src, COMSIG_FISH_FINISH_GROWING, PROC_REF(on_growth))
 
@@ -253,7 +252,7 @@
 /obj/item/fish/tadpole/proc/gestation(mob/living/user)
 	if(QDELETED(user) || QDELETED(src))
 		return
-	new /obj/effect/spawner/random/frog(user.drop_location())
+	new /mob/living/basic/frog(user)
 	user.gib()
 	qdel(src)
 

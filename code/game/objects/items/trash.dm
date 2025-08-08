@@ -115,10 +115,6 @@
 	icon_state = "candle4"
 	custom_materials = null
 
-/obj/item/trash/candle/Initialize(mapload)
-	. = ..()
-	AddElement(/datum/element/floor_placeable)
-
 /obj/item/trash/flare
 	name = "burnt flare"
 	icon = 'icons/obj/lighting.dmi'

@@ -121,25 +121,25 @@
 	W.update_appearance()
 	return W
 
-/turf/open/floor/attackby(obj/item/object, mob/living/user, list/modifiers)
+/turf/open/floor/attackby(obj/item/object, mob/living/user, params)
 	if(!object || !user)
 		return TRUE
 	. = ..()
 	if(.)
 		return .
 	if(overfloor_placed && istype(object, /obj/item/stack/tile))
-		try_replace_tile(object, user, modifiers)
+		try_replace_tile(object, user, params)
 		return TRUE
 	if(user.combat_mode && istype(object, /obj/item/stack/sheet))
 		var/obj/item/stack/sheet/sheets = object
-		return sheets.on_attack_floor(src, user, modifiers)
+		return sheets.on_attack_floor(user, params)
 	return FALSE
 
 /turf/open/floor/crowbar_act(mob/living/user, obj/item/I)
 	if(overfloor_placed && pry_tile(I, user))
 		return TRUE
 
-/turf/open/floor/proc/try_replace_tile(obj/item/stack/tile/T, mob/user, list/modifiers)
+/turf/open/floor/proc/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
 	if(T.turf_type == type && T.turf_dir == dir)
 		return
 	var/obj/item/crowbar/CB = user.is_holding_tool_quality(TOOL_CROWBAR)
@@ -148,7 +148,7 @@
 	var/turf/open/floor/plating/P = pry_tile(CB, user, TRUE)
 	if(!istype(P))
 		return
-	P.attackby(T, user, modifiers)
+	P.attackby(T, user, params)
 
 /turf/open/floor/proc/pry_tile(obj/item/I, mob/user, silent = FALSE)
 	I.play_tool_sound(src, 80)

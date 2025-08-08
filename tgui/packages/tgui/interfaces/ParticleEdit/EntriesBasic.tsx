@@ -13,25 +13,20 @@ import {
 import { useBackend } from '../../backend';
 import { ParticleContext } from '.';
 import {
-  type EntryCoordProps,
-  type EntryFloatProps,
-  type EntryGradientProps,
-  type EntryIconStateProps,
-  type EntryTransformProps,
+  EntryCoordProps,
+  EntryFloatProps,
+  EntryGradientProps,
+  EntryIconStateProps,
+  EntryTransformProps,
   MatrixTypes,
   P_DATA_ICON_ADD,
   P_DATA_ICON_REMOVE,
   P_DATA_ICON_WEIGHT,
-  type ParticleUIData,
+  ParticleUIData,
   SpaceToNum,
   SpaceTypes,
 } from './data';
-import {
-  editKeyOf,
-  editWeightOf,
-  isColorSpaceObject,
-  setGradientSpace,
-} from './helpers';
+import { editKeyOf, editWeightOf, setGradientSpace } from './helpers';
 
 export const EntryFloat = (props: EntryFloatProps) => {
   const { act } = useBackend<ParticleUIData>();
@@ -119,21 +114,12 @@ export const EntryGradient = (props: EntryGradientProps) => {
   const { act } = useBackend<ParticleUIData>();
   const { setDesc } = useContext(ParticleContext);
   const { name, var_name, gradient } = props;
-
   const isLooping = gradient?.find((x) => x === 'loop');
-
-  let space_type = 'COLORSPACE_RGB';
-  const gradientSpace = gradient?.find(isColorSpaceObject);
-
-  if (gradientSpace) {
-    const match = Object.keys(SpaceToNum).find(
-      (space) => SpaceToNum[space] === gradientSpace.space,
-    );
-    if (match) {
-      space_type = match;
-    }
-  }
-
+  const space_type = gradient?.includes('space')
+    ? Object.keys(SpaceToNum).find(
+        (space) => SpaceToNum[space] === gradient['space'],
+      )
+    : 'COLORSPACE_RGB';
   return (
     <LabeledList.Item label={name}>
       <Stack>
@@ -184,8 +170,8 @@ export const EntryGradient = (props: EntryGradientProps) => {
                 <Input
                   key={index}
                   maxWidth={'70px'}
-                  value={entry.toString()}
-                  onBlur={(value) =>
+                  value={entry}
+                  onChange={(e, value) =>
                     act('edit', {
                       var: var_name,
                       new_value: gradient!.map((x, i) =>
@@ -195,8 +181,8 @@ export const EntryGradient = (props: EntryGradientProps) => {
                   }
                 />
                 <Button
-                  icon="minus"
-                  tooltip="Remove entry"
+                  icon={'minus'}
+                  tooltip={'Remove entry'}
                   onClick={() =>
                     act('edit', {
                       var: var_name,
@@ -378,9 +364,9 @@ export const EntryIconState = (props: EntryIconStateProps) => {
             <>
               <Stack.Item>
                 <Input
-                  width="70px"
+                  width={'70px'}
                   value={iconstate}
-                  onBlur={(value) =>
+                  onChange={(e, value) =>
                     act('edit', {
                       var: var_name,
                       new_value: editKeyOf(icon_state, iconstate, value),
@@ -427,7 +413,7 @@ export const EntryIconState = (props: EntryIconStateProps) => {
           <>
             <Input
               value={icon_state ? icon_state : 'None'}
-              onBlur={(value) =>
+              onChange={(e, value) =>
                 act('edit', {
                   var: var_name,
                   new_value: value,

@@ -33,7 +33,7 @@
 	// Save the old DNA
 	transforming.dna.copy_dna(old_dna)
 	// Makes them into the new DNA
-	new_dna.copy_dna(transforming.dna, COPY_DNA_SPECIES)
+	new_dna.transfer_identity(transforming)
 	transforming.real_name = new_dna.real_name
 	transforming.name = transforming.get_visible_name()
 	transforming.updateappearance(mutcolor_update = TRUE)
@@ -44,7 +44,7 @@
 	var/mob/living/carbon/transforming = owner
 
 	if(!QDELING(owner)) // Don't really need to do appearance stuff if we're being deleted
-		old_dna.copy_dna(transforming.dna, COPY_DNA_SPECIES)
+		old_dna.transfer_identity(transforming)
 		transforming.updateappearance(mutcolor_update = TRUE)
 		transforming.domutcheck()
 

@@ -1,4 +1,9 @@
+
 // This is the home of drink related tablecrafting recipes, I have opted to only let players bottle fancy boozes to reduce the number of entries.
+
+///Abstract types for all drink recipes that use bottles and result in another bottle, so that the message_in_a_bottle item is properly transferred.
+/datum/crafting_recipe/bottled
+	parts = list(/obj/item/reagent_containers/cup/glass/bottle = 1)
 
 ///////////////// Booze & Bottles ///////////////////
 
@@ -13,7 +18,7 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/lizardwine
 	category = CAT_DRINK
 
-/datum/crafting_recipe/moonshinejug
+/datum/crafting_recipe/bottled/moonshinejug
 	name = "Moonshine Jug"
 	time = 30
 	reqs = list(
@@ -23,7 +28,7 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/moonshine
 	category = CAT_DRINK
 
-/datum/crafting_recipe/hoochbottle
+/datum/crafting_recipe/bottled/hoochbottle
 	name = "Hooch Bottle"
 	time = 30
 	reqs = list(
@@ -34,7 +39,7 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/hooch
 	category = CAT_DRINK
 
-/datum/crafting_recipe/blazaambottle
+/datum/crafting_recipe/bottled/blazaambottle
 	name = "Blazaam Bottle"
 	time = 20
 	reqs = list(
@@ -44,7 +49,7 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/blazaam
 	category = CAT_DRINK
 
-/datum/crafting_recipe/champagnebottle
+/datum/crafting_recipe/bottled/champagnebottle
 	name = "Champagne Bottle"
 	time = 30
 	reqs = list(
@@ -54,7 +59,7 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/champagne
 	category = CAT_DRINK
 
-/datum/crafting_recipe/trappistbottle
+/datum/crafting_recipe/bottled/trappistbottle
 	name = "Trappist Bottle"
 	time = 15
 	reqs = list(
@@ -64,7 +69,7 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/trappist
 	category = CAT_DRINK
 
-/datum/crafting_recipe/goldschlagerbottle
+/datum/crafting_recipe/bottled/goldschlagerbottle
 	name = "Goldschlager Bottle"
 	time = 30
 	reqs = list(
@@ -74,7 +79,7 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/goldschlager
 	category = CAT_DRINK
 
-/datum/crafting_recipe/patronbottle
+/datum/crafting_recipe/bottled/patronbottle
 	name = "Patron Bottle"
 	time = 30
 	reqs = list(
@@ -86,7 +91,7 @@
 
 ////////////////////// Non-alcoholic recipes ///////////////////
 
-/datum/crafting_recipe/holybottle
+/datum/crafting_recipe/bottled/holybottle
 	name = "Holy Water Flask"
 	time = 30
 	reqs = list(
@@ -98,7 +103,7 @@
 
 //flask of unholy water is a beaker for some reason, I will try making it a bottle and add it here once the antag freeze is over. t. kryson
 
-/datum/crafting_recipe/nothingbottle
+/datum/crafting_recipe/bottled/nothingbottle
 	name = "Nothing Bottle"
 	time = 30
 	reqs = list(
@@ -115,7 +120,7 @@
 	reqs = list(/obj/item/stack/sheet/cardboard = 1)
 	category = CAT_CONTAINERS
 
-/datum/crafting_recipe/candycornliquor
+/datum/crafting_recipe/bottled/candycornliquor
 	name = "candy corn liquor"
 	result = /obj/item/reagent_containers/cup/glass/bottle/candycornliquor
 	time = 30
@@ -124,7 +129,7 @@
 				/obj/item/reagent_containers/cup/glass/bottle = 1)
 	category = CAT_DRINK
 
-/datum/crafting_recipe/kong
+/datum/crafting_recipe/bottled/kong
 	name = "Kong"
 	result = /obj/item/reagent_containers/cup/glass/bottle/kong
 	time = 30
@@ -138,11 +143,8 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/pruno
 	time = 30
 	reqs = list(/obj/item/storage/bag/trash = 1,
-		/obj/item/food/breadslice/moldy = 1,
-		/obj/item/food/grown = 4,
-		/obj/item/food/candy_corn = 2,
-		/datum/reagent/water = 15,
-	)
-	//We can't spawn the abstract food/grown path
-	unit_test_spawn_extras = list(/obj/item/food/grown/banana = 4)
+	            /obj/item/food/breadslice/moldy = 1,
+	            /obj/item/food/grown = 4,
+	            /obj/item/food/candy_corn = 2,
+	            /datum/reagent/water = 15)
 	category = CAT_DRINK

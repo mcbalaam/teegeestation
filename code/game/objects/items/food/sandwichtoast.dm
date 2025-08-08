@@ -13,7 +13,6 @@
 	food_flags = FOOD_FINGER_FOOD
 	w_class = WEIGHT_CLASS_SMALL
 	crafting_complexity = FOOD_COMPLEXITY_3
-	custom_materials = list(/datum/material/meat = MEATSLAB_MATERIAL_AMOUNT)
 
 /obj/item/food/sandwich/cheese
 	name = "cheese sandwich"
@@ -27,7 +26,6 @@
 	foodtypes = GRAIN | DAIRY
 	venue_value = FOOD_PRICE_NORMAL
 	crafting_complexity = FOOD_COMPLEXITY_2
-	custom_materials = null
 
 /obj/item/food/sandwich/cheese/make_grillable()
 	AddComponent(/datum/component/grillable, /obj/item/food/sandwich/cheese/grilled, rand(30 SECONDS, 60 SECONDS), TRUE)
@@ -54,7 +52,6 @@
 	tastes = list("bread" = 1, "jelly" = 1)
 	foodtypes = GRAIN
 	crafting_complexity = FOOD_COMPLEXITY_2
-	custom_materials = null
 
 /obj/item/food/sandwich/jelly/slime
 	food_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/toxin/slimejelly = 10, /datum/reagent/consumable/nutriment/vitamin = 4)
@@ -75,7 +72,6 @@
 	tastes = list("nothing suspicious" = 1)
 	foodtypes = GRAIN | GROSS
 	crafting_complexity = FOOD_COMPLEXITY_2
-	custom_materials = null
 
 /obj/item/food/griddle_toast
 	name = "griddle toast"
@@ -158,7 +154,6 @@
 	venue_value = FOOD_PRICE_CHEAP
 	crafting_complexity = FOOD_COMPLEXITY_3
 	custom_price = PAYCHECK_CREW * 0.7
-	custom_materials = list(/datum/material/meat = MEATSLAB_MATERIAL_AMOUNT)
 
 // Used for unit tests, do not delete
 /obj/item/food/hotdog/debug
@@ -182,7 +177,6 @@
 	venue_value = FOOD_PRICE_NORMAL
 	crafting_complexity = FOOD_COMPLEXITY_4
 	custom_price = PAYCHECK_CREW
-	custom_materials = list(/datum/material/meat = MEATSLAB_MATERIAL_AMOUNT)
 
 /obj/item/food/sandwich/blt
 	name = "\improper BLT"
@@ -197,7 +191,6 @@
 	tastes = list("bacon" = 3, "lettuce" = 2, "tomato" = 2, "bread" = 2)
 	foodtypes = GRAIN | MEAT | VEGETABLES | BREAKFAST
 	crafting_complexity = FOOD_COMPLEXITY_3
-	custom_materials = list(/datum/material/meat = MEATDISH_MATERIAL_AMOUNT * 2)
 
 /obj/item/food/sandwich/peanut_butter_jelly
 	name = "peanut butter and jelly sandwich"
@@ -211,7 +204,6 @@
 	tastes = list("peanut butter" = 1, "jelly" = 1, "bread" = 2)
 	foodtypes = GRAIN | FRUIT | NUTS
 	crafting_complexity = FOOD_COMPLEXITY_3
-	custom_materials = null
 
 /obj/item/food/sandwich/peanut_butter_banana
 	name = "peanut butter and banana sandwich"
@@ -226,7 +218,6 @@
 	tastes = list("peanut butter" = 1, "banana" = 1, "bread" = 2)
 	foodtypes = GRAIN | FRUIT | NUTS
 	crafting_complexity = FOOD_COMPLEXITY_3
-	custom_materials = null
 
 /obj/item/food/sandwich/philly_cheesesteak
 	name = "Philly cheesesteak"
@@ -240,7 +231,6 @@
 	tastes = list("bread" = 1, "juicy meat" = 1, "melted cheese" = 1, "onions" = 1)
 	foodtypes = GRAIN | MEAT | DAIRY | VEGETABLES
 	crafting_complexity = FOOD_COMPLEXITY_3
-	custom_materials = list(/datum/material/meat = MEATDISH_MATERIAL_AMOUNT * 2)
 
 /obj/item/food/sandwich/toast_sandwich
 	name = "toast sandwich"
@@ -254,7 +244,6 @@
 	tastes = list("bread" = 2, "Britain" = 1, "butter" = 1, "toast" = 1)
 	foodtypes = GRAIN|DAIRY
 	crafting_complexity = FOOD_COMPLEXITY_2
-	custom_materials = null
 
 /obj/item/food/sandwich/death
 	name = "death sandwich"

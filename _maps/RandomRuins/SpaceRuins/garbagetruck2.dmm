@@ -15,14 +15,6 @@
 /obj/effect/decal/cleanable/blood/gibs/old,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"cw" = (
-/obj/effect/decal/cleanable/blood/gibs/robot_debris,
-/obj/structure/closet/crate/freezer,
-/obj/item/organ/liver/roach,
-/obj/item/organ/stomach,
-/obj/item/organ/tongue/robot,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "eO" = (
 /obj/effect/spawner/random/contraband/narcotics,
 /turf/open/floor/plating,
@@ -98,13 +90,6 @@
 /obj/effect/spawner/random/trash/garbage,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"iX" = (
-/obj/effect/decal/cleanable/fuel_pool,
-/obj/item/rack_parts,
-/obj/item/storage/pill_bottle/mannitol,
-/obj/effect/decal/cleanable/blood/oil/slippery,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "kf" = (
 /obj/machinery/power/smes,
 /obj/structure/cable,
@@ -174,6 +159,13 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
+"qh" = (
+/obj/effect/decal/cleanable/fuel_pool,
+/obj/item/rack_parts,
+/obj/item/storage/pill_bottle/mannitol,
+/obj/effect/decal/cleanable/oil/slippery,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "qC" = (
 /turf/closed/wall/mineral/titanium,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
@@ -218,11 +210,6 @@
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "tI" = (
 /obj/structure/tank_holder/anesthetic,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"ue" = (
-/obj/effect/decal/cleanable/blood/gibs/robot_debris/down,
-/obj/item/circular_saw,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "uo" = (
@@ -284,6 +271,14 @@
 /obj/item/reagent_containers/applicator/pill/mannitol,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
+"xH" = (
+/obj/item/food/badrecipe/moldy,
+/obj/item/food/badrecipe/moldy,
+/obj/structure/closet/mini_fridge/grimy,
+/obj/effect/decal/cleanable/oil,
+/obj/item/reagent_containers/cup/bottle/morphine,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "zb" = (
 /obj/item/wheelchair,
 /obj/item/cane/white,
@@ -296,21 +291,21 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"zu" = (
-/obj/structure/toilet{
-	anchored = 0
-	},
-/obj/effect/spawner/random/contraband/permabrig_weapon,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"zH" = (
+"zn" = (
 /obj/structure/closet/cardboard,
 /obj/item/stack/medical/suture,
 /obj/item/stack/medical/gauze,
 /obj/item/stack/sticky_tape/surgical,
 /obj/structure/broken_flooring/corner,
-/obj/item/organ/cyberimp/arm/toolkit/surgery,
+/obj/item/organ/cyberimp/arm/surgery,
 /obj/item/organ/cyberimp/eyes/hud/medical,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/medicalwaste)
+"zu" = (
+/obj/structure/toilet{
+	anchored = 0
+	},
+/obj/effect/spawner/random/contraband/permabrig_weapon,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "zZ" = (
@@ -438,6 +433,14 @@
 /obj/structure/bedsheetbin,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
+"IM" = (
+/obj/effect/decal/cleanable/robot_debris,
+/obj/structure/closet/crate/freezer,
+/obj/item/organ/liver/roach,
+/obj/item/organ/stomach,
+/obj/item/organ/tongue/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "IS" = (
 /obj/structure/broken_flooring/singular,
 /turf/open/floor/plating,
@@ -556,6 +559,14 @@
 /obj/structure/grille/broken,
 /turf/template_noop,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
+"Pe" = (
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/structure/frame/computer,
+/obj/item/stack/sheet/glass{
+	amount = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "PM" = (
 /obj/structure/closet/mini_fridge/grimy,
 /obj/item/storage/organbox,
@@ -569,12 +580,9 @@
 /obj/item/instrument/bilehorn,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"QQ" = (
-/obj/item/food/badrecipe/moldy,
-/obj/item/food/badrecipe/moldy,
-/obj/structure/closet/mini_fridge/grimy,
-/obj/effect/decal/cleanable/blood/oil,
-/obj/item/reagent_containers/cup/bottle/morphine,
+"QK" = (
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/item/circular_saw,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "Rn" = (
@@ -652,14 +660,6 @@
 /obj/machinery/power/shuttle_engine/propulsion,
 /turf/template_noop,
 /area/template_noop)
-"VV" = (
-/obj/effect/decal/cleanable/blood/gibs/robot_debris/up,
-/obj/structure/frame/computer,
-/obj/item/stack/sheet/glass{
-	amount = 2
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "WX" = (
 /obj/machinery/light/warm,
 /obj/structure/cable,
@@ -673,7 +673,7 @@
 /obj/structure/sinkframe,
 /obj/structure/broken_flooring/pile,
 /obj/effect/decal/cleanable/blood/gibs/old,
-/obj/item/rag{
+/obj/item/reagent_containers/cup/rag{
 	pixel_x = 6;
 	pixel_y = -3
 	},
@@ -773,7 +773,7 @@ MC
 Dj
 XR
 Al
-ue
+QK
 CJ
 Um
 zb
@@ -792,7 +792,7 @@ LI
 kl
 qC
 MC
-VV
+Pe
 CJ
 CJ
 CJ
@@ -819,7 +819,7 @@ Ky
 iU
 Rn
 CM
-iX
+qh
 CJ
 wh
 CJ
@@ -869,7 +869,7 @@ Gp
 CJ
 pD
 CJ
-cw
+IM
 MC
 "}
 (9,1,1) = {"
@@ -904,14 +904,14 @@ qC
 MC
 CU
 Ll
-QQ
+xH
 Qq
 hf
 LA
 CJ
 Am
 Tp
-zH
+zn
 AU
 qX
 XC

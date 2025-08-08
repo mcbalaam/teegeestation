@@ -18,12 +18,13 @@ import {
 } from 'tgui-core/components';
 
 import { getSecurityRecord } from './helpers';
-import { type Crime, SECURETAB, type SecurityRecordsData } from './types';
+import { Crime, SECURETAB, SecurityRecordsData } from './types';
 
 /** Displays a list of crimes and allows to add new ones. */
 export const CrimeWatcher = (props) => {
   const foundRecord = getSecurityRecord();
-  if (!foundRecord) return;
+  if (!foundRecord) return <> </>;
+
   const { crimes, citations } = foundRecord;
   const [selectedTab, setSelectedTab] = useLocalState<SECURETAB>(
     'selectedTab',
@@ -72,7 +73,7 @@ export const CrimeWatcher = (props) => {
 /** Displays the crimes and citations of a record. */
 const CrimeList = (props) => {
   const foundRecord = getSecurityRecord();
-  if (!foundRecord) return;
+  if (!foundRecord) return <> </>;
 
   const { citations, crimes } = foundRecord;
   const { tab } = props;
@@ -96,7 +97,7 @@ const CrimeList = (props) => {
 /** Displays an individual crime */
 const CrimeDisplay = ({ item }: { item: Crime }) => {
   const foundRecord = getSecurityRecord();
-  if (!foundRecord) return;
+  if (!foundRecord) return <> </>;
 
   const { crew_ref } = foundRecord;
   const { act, data } = useBackend<SecurityRecordsData>();
@@ -179,7 +180,7 @@ const CrimeDisplay = ({ item }: { item: Crime }) => {
               fluid
               maxLength={25}
               onEscape={() => setEditing(false)}
-              onEnter={(value) => {
+              onEnter={(event, value) => {
                 setEditing(false);
                 act('edit_crime', {
                   crew_ref: crew_ref,
@@ -194,7 +195,7 @@ const CrimeDisplay = ({ item }: { item: Crime }) => {
               maxLength={1025}
               mt={1}
               onEscape={() => setEditing(false)}
-              onEnter={(value) => {
+              onEnter={(event, value) => {
                 setEditing(false);
                 act('edit_crime', {
                   crew_ref: crew_ref,
@@ -214,7 +215,7 @@ const CrimeDisplay = ({ item }: { item: Crime }) => {
 /** Writes a new crime. Reducers don't seem to work here, so... */
 const CrimeAuthor = (props) => {
   const foundRecord = getSecurityRecord();
-  if (!foundRecord) return;
+  if (!foundRecord) return <> </>;
 
   const { crew_ref } = foundRecord;
   const { act } = useBackend<SecurityRecordsData>();
@@ -226,13 +227,12 @@ const CrimeAuthor = (props) => {
     'selectedTab',
     SECURETAB.Crimes,
   );
-  const [crimeFineIsValid, setCrimeFineIsValid] = useState(true);
 
   const nameMeetsReqs = crimeName?.length > 2;
 
   /** Sends form to backend */
   const createCrime = () => {
-    if (!crimeName || !crimeFineIsValid) return;
+    if (!crimeName) return;
     act('add_crime', {
       crew_ref: crew_ref,
       details: crimeDetails,
@@ -257,7 +257,7 @@ const CrimeAuthor = (props) => {
         <Input
           fluid
           maxLength={25}
-          onChange={setCrimeName}
+          onChange={(_, value) => setCrimeName(value)}
           placeholder="Brief overview"
         />
       </Stack.Item>
@@ -267,7 +267,7 @@ const CrimeAuthor = (props) => {
           fluid
           height={4}
           maxLength={1025}
-          onChange={setCrimeDetails}
+          onChange={(_, value) => setCrimeDetails(value)}
           placeholder="Type some details..."
         />
       </Stack.Item>
@@ -277,19 +277,17 @@ const CrimeAuthor = (props) => {
           fluid
           value={crimeFine}
           maxValue={1000}
-          onChange={setCrimeFine}
-          onValidationChange={setCrimeFineIsValid}
+          onChange={(_, value) => setCrimeFine(value)}
         />
       </Stack.Item>
       <Stack.Item>
         <Button.Confirm
-          disabled={!nameMeetsReqs || !crimeFineIsValid}
+          content="Create"
+          disabled={!nameMeetsReqs}
           icon="plus"
           onClick={createCrime}
           tooltip={!nameMeetsReqs ? 'Name must be at least 3 characters.' : ''}
-        >
-          Create
-        </Button.Confirm>
+        />
       </Stack.Item>
     </Stack>
   );

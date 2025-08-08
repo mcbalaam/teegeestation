@@ -1,5 +1,4 @@
-import { sortBy, uniq } from 'es-toolkit';
-import { filter, map } from 'es-toolkit/compat';
+import { filter, map, sortBy, uniq } from 'common/collections';
 import { useState } from 'react';
 import {
   Box,
@@ -54,11 +53,9 @@ export const SelectEquipment = (props) => {
       filter(outfits, (entry) => entry.category === tab),
       searchFilter,
     ),
-    [
-      (entry) => !entry.favorite,
-      (entry) => !entry.priority,
-      (entry) => entry.name,
-    ],
+    (entry) => !entry.favorite,
+    (entry) => !entry.priority,
+    (entry) => entry.name,
   );
 
   const getOutfitEntry = (current_outfit) =>
@@ -78,13 +75,13 @@ export const SelectEquipment = (props) => {
                   autoFocus
                   placeholder="Search"
                   value={searchText}
-                  onChange={setSearchText}
+                  onInput={(e, value) => setSearchText(value)}
                 />
               </Stack.Item>
               <Stack.Item>
                 <DisplayTabs categories={categories} />
               </Stack.Item>
-              <Stack.Item grow={1} basis={0}>
+              <Stack.Item mt={0} grow={1} basis={0}>
                 <OutfitDisplay entries={visibleOutfits} currentTab={tab} />
               </Stack.Item>
             </Stack>

@@ -56,9 +56,10 @@
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/click_ctrl(mob/user)
 	if(is_operational)
-		set_on(!on)
+		on = !on
 		balloon_alert(user, "turned [on ? "on" : "off"]")
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+		update_appearance()
 		return CLICK_ACTION_BLOCKING
 	return CLICK_ACTION_SUCCESS
 
@@ -69,12 +70,12 @@
 	volume_rate = MAX_TRANSFER_RATE
 	investigate_log("was set to [volume_rate] L/s by [key_name(user)]", INVESTIGATE_ATMOS)
 	balloon_alert(user, "volume output set to [volume_rate] L/s")
-	update_appearance(UPDATE_ICON)
+	update_appearance()
 	return CLICK_ACTION_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/update_icon_nopipes()
 	cut_overlays()
-	if(underfloor_state)
+	if(showpipe)
 		// everything is already shifted so don't shift the cap
 		var/image/cap = get_pipe_image(icon, "inje_cap", initialize_directions, pipe_color)
 		cap.appearance_flags |= RESET_COLOR|KEEP_APART
@@ -130,7 +131,7 @@
 
 	switch(action)
 		if("power")
-			set_on(!on)
+			on = !on
 			investigate_log("was turned [on ? "on" : "off"] by [key_name(usr)]", INVESTIGATE_ATMOS)
 			. = TRUE
 		if("rate")
@@ -144,7 +145,7 @@
 			if(.)
 				volume_rate = clamp(rate, 0, MAX_TRANSFER_RATE)
 				investigate_log("was set to [volume_rate] L/s by [key_name(usr)]", INVESTIGATE_ATMOS)
-	update_appearance(UPDATE_ICON)
+	update_appearance()
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/can_unwrench(mob/user)
 	. = ..()

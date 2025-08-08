@@ -33,7 +33,7 @@ export const LTSRBT = (props) => {
               width="80%"
               value={name}
               placeholder="Insert a name"
-              onBlur={(value) =>
+              onChange={(e, value) =>
                 act('change_name', {
                   value: value,
                 })
@@ -69,11 +69,10 @@ export const LTSRBT = (props) => {
           <Stack.Divider />
           <Stack.Item grow>
             <TextArea
-              height="100%"
-              fluid
+              height="90%"
               value={desc}
               placeholder="Insert a description (or don't)"
-              onBlur={(value) =>
+              onChange={(e, value) =>
                 act('change_desc', {
                   value: value,
                 })

@@ -21,7 +21,6 @@ See an example of what systemd unit settings should be used in [tgstation-pr-ann
 Create an `appsettings.Production.json` file in the working directory the daemon will be launched from.
 
 Here's an example config:
-
 ```json
 {
 	"Settings": {
@@ -39,17 +38,23 @@ Here's an example config:
 			{
 				"Address": "tgsatan.tg.lan",
 				"Port": 1337,
-				"InterestedRepoSlugs": ["tgstation/tgstation"]
+				"InterestedRepoSlugs": [
+					"tgstation/tgstation"
+				]
 			},
 			{
 				"Address": "tgsatan.tg.lan",
 				"Port": 1447,
-				"InterestedRepoSlugs": ["tgstation/tgstation"]
+				"InterestedRepoSlugs": [
+					"tgstation/tgstation"
+				]
 			},
 			{
 				"Address": "tgsatan.tg.lan",
 				"Port": 5337,
-				"InterestedRepoSlugs": ["tgstation/TerraGov-Marine-Corps"]
+				"InterestedRepoSlugs": [
+					"tgstation/TerraGov-Marine-Corps"
+				]
 			}
 		]
 	},

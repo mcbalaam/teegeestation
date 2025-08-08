@@ -15,7 +15,7 @@ import { captureExternalLinks } from 'tgui/links';
 import { render } from 'tgui/renderer';
 import { configureStore } from 'tgui/store';
 import { setupGlobalEvents } from 'tgui-core/events';
-import { setupHotReloading } from 'tgui-dev-server/link/client';
+import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
 import { audioMiddleware, audioReducer } from './audio';
 import { chatMiddleware, chatReducer } from './chat';
@@ -84,10 +84,10 @@ function setupApp() {
   });
 
   // Enable hot module reloading
-  if (import.meta.webpackHot) {
+  if (module.hot) {
     setupHotReloading();
 
-    import.meta.webpackHot.accept(
+    module.hot.accept(
       [
         './audio',
         './chat',

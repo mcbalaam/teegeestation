@@ -223,7 +223,7 @@
 
 /obj/effect/decal/cleanable/traitor_rune/wash(clean_types)
 	if (clean_proof)
-		return NONE
+		return FALSE
 
 	return ..()
 

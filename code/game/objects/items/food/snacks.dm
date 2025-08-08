@@ -71,7 +71,6 @@
 	w_class = WEIGHT_CLASS_SMALL
 	foodtypes = JUNKFOOD | MEAT | SUGAR
 	crafting_complexity = FOOD_COMPLEXITY_1
-	custom_materials = list(/datum/material/meat = MEATSLAB_MATERIAL_AMOUNT)
 
 /obj/item/food/sosjerky/healthy
 	name = "homemade beef jerky"

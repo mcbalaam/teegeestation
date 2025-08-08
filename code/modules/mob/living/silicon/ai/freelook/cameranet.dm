@@ -79,7 +79,7 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 		var/list/add = visibleChunks - eye.visibleCameraChunks
 
 		for(var/datum/camerachunk/chunk as anything in remove)
-			chunk.remove(eye)
+			chunk.remove(eye, FALSE)
 
 		for(var/datum/camerachunk/chunk as anything in add)
 			chunk.add(eye)

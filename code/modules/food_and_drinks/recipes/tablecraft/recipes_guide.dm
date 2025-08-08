@@ -18,7 +18,6 @@
 
 /datum/crafting_recipe/runed_metal
 	reqs = list(/obj/item/stack/sheet/plasteel = 1)
-	requirements_mats_blacklist = list(/obj/item/stack/sheet/plasteel) // runed metal has its own material
 	result = /obj/item/stack/sheet/runed_metal
 	category = CAT_CULT
 	non_craftable = TRUE

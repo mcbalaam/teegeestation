@@ -147,8 +147,6 @@
 /datum/component/thermite/proc/clean_react(datum/source, strength)
 	SIGNAL_HANDLER
 
-	. = NONE
-
 	//Thermite is just some loose powder, you could probably clean it with your hands
 	qdel(src)
 

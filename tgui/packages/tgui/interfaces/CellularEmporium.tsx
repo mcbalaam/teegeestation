@@ -40,7 +40,7 @@ export const CellularEmporium = (props) => {
 
   const { can_readapt, genetic_points_count } = data;
   const readaptTracker = (can_readapt: number): string => {
-    const firstPart = 'Readapt(';
+    let firstPart = 'Readapt(';
     return firstPart.concat(can_readapt.toString(), ')');
   };
   return (
@@ -74,7 +74,7 @@ export const CellularEmporium = (props) => {
               <Stack.Item>
                 <Input
                   width="200px"
-                  onChange={setSearchAbilities}
+                  onInput={(event, value) => setSearchAbilities(value)}
                   placeholder="Search Abilities..."
                   value={searchAbilities}
                 />

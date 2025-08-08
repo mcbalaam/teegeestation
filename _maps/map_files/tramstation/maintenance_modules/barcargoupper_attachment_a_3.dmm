@@ -53,7 +53,7 @@
 "K" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table/wood,
-/obj/item/rag{
+/obj/item/reagent_containers/cup/rag{
 	pixel_y = 13;
 	pixel_x = -7
 	},

@@ -21,7 +21,7 @@ export const MechpadControl = (props) => {
         <Input
           value={pad_name}
           width="200px"
-          onBlur={(value) =>
+          onChange={(e, value) =>
             act('rename', {
               name: value,
             })

@@ -132,7 +132,7 @@
 
 	return ITEM_INTERACT_SUCCESS
 
-/obj/structure/reflector/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
+/obj/structure/reflector/attackby(obj/item/W, mob/user, params)
 	if(admin)
 		return
 	//Finishing the frame

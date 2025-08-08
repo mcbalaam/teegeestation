@@ -42,7 +42,7 @@
 /turf/open/floor/plating/abductor2/burn_tile()
 	return //unburnable
 
-/turf/open/floor/plating/abductor2/try_replace_tile(obj/item/stack/tile/T, mob/user, list/modifiers)
+/turf/open/floor/plating/abductor2/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
 	return
 
 /turf/open/floor/plating/snowed

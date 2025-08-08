@@ -57,7 +57,7 @@
 	var/datum/antagonist/nukeop/nuke_datum = new()
 	nuke_datum.send_to_spawnpoint = FALSE
 	new_ai.mind.add_antag_datum(nuke_datum, op_datum.nuke_team)
-	LAZYADD(new_ai.mind.special_roles, "Syndicate AI")
+	new_ai.mind.special_role = "Syndicate AI"
 	new_ai.faction |= ROLE_SYNDICATE
 	// Make it look evil!!!
 	new_ai.hologram_appearance = mutable_appearance('icons/mob/silicon/ai.dmi',"xeno_queen") //good enough
@@ -95,12 +95,12 @@
 	max_capacity = 1000
 	w_class = WEIGHT_CLASS_NORMAL
 
-/obj/item/computer_disk/syndie_ai_upgrade/pre_attack(atom/target, mob/living/user, list/modifiers, list/attack_modifiers)
+/obj/item/computer_disk/syndie_ai_upgrade/pre_attack(atom/A, mob/living/user, params)
 	var/mob/living/silicon/ai/AI
-	if(isAI(target))
-		AI = target
+	if(isAI(A))
+		AI = A
 	else
-		AI = locate() in target
+		AI = locate() in A
 	if(!AI || AI.interaction_range == INFINITY)
 		playsound(src,'sound/machines/buzz/buzz-sigh.ogg',50,FALSE)
 		to_chat(user, span_notice("Error! Incompatible object!"))

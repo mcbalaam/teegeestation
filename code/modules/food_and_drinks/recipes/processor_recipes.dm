@@ -22,7 +22,7 @@
 		/obj/item/food/meat/slab/xeno,
 		/obj/item/food/meat/slab/bear,
 		/obj/item/food/meat/slab/chicken)
-	food_multiplier = MEATSLAB_PROCESSED_AMOUNT
+	food_multiplier = 3
 
 /datum/food_processor_process/cutlet
 	input = /obj/item/food/meat/cutlet/plain

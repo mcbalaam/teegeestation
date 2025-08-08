@@ -71,11 +71,10 @@
 
 	var/mob/living/living_parent = parent
 	if (living_parent.stat != CONSCIOUS)
-		return NONE
+		return
 
 	COOLDOWN_START(src, groom_cooldown, GROOM_COOLDOWN)
 	increase_happiness_level(on_groom_change)
-	return COMPONENT_CLEANED|COMPONENT_CLEANED_GAIN_XP
 
 /datum/component/happiness/proc/on_petted(datum/source, mob/living/petter, list/modifiers)
 	SIGNAL_HANDLER

@@ -191,15 +191,15 @@
 
 /obj/effect/decal/cleanable/vomit/attack_hand(mob/user, list/modifiers)
 	. = ..()
-	if(. || !ishuman(user))
+	if(.)
 		return
-	var/mob/living/carbon/human/as_human = user
-	if(!isflyperson(as_human))
-		return
-	playsound(get_turf(src), 'sound/items/drink.ogg', 50, TRUE) //slurp
-	as_human.visible_message(span_alert("[as_human] extends a small proboscis into the vomit pool, sucking it with a slurping sound."))
-	lazy_init_reagents()?.trans_to(as_human, reagents.total_volume, transferred_by = user, methods = INGEST)
-	qdel(src)
+	if(ishuman(user))
+		var/mob/living/carbon/human/H = user
+		if(isflyperson(H))
+			playsound(get_turf(src), 'sound/items/drink.ogg', 50, TRUE) //slurp
+			H.visible_message(span_alert("[H] extends a small proboscis into the vomit pool, sucking it with a slurping sound."))
+			reagents.trans_to(H, reagents.total_volume, transferred_by = user, methods = INGEST)
+			qdel(src)
 
 /obj/effect/decal/cleanable/vomit/toxic // this has a more toned-down color palette, which may be why it's used as the default in so many spots
 	icon_state = "vomittox_1"
@@ -215,9 +215,6 @@
 	icon_state = "vomitnanite_1"
 	random_icon_states = list("vomitnanite_1", "vomitnanite_2", "vomitnanite_3", "vomitnanite_4")
 
-/// Tracked for voidwalkers to jump to and from
-GLOBAL_LIST_EMPTY(nebula_vomits)
-
 /obj/effect/decal/cleanable/vomit/nebula
 	name = "nebula vomit"
 	desc = "Gosh, how... beautiful."
@@ -228,16 +225,10 @@ GLOBAL_LIST_EMPTY(nebula_vomits)
 /obj/effect/decal/cleanable/vomit/nebula/Initialize(mapload, list/datum/disease/diseases)
 	. = ..()
 	update_appearance(UPDATE_OVERLAYS)
-	GLOB.nebula_vomits += src
 
 /obj/effect/decal/cleanable/vomit/nebula/update_overlays()
 	. = ..()
 	. += emissive_appearance(icon, icon_state, src, alpha = src.alpha)
-
-/obj/effect/decal/cleanable/vomit/nebula/Destroy()
-	. = ..()
-
-	GLOB.nebula_vomits -= src
 
 /// Nebula vomit with extra guests
 /obj/effect/decal/cleanable/vomit/nebula/worms
@@ -294,14 +285,22 @@ GLOBAL_LIST_EMPTY(nebula_vomits)
 /obj/effect/decal/cleanable/glitter
 	name = "generic glitter pile"
 	desc = "The herpes of arts and crafts."
-	icon = 'icons/effects/glitter.dmi'
-	icon_state = "glitter"
+	icon = 'icons/effects/atmospherics.dmi'
+	icon_state = "plasma_old"
 	gender = NEUTER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-/obj/effect/decal/cleanable/glitter/Initialize(mapload, list/datum/disease/diseases)
-	. = ..()
-	add_overlay(mutable_appearance('icons/effects/glitter.dmi', "glitter_sparkle[rand(1,9)]", appearance_flags = EMISSIVE_APPEARANCE_FLAGS))
+/obj/effect/decal/cleanable/glitter/pink
+	name = "pink glitter"
+	icon_state = "plasma"
+
+/obj/effect/decal/cleanable/glitter/white
+	name = "white glitter"
+	icon_state = "nitrous_oxide"
+
+/obj/effect/decal/cleanable/glitter/blue
+	name = "blue glitter"
+	icon_state = "freon"
 
 /obj/effect/decal/cleanable/plasma
 	name = "stabilized plasma"
@@ -314,9 +313,8 @@ GLOBAL_LIST_EMPTY(nebula_vomits)
 	name = "insect guts"
 	desc = "One bug squashed. Four more will rise in its place."
 	icon = 'icons/effects/blood.dmi'
-	icon_state = "floor1"
-	random_icon_states = list("floor1", "floor2", "floor3", "floor4", "floor5", "floor6", "floor7")
-	color = BLOOD_COLOR_XENO
+	icon_state = "xfloor1"
+	random_icon_states = list("xfloor1", "xfloor2", "xfloor3", "xfloor4", "xfloor5", "xfloor6", "xfloor7")
 
 /obj/effect/decal/cleanable/confetti
 	name = "confetti"
@@ -396,7 +394,7 @@ GLOBAL_LIST_EMPTY(nebula_vomits)
 
 /obj/effect/decal/cleanable/ants/proc/update_ant_damage(ant_min_damage, ant_max_damage)
 	if(!ant_max_damage)
-		ant_max_damage = min(10, round((reagents ? reagents.get_reagent_amount(/datum/reagent/ants) : reagent_amount) * 0.1,0.1)) // 100u ants = 10 max_damage
+		ant_max_damage = min(10, round((reagents.get_reagent_amount(/datum/reagent/ants) * 0.1),0.1)) // 100u ants = 10 max_damage
 	if(!ant_min_damage)
 		ant_min_damage = 0.1
 	var/ant_flags = (CALTROP_NOCRAWL | CALTROP_NOSTUN) /// Small amounts of ants won't be able to bite through shoes.
@@ -473,11 +471,10 @@ GLOBAL_LIST_EMPTY(nebula_vomits)
 
 /obj/effect/decal/cleanable/fuel_pool/Initialize(mapload, burn_stacks)
 	. = ..()
-	var/static/list/loc_connections = list(
+	var/static/list/ignition_trigger_connections = list(
 		COMSIG_TURF_MOVABLE_THROW_LANDED = PROC_REF(ignition_trigger),
-		COMSIG_ATOM_ENTERED = PROC_REF(on_entered)
 	)
-	AddElement(/datum/element/connect_loc, loc_connections)
+	AddElement(/datum/element/connect_loc, ignition_trigger_connections)
 	for(var/obj/effect/decal/cleanable/fuel_pool/pool in get_turf(src)) //Can't use locate because we also belong to that turf
 		if(pool == src)
 			continue
@@ -539,17 +536,17 @@ GLOBAL_LIST_EMPTY(nebula_vomits)
 	ignite()
 	log_combat(hit_proj.firer, src, "used [hit_proj] to ignite")
 
-/obj/effect/decal/cleanable/fuel_pool/attackby(obj/item/item, mob/user, list/modifiers, list/attack_modifiers)
+/obj/effect/decal/cleanable/fuel_pool/attackby(obj/item/item, mob/user, params)
 	if(item.ignition_effect(src, user))
 		ignite()
 		log_combat(user, src, "used [item] to ignite")
 	return ..()
 
-/obj/effect/decal/cleanable/fuel_pool/proc/on_entered(datum/source, atom/movable/entered_atom)
-	SIGNAL_HANDLER
-
-	if(!entered_atom.throwing) // don't light from things being thrown over us, we handle that somewhere else
-		ignition_trigger(source = src, enflammable_atom = entered_atom)
+/obj/effect/decal/cleanable/fuel_pool/on_entered(datum/source, atom/movable/entered_atom)
+	. = ..()
+	if(entered_atom.throwing) // don't light from things being thrown over us, we handle that somewhere else
+		return
+	ignition_trigger(source = src, enflammable_atom = entered_atom)
 
 /obj/effect/decal/cleanable/fuel_pool/proc/ignition_trigger(datum/source, atom/movable/enflammable_atom)
 	SIGNAL_HANDLER

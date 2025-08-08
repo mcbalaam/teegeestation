@@ -1,11 +1,18 @@
 import './styles/main.scss';
 
-import { useEffect, useRef, useState } from 'react';
+import {
+  FormEvent,
+  KeyboardEvent,
+  MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { dragStartHandler } from 'tgui/drag';
 import { isEscape, KEY } from 'tgui-core/keys';
-import { type BooleanLike, classes } from 'tgui-core/react';
+import { BooleanLike, classes } from 'tgui-core/react';
 
-import { type Channel, ChannelIterator } from './ChannelIterator';
+import { Channel, ChannelIterator } from './ChannelIterator';
 import { ChatHistory } from './ChatHistory';
 import { LineLength, RADIO_PREFIXES, WindowSize } from './constants';
 import { getPrefix, windowClose, windowOpen, windowSet } from './helpers';
@@ -21,6 +28,13 @@ type ByondProps = {
   scale: BooleanLike;
 };
 
+const ROWS: Record<keyof typeof WindowSize, number> = {
+  Small: 1,
+  Medium: 2,
+  Large: 3,
+  Width: 1, // not used
+} as const;
+
 export function TguiSay() {
   const innerRef = useRef<HTMLTextAreaElement>(null);
   const channelIterator = useRef(new ChannelIterator());
@@ -34,9 +48,9 @@ export function TguiSay() {
   const [currentPrefix, setCurrentPrefix] = useState<
     keyof typeof RADIO_PREFIXES | null
   >(null);
-  const [lightMode, setLightMode] = useState(false);
-  const [maxLength, setMaxLength] = useState(1024);
   const [size, setSize] = useState(WindowSize.Small);
+  const [maxLength, setMaxLength] = useState(1024);
+  const [lightMode, setLightMode] = useState(false);
   const [value, setValue] = useState('');
 
   const position = useRef([window.screenX, window.screenY]);
@@ -86,7 +100,7 @@ export function TguiSay() {
     }
   }
 
-  function handleButtonClick(event: React.MouseEvent<HTMLButtonElement>): void {
+  function handleButtonClick(event: MouseEvent<HTMLButtonElement>): void {
     isDragging.current = true;
 
     setTimeout(() => {
@@ -158,11 +172,11 @@ export function TguiSay() {
     messages.current.channelIncrementMsg(iterator.isVisible());
   }
 
-  function handleInput(event: React.FormEvent<HTMLTextAreaElement>): void {
+  function handleInput(event: FormEvent<HTMLTextAreaElement>): void {
     const iterator = channelIterator.current;
     let newValue = event.currentTarget.value;
 
-    const newPrefix = getPrefix(newValue) || currentPrefix;
+    let newPrefix = getPrefix(newValue) || currentPrefix;
     // Handles switching prefixes
     if (newPrefix && newPrefix !== currentPrefix) {
       setButtonContent(RADIO_PREFIXES[newPrefix]);
@@ -183,9 +197,7 @@ export function TguiSay() {
     setValue(newValue);
   }
 
-  function handleKeyDown(
-    event: React.KeyboardEvent<HTMLTextAreaElement>,
-  ): void {
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>): void {
     if (event.getModifierState('AltGraph')) return;
 
     switch (event.key) {
@@ -218,14 +230,20 @@ export function TguiSay() {
   }
 
   function handleOpen(data: ByondOpen): void {
-    channelIterator.current.set(data.channel);
+    const { channel } = data;
+    const iterator = channelIterator.current;
+    // Catches the case where the modal is already open
+    if (iterator.isSay()) {
+      iterator.set(channel);
+    }
 
-    setCurrentPrefix(null);
-    setButtonContent(channelIterator.current.current());
+    setButtonContent(iterator.current());
+    windowOpen(iterator.current(), scale.current);
 
-    windowOpen(channelIterator.current.current(), scale.current);
-
-    innerRef.current?.focus();
+    const input = innerRef.current;
+    setTimeout(() => {
+      input?.focus();
+    }, 1);
   }
 
   function handleProps(data: ByondProps): void {
@@ -261,8 +279,8 @@ export function TguiSay() {
     }
 
     if (size !== newSize) {
-      windowSet(newSize, scale.current);
       setSize(newSize);
+      windowSet(newSize, scale.current);
     }
   }, [value]);
 
@@ -295,16 +313,13 @@ export function TguiSay() {
         </button>
         <textarea
           autoCorrect="off"
-          className={classes([
-            'textarea',
-            `textarea-${theme}`,
-            value.length > LineLength.Large && 'textarea-large',
-          ])}
+          className={`textarea textarea-${theme}`}
           maxLength={maxLength}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           ref={innerRef}
           spellCheck={false}
+          rows={ROWS[size] || 1}
           value={value}
         />
       </div>

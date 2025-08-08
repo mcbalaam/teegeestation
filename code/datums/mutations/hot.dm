@@ -1,4 +1,4 @@
-/datum/mutation/cindikinesis
+/datum/mutation/human/cindikinesis
 	name = "Cindikinesis"
 	desc = "Allows the user to concentrate nearby heat into a pile of ash. Wow. Very interesting."
 	quality = POSITIVE
@@ -21,7 +21,7 @@
 	delete_old = FALSE
 	delete_on_failure = FALSE
 
-/datum/mutation/pyrokinesis
+/datum/mutation/human/pyrokinesis
 	name = "Pyrokinesis"
 	desc = "Draws positive energy from the surroundings to heat surrounding temperatures at subject's will."
 	quality = POSITIVE

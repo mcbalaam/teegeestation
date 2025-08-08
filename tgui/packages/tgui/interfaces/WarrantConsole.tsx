@@ -1,4 +1,4 @@
-import { sortBy } from 'es-toolkit';
+import { sortBy } from 'common/collections';
 import { useState } from 'react';
 import {
   BlockQuote,
@@ -63,7 +63,7 @@ export const WarrantConsole = (props) => {
 const RecordList = (props) => {
   const { act, data } = useBackend<Data>();
   const { records = [] } = data;
-  const sorted = sortBy(records, [(record) => record.crew_name]);
+  const sorted = sortBy(records, (record) => record.crew_name);
 
   const [selectedRecord, setSelectedRecord] = useLocalState<
     WarrantRecord | undefined
@@ -116,7 +116,7 @@ const RecordList = (props) => {
 /** Views info on the current selection. */
 const ViewRecord = (props) => {
   const foundRecord = getCurrentRecord();
-  if (!foundRecord) return;
+  if (!foundRecord) return <> </>;
 
   const { citations = [], crew_name } = foundRecord;
 
@@ -136,7 +136,7 @@ const ViewRecord = (props) => {
 /** Handles paying fines */
 const CitationManager = (props) => {
   const foundRecord = getCurrentRecord();
-  if (!foundRecord) return;
+  if (!foundRecord) return <> </>;
 
   const { act } = useBackend<Data>();
   const {
@@ -146,7 +146,6 @@ const CitationManager = (props) => {
   const { crew_ref } = foundRecord;
 
   const [paying, setPaying] = useState(5);
-  const [payingIsValid, setPayingIsValid] = useState(true);
 
   return (
     <Collapsible
@@ -177,12 +176,11 @@ const CitationManager = (props) => {
             <RestrictedInput
               maxValue={fine}
               minValue={5}
-              onChange={setPaying}
+              onChange={(event, value) => setPaying(value)}
               value={paying}
-              onValidationChange={setPayingIsValid}
             />
             <Button.Confirm
-              disabled={!payingIsValid}
+              content="Pay"
               onClick={() =>
                 act('pay', {
                   amount: paying,
@@ -190,9 +188,7 @@ const CitationManager = (props) => {
                   fine_ref: fine_ref,
                 })
               }
-            >
-              Pay
-            </Button.Confirm>
+            />
           </LabeledList.Item>
         )}
       </LabeledList>

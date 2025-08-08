@@ -7,8 +7,10 @@
 	plane = GAME_PLANE
 	layer = CLEANABLE_OBJECT_LAYER
 	mergeable_decal = FALSE
-	decal_reagent = /datum/reagent/brimdust
-	reagent_amount = 15
+
+/obj/effect/decal/cleanable/brimdust/Initialize(mapload)
+	. = ..()
+	reagents.add_reagent(/datum/reagent/brimdust, 15)
 
 /// Ashwalker ore sensor crafted from brimdemon ash
 /obj/item/ore_sensor

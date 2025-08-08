@@ -57,7 +57,7 @@
 	return removed
 
 /obj/machinery/atmospherics/components/binary/circulator/process_atmos()
-	update_appearance(UPDATE_ICON)
+	update_appearance()
 
 /obj/machinery/atmospherics/components/binary/circulator/update_overlays()
 	. = ..()
@@ -166,7 +166,7 @@
 		generator.cold_circ = null
 	else
 		generator.hot_circ = null
-	generator.update_appearance(UPDATE_ICON)
+	generator.update_appearance()
 	generator = null
 
 /obj/machinery/atmospherics/components/binary/circulator/set_piping_layer(new_layer)

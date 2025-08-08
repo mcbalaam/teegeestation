@@ -157,7 +157,7 @@ function TextHighlightSetting(props) {
             monospace
             placeholder="#ffffff"
             value={highlightColor}
-            onBlur={(value) =>
+            onInput={(e, value) =>
               dispatch(
                 updateHighlightSetting({
                   id: id,
@@ -169,11 +169,10 @@ function TextHighlightSetting(props) {
         </Stack.Item>
       </Stack>
       <TextArea
-        fluid
         height="3em"
         value={highlightText}
         placeholder="Put words to highlight here. Separate terms with commas, i.e. (term1, term2, term3)"
-        onBlur={(value) =>
+        onChange={(e, value) =>
           dispatch(
             updateHighlightSetting({
               id: id,

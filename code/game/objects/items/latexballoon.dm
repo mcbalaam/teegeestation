@@ -101,7 +101,7 @@
 
 	return ..()
 
-/obj/item/latexballoon/attackby(obj/item/item, mob/user, list/modifiers, list/attack_modifiers)
+/obj/item/latexballoon/attackby(obj/item/item, mob/user, params)
 	if(istype(item, /obj/item/tank))
 		var/obj/item/tank/air_tank = item
 		blow(air_tank, user)

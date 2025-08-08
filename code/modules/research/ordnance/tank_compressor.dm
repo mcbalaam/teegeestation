@@ -220,10 +220,10 @@
 /obj/machinery/atmospherics/components/binary/tank_compressor/proc/eject_disk(mob/user)
 	if(!inserted_disk)
 		return FALSE
-	if(!user || !Adjacent(user))
-		inserted_disk.forceMove(drop_location())
-	else
+	if(user)
 		user.put_in_hands(inserted_disk)
+	else
+		inserted_disk.forceMove(drop_location())
 	playsound(src, 'sound/machines/card_slide.ogg', 50)
 	return TRUE
 

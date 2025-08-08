@@ -40,17 +40,15 @@
 /obj/vehicle/ridden/wheelchair/motorized/make_ridable()
 	AddElement(/datum/element/ridable, /datum/component/riding/vehicle/wheelchair/motorized)
 
-/obj/vehicle/ridden/wheelchair/motorized/on_craft_completion(list/components, datum/crafting_recipe/current_recipe, atom/crafter)
-	. = ..()
-
+/obj/vehicle/ridden/wheelchair/motorized/CheckParts(list/parts_list)
 	// This wheelchair was crafted, so clean out default parts
-	QDEL_NULL(power_cell)
-
+	qdel(power_cell)
 	component_parts = list()
-	for(var/obj/item/stock_parts/part in contents)
-		// power cell, physically moves into the wheelchair
-		if(istype(part, /obj/item/stock_parts/power_store/cell))
+
+	for(var/obj/item/stock_parts/part in parts_list)
+		if(istype(part, /obj/item/stock_parts/power_store/cell)) // power cell, physically moves into the wheelchair
 			power_cell = part
+			part.forceMove(src)
 			continue
 
 		// find matching datum/stock_part for this part and add to component list
@@ -58,6 +56,8 @@
 		if(isnull(newstockpart))
 			CRASH("No corresponding datum/stock_part for [part.type]")
 		component_parts += newstockpart
+		// delete this part
+		part.moveToNullspace()
 		qdel(part)
 	refresh_parts()
 
@@ -97,7 +97,7 @@
 	user.put_in_hands(power_cell)
 	power_cell = null
 
-/obj/vehicle/ridden/wheelchair/motorized/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+/obj/vehicle/ridden/wheelchair/motorized/attackby(obj/item/attacking_item, mob/user, params)
 	if(!panel_open)
 		return ..()
 
@@ -140,14 +140,12 @@
 	. = ..()
 	if (!disassembled)
 		return
-
-	var/atom/drop = drop_location()
-	new /obj/item/stack/rods(drop, 2)
-	new /obj/item/stack/sheet/iron(drop, 6)
+	new /obj/item/stack/rods(drop_location(), 2)
+	new /obj/item/stack/sheet/iron(drop_location(), 6)
 	for(var/datum/stock_part/part in component_parts)
-		new part.physical_object_type(drop)
+		new part.physical_object_type(drop_location())
 	if(!isnull(power_cell))
-		power_cell.forceMove(drop)
+		power_cell.forceMove(drop_location())
 		power_cell = null
 
 /obj/vehicle/ridden/wheelchair/motorized/screwdriver_act(mob/living/user, obj/item/tool)
@@ -165,7 +163,7 @@
 		return
 	. += "Speed: [speed]"
 	. += "Energy efficiency: [power_efficiency]"
-	. += "Power: [display_energy(power_cell.charge)] out of [display_energy(power_cell.maxcharge)]"
+	. += "Power: [power_cell.charge] out of [power_cell.maxcharge]"
 
 /obj/vehicle/ridden/wheelchair/motorized/Move(newloc, direct)
 	. = ..()

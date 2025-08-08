@@ -14,7 +14,7 @@ import {
 } from 'tgui-core/components';
 
 import { useServerPrefs } from '../../useServerPrefs';
-import type {
+import {
   LoadoutCategory,
   LoadoutItem,
   LoadoutManagerData,
@@ -54,7 +54,7 @@ export function LoadoutPage(props) {
           buttons={
             <Input
               width="200px"
-              onChange={setSearchLoadout}
+              onInput={(_, value) => setSearchLoadout(value)}
               placeholder="Search for an item..."
               value={searchLoadout}
             />
@@ -136,7 +136,7 @@ function LoadoutTabs(props: LoadoutTabsProps) {
       <Stack.Item grow>
         {searching || activeCategory?.contents ? (
           <Section
-            title={searching ? 'Search results' : 'Catalog'}
+            title={searching ? 'Searching...' : 'Catalog'}
             fill
             scrollable
             buttons={

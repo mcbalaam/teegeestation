@@ -3,6 +3,8 @@
 	Lets you read PDA and request console messages.
 */
 
+#define LINKED_SERVER_NONRESPONSIVE  (!linkedServer || (linkedServer.machine_stat & (NOPOWER|BROKEN)))
+
 #define MSG_MON_SCREEN_MAIN 0
 #define MSG_MON_SCREEN_LOGS 1
 #define MSG_MON_SCREEN_REQUEST_LOGS 2
@@ -15,7 +17,7 @@
 	circuit = /obj/item/circuitboard/computer/message_monitor
 	light_color = LIGHT_COLOR_GREEN
 	/// Server linked to.
-	var/obj/machinery/telecomms/message_server/linked_server = null
+	var/obj/machinery/telecomms/message_server/linkedServer = null
 	/// Sparks effect - For emag
 	var/datum/effect_system/spark_spread/spark_system
 	/// Computer properties.
@@ -32,33 +34,6 @@
 	/// Decrypt password
 	var/password = ""
 
-/obj/machinery/computer/message_monitor/Initialize(mapload)
-	..()
-	spark_system = new
-	return INITIALIZE_HINT_LATELOAD
-
-/obj/machinery/computer/message_monitor/post_machine_initialize()
-	. = ..()
-	//Is the server isn't linked to a server, and there's a server available, default it to the first one in the list.
-	if(!linked_server)
-		for(var/obj/machinery/telecomms/message_server/message_server in GLOB.telecomm_machines)
-			set_linked_server(message_server)
-			break
-
-/obj/machinery/computer/message_monitor/Destroy()
-	set_linked_server(null)
-	return ..()
-
-/obj/machinery/computer/message_monitor/proc/set_linked_server(obj/machinery/telecomms/message_server/new_server)
-	if(linked_server)
-		linked_server.listening_computers -= src
-	linked_server = new_server
-	if(linked_server)
-		linked_server.listening_computers += src
-
-/obj/machinery/computer/message_monitor/proc/is_server_responsive()
-	return !!(linked_server && !(linked_server.machine_stat & (NOPOWER|BROKEN)))
-
 /obj/machinery/computer/message_monitor/screwdriver_act(mob/living/user, obj/item/I)
 	if(obj_flags & EMAGGED)
 		//Stops people from just unscrewing the monitor and putting it back to get the console working again.
@@ -69,18 +44,18 @@
 /obj/machinery/computer/message_monitor/emag_act(mob/user, obj/item/card/emag/emag_card)
 	if(obj_flags & EMAGGED)
 		return FALSE
-	if(!isnull(linked_server))
+	if(!isnull(linkedServer))
 		obj_flags |= EMAGGED
 		screen = MSG_MON_SCREEN_HACKED
 		spark_system.set_up(5, 0, src)
 		spark_system.start()
-		var/obj/item/paper/monitorkey/monitor_key_paper = new(loc, linked_server)
+		var/obj/item/paper/monitorkey/monitor_key_paper = new(loc, linkedServer)
 		// Will help make emagging the console not so easy to get away with.
 		monitor_key_paper.add_raw_text("<br><br><font color='red'>£%@%(*$%&(£&?*(%&£/{}</font>")
-		var/time = 100 * length(linked_server.decryptkey)
+		var/time = 100 * length(linkedServer.decryptkey)
 		addtimer(CALLBACK(src, PROC_REF(unemag_console)), time)
 		error_message = "%$&(£: Critical %$$@ Error // !RestArting! <lOadiNg backUp iNput ouTput> - ?pLeaSe wAit!"
-		linked_server.toggled = FALSE
+		linkedServer.toggled = FALSE
 		return TRUE
 	else
 		to_chat(user, span_notice("A no server error appears on the screen."))
@@ -89,9 +64,28 @@
 /// Remove the emag effect from the console
 /obj/machinery/computer/message_monitor/proc/unemag_console()
 	screen = MSG_MON_SCREEN_MAIN
-	linked_server.toggled = TRUE
+	linkedServer.toggled = TRUE
 	error_message = ""
 	obj_flags &= ~EMAGGED
+
+/obj/machinery/computer/message_monitor/Initialize(mapload)
+	..()
+	spark_system = new
+	GLOB.telecomms_list += src
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/machinery/computer/message_monitor/post_machine_initialize()
+	. = ..()
+	//Is the server isn't linked to a server, and there's a server available, default it to the first one in the list.
+	if(!linkedServer)
+		for(var/obj/machinery/telecomms/message_server/message_server in GLOB.telecomms_list)
+			linkedServer = message_server
+			break
+
+/obj/machinery/computer/message_monitor/Destroy()
+	GLOB.telecomms_list -= src
+	linkedServer = null
+	return ..()
 
 /obj/machinery/computer/message_monitor/ui_data(mob/user)
 	var/list/data = list(
@@ -100,25 +94,25 @@
 		"notice_message" = notice_message,
 		"success_message" = success_message,
 		"auth" = authenticated,
-		"server_status" = is_server_responsive(),
+		"server_status" = !LINKED_SERVER_NONRESPONSIVE,
 	)
 
 	switch(screen)
 		if(MSG_MON_SCREEN_MAIN)
 			data["password"] = password
-			data["status"] = linked_server.on
+			data["status"] = linkedServer.on
 			// Check is AI or cyborg malf
 			var/mob/living/silicon/silicon_user = user
 			data["is_malf"] = istype(silicon_user) && silicon_user.hack_software
 
 		if(MSG_MON_SCREEN_LOGS)
 			var/list/message_list = list()
-			for(var/datum/data_tablet_msg/pda in linked_server.pda_msgs)
+			for(var/datum/data_tablet_msg/pda in linkedServer.pda_msgs)
 				message_list += list(list("ref" = REF(pda), "sender" = pda.sender, "recipient" = pda.recipient, "message" = pda.message))
 			data["messages"] = message_list
 		if(MSG_MON_SCREEN_REQUEST_LOGS)
 			var/list/request_list = list()
-			for(var/datum/data_rc_msg/rc in linked_server.rc_msgs)
+			for(var/datum/data_rc_msg/rc in linkedServer.rc_msgs)
 				request_list += list(list("ref" = REF(rc), "message" = rc.message, "stamp" = rc.stamp, "id_auth" = rc.id_auth, "departament" = rc.sender_department))
 			data["requests"] = request_list
 	return data
@@ -140,7 +134,7 @@
 				authenticated = FALSE
 				return TRUE
 
-			if(linked_server.decryptkey != authPass)
+			if(linkedServer.decryptkey != authPass)
 				error_message = "ALERT: Incorrect decryption key!"
 				return TRUE
 
@@ -150,26 +144,26 @@
 			return TRUE
 		if("link_server")
 			var/list/message_servers = list()
-			for (var/obj/machinery/telecomms/message_server/message_server in GLOB.telecomm_machines)
+			for (var/obj/machinery/telecomms/message_server/message_server in GLOB.telecomms_list)
 				message_servers += message_server
 
 			if(length(message_servers) > 1)
-				set_linked_server(tgui_input_list(usr, "Please select a server", "Server Selection", message_servers))
-				if(linked_server)
+				linkedServer = tgui_input_list(usr, "Please select a server", "Server Selection", message_servers)
+				if(linkedServer)
 					notice_message = "NOTICE: Server selected."
-			else if(length(message_servers) == 1)
-				set_linked_server(message_servers[1])
-				notice_message = "NOTICE: Only Single Server Detected - Server selected."
-			else
-				error_message = "ALERT: No server detected."
+				else if(length(message_servers) > 0)
+					linkedServer = message_servers[1]
+					notice_message = "NOTICE: Only Single Server Detected - Server selected."
+				else
+					error_message = "ALERT: No server detected."
 			screen = MSG_MON_SCREEN_MAIN
 			return TRUE
 		if("turn_server")
-			if(!is_server_responsive())
+			if(LINKED_SERVER_NONRESPONSIVE)
 				error_message = "ALERT: No server detected."
 				return TRUE
 
-			linked_server.toggled = !linked_server.toggled
+			linkedServer.toggled = !linkedServer.toggled
 			return TRUE
 		if("view_message_logs")
 			screen = MSG_MON_SCREEN_LOGS
@@ -178,22 +172,22 @@
 			screen = MSG_MON_SCREEN_REQUEST_LOGS
 			return TRUE
 		if("clear_message_logs")
-			linked_server.pda_msgs = list()
+			linkedServer.pda_msgs = list()
 			notice_message = "NOTICE: Logs cleared."
 			return TRUE
 		if("clear_request_logs")
-			linked_server.rc_msgs = list()
+			linkedServer.rc_msgs = list()
 			notice_message = "NOTICE: Logs cleared."
 			return TRUE
 		if("set_key")
 			var/dkey = tgui_input_text(usr, "Please enter the decryption key", "Telecomms Decryption", max_length = 16)
 			if(dkey && dkey != "")
-				if(linked_server.decryptkey == dkey)
+				if(linkedServer.decryptkey == dkey)
 					var/newkey = tgui_input_text(usr, "Please enter the new key (3 - 16 characters max)", "New Key", max_length = 16)
 					if(length(newkey) <= 3)
 						notice_message = "NOTICE: Decryption key too short!"
 					else if(newkey && newkey != "")
-						linked_server.decryptkey = newkey
+						linkedServer.decryptkey = newkey
 					notice_message = "NOTICE: Decryption key set."
 				else
 					error_message = "ALERT: Incorrect decryption key!"
@@ -202,19 +196,18 @@
 			screen = MSG_MON_SCREEN_MAIN
 			return TRUE
 		if("delete_message")
-			linked_server.pda_msgs -= locate(params["ref"]) in linked_server.pda_msgs
+			linkedServer.pda_msgs -= locate(params["ref"]) in linkedServer.pda_msgs
 			success_message = "Log Deleted!"
 			return TRUE
 		if("delete_request")
-			linked_server.rc_msgs -= locate(params["ref"]) in linked_server.rc_msgs
+			linkedServer.rc_msgs -= locate(params["ref"]) in linkedServer.rc_msgs
 			success_message = "Log Deleted!"
 			return TRUE
 		if("connect_server")
-			if(linked_server)
-				return TRUE
-			for(var/obj/machinery/telecomms/message_server/new_home in GLOB.telecomm_machines)
-				set_linked_server(new_home)
-				break
+			if(!linkedServer)
+				for(var/obj/machinery/telecomms/message_server/S in GLOB.telecomms_list)
+					linkedServer = S
+					break
 			return TRUE
 		if("send_fake_message")
 			var/sender = tgui_input_text(usr, "What is the sender's name?", "Sender", max_length = MAX_NAME_LEN)
@@ -254,16 +247,16 @@
 				"targets" = list(tablet_to_messenger[recipient]),
 			))
 			// This will log the signal and transmit it to the target
-			linked_server.receive_information(signal, null)
+			linkedServer.receive_information(signal, null)
 			usr.log_message("(Tablet: [name] | [usr.real_name]) sent \"[message]\" to [signal.format_target()]", LOG_PDA)
 			return TRUE
 		// Malfunction AI and cyborgs can hack console. This will authenticate the console, but you need to wait password selection
 		if("hack")
-			var/time = 10 SECONDS * length(linked_server.decryptkey)
+			var/time = 10 SECONDS * length(linkedServer.decryptkey)
 			addtimer(CALLBACK(src, PROC_REF(unemag_console)), time)
 			screen = MSG_MON_SCREEN_HACKED
 			error_message = "%$&(£: Critical %$$@ Error // !RestArting! <lOadiNg backUp iNput ouTput> - ?pLeaSe wAit!"
-			linked_server.toggled = FALSE
+			linkedServer.toggled = FALSE
 			authenticated = TRUE
 			return TRUE
 	return TRUE
@@ -283,6 +276,7 @@
 #undef MSG_MON_SCREEN_LOGS
 #undef MSG_MON_SCREEN_REQUEST_LOGS
 #undef MSG_MON_SCREEN_HACKED
+#undef LINKED_SERVER_NONRESPONSIVE
 
 /// Monitor decryption key paper
 
@@ -305,7 +299,7 @@
 	update_appearance()
 
 /obj/item/paper/monitorkey/LateInitialize()
-	for (var/obj/machinery/telecomms/message_server/preset/server in GLOB.telecomm_machines)
+	for (var/obj/machinery/telecomms/message_server/preset/server in GLOB.telecomms_list)
 		if (server.decryptkey)
 			print(server)
 			break

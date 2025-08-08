@@ -59,24 +59,13 @@
 	if(!can_adjust_stamina_loss(amount, forced, required_biotype))
 		return 0
 	. = staminaloss
-
-	var/stamina_delta = forced ? amount : amount * damage_coeff[STAMINA]
-	staminaloss = max(0, min(max_stamina, staminaloss + stamina_delta))
-
-	if(stamina_delta > 0)
-		received_stamina_damage(staminaloss, -1 * stamina_delta, amount)
-	if(updating_stamina && stamina_delta)
+	if(forced)
+		staminaloss = max(0, min(BASIC_MOB_MAX_STAMINALOSS, staminaloss + amount))
+	else
+		staminaloss = max(0, min(BASIC_MOB_MAX_STAMINALOSS, staminaloss + (amount * damage_coeff[STAMINA])))
+	if(updating_stamina)
 		update_stamina()
 	. -= staminaloss
 
 /mob/living/basic/received_stamina_damage(current_level, amount_actual, amount)
-	if (stamina_recovery == 0)
-		return ..()
-
-/mob/living/basic/received_stamina_damage(current_level, amount_actual, amount)
-	. = ..()
-	if (stat == DEAD || stamina_crit_threshold == BASIC_MOB_NO_STAMCRIT)
-		return
-
-	if (100 / (max_stamina / current_level) >= stamina_crit_threshold)
-		apply_status_effect(/datum/status_effect/incapacitating/stamcrit)
+	return

@@ -1,8 +1,8 @@
-import type { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { useBackend } from 'tgui/backend';
 import { Button, Stack } from 'tgui-core/components';
 
-import type { AirAlarmData, AlarmScreen } from '../types';
+import { AirAlarmData, AlarmScreen } from '../types';
 
 type Props = {
   setScreen?: Dispatch<SetStateAction<AlarmScreen>>;
@@ -36,7 +36,7 @@ export function AirAlarmControlHome(props: Props) {
           Area Atmosphere Alarm
         </Button>
       </Stack.Item>
-      <Stack.Item mb={1}>
+      <Stack.Item mb={2}>
         <Button
           icon={isPanicSiphoning ? 'exclamation-triangle' : 'exclamation'}
           color={isPanicSiphoning && 'danger'}

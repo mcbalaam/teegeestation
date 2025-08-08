@@ -27,8 +27,10 @@
 
 /datum/crafting_recipe/food/chococoin
 	name = "Choco coin"
-	reqs = list(/obj/item/food/chocolatebar = 1)
-	tool_paths = list(/obj/item/coin)
+	reqs = list(
+		/obj/item/coin = 1,
+		/obj/item/food/chocolatebar = 1,
+	)
 	result = /obj/item/food/chococoin
 	category = CAT_MISCFOOD
 
@@ -95,6 +97,7 @@
 		/obj/item/food/grown/holymelon = 1,
 		/obj/item/reagent_containers/cup/glass/bottle/vodka = 1
 	)
+	parts = list(/obj/item/reagent_containers/cup/glass/bottle/vodka = 1)
 	result = /obj/item/food/melonkeg
 	added_foodtypes = ALCOHOL
 	category = CAT_MISCFOOD

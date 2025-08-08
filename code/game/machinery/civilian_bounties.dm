@@ -47,7 +47,7 @@
 	///Typecast of an inserted, scanned ID card inside the console, as bounties are held within the ID card.
 	var/obj/item/card/id/inserted_scan_id
 
-/obj/machinery/computer/piratepad_control/civilian/attackby(obj/item/I, mob/living/user, list/modifiers, list/attack_modifiers)
+/obj/machinery/computer/piratepad_control/civilian/attackby(obj/item/I, mob/living/user, params)
 	if(isidcard(I))
 		if(id_insert(user, I, inserted_scan_id))
 			inserted_scan_id = I
@@ -286,12 +286,14 @@
 	return TRUE
 
 ///Removes A stored ID card.
-/obj/machinery/computer/piratepad_control/civilian/proc/id_eject(mob/user, obj/item/target)
+/obj/machinery/computer/piratepad_control/civilian/proc/id_eject(mob/user, obj/target)
 	if(!target)
 		to_chat(user, span_warning("That slot is empty!"))
 		return FALSE
 	else
-		try_put_in_hand(target, user)
+		target.forceMove(drop_location())
+		if(!issilicon(user) && Adjacent(user))
+			user.put_in_hands(target)
 		user.visible_message(span_notice("[user] gets \the [target] from \the [src]."), \
 							span_notice("You get \the [target] from \the [src]."))
 		playsound(src, 'sound/machines/terminal/terminal_insert_disc.ogg', 50, FALSE)

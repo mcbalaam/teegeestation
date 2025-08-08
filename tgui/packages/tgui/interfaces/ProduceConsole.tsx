@@ -1,33 +1,33 @@
-import { atom, useAtom } from 'jotai';
 import { useState } from 'react';
 import {
   Box,
   Button,
   Dimmer,
+  Divider,
   DmIcon,
   Icon,
   Input,
   NumberInput,
   Section,
   Stack,
-  Table,
   Tabs,
-  Tooltip,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 import { capitalize, createSearch } from 'tgui-core/string';
 
-import { useBackend } from '../backend';
+import { useBackend, useLocalState } from '../backend';
 import { Window } from '../layouts';
 
+const buttonWidth = 2;
+
 type OrderDatum = {
-  cat: string;
-  cost: number;
-  desc: number;
-  icon_state: string;
-  icon: string;
   name: string;
+  desc: number;
+  cat: string;
   ref: string;
+  cost: number;
+  icon: string;
+  icon_state: string;
 };
 
 type Item = {
@@ -36,62 +36,46 @@ type Item = {
 };
 
 type Data = {
-  cargo_cost_multiplier: number;
-  cargo_value: number;
   credit_type: string;
-  express_cost_multiplier: number;
-  express_tooltip: string;
-  forced_express: string;
-  item_amts: Item[];
   off_cooldown: BooleanLike;
+  points: number;
+  express_tooltip: string;
+  purchase_tooltip: string;
+  forced_express: string;
+  cargo_value: number;
+  cargo_cost_multiplier: number;
+  express_cost_multiplier: number;
   order_categories: string[];
   order_datums: OrderDatum[];
-  points: number;
-  purchase_tooltip: string;
+  item_amts: Item[];
   total_cost: number;
 };
 
-const buttonWidth = 2;
+const TAB2NAME = [
+  {
+    component: () => ShoppingTab,
+  },
+  {
+    component: () => CheckoutTab,
+  },
+];
 
-const condensedAtom = atom(false);
-
-const creditIcons = {
-  credit: 'coins',
-} as const;
-
-type CreditIconProps = {
-  credit_type: string;
-  color?: string;
+const findAmount = (item_amts, name) => {
+  const amount = item_amts.find((item) => item.name === name);
+  return amount.amt;
 };
 
-function CreditIcon(props: CreditIconProps) {
-  const { credit_type, color = 'gold' } = props;
-
-  const foundIcon = creditIcons[credit_type];
-  if (!foundIcon) return credit_type;
-
-  return <Icon name={foundIcon} color={color} />;
-}
-
-function findAmount(item_amts: Item[], name: string): number {
-  const amount = item_amts.find((item) => item.name === name);
-  return amount?.amt || 0;
-}
-
-function ShoppingTab(props) {
+const ShoppingTab = (props) => {
   const { data, act } = useBackend<Data>();
   const { credit_type, order_categories, order_datums, item_amts } = data;
-
   const [shopCategory, setShopCategory] = useState(order_categories[0]);
-  const [condensed] = useAtom(condensedAtom);
+  const [condensed] = useLocalState('condensed', false);
   const [searchItem, setSearchItem] = useState('');
-
   const search = createSearch<OrderDatum>(
     searchItem,
     (order_datums) => order_datums.name,
   );
-
-  const goods =
+  let goods =
     searchItem.length > 0
       ? order_datums.filter((item) => search(item))
       : order_datums.filter((item) => item && item.cat === shopCategory);
@@ -122,7 +106,9 @@ function ShoppingTab(props) {
                 width="150px"
                 placeholder="Search item..."
                 value={searchItem}
-                onChange={setSearchItem}
+                onInput={(e, value) => {
+                  setSearchItem(value);
+                }}
               />
             </Stack.Item>
           </Tabs>
@@ -130,82 +116,86 @@ function ShoppingTab(props) {
       </Section>
       <Stack.Item grow>
         <Section fill scrollable>
-          <Table>
+          <Stack vertical mt={-2}>
+            <Divider />
             {goods.map((item) => (
-              <Table.Row
-                key={item.ref}
-                style={{ borderBottom: 'thin solid #333' }}
-              >
-                {!condensed && (
-                  <Table.Cell collapsing>
-                    <DmIcon
-                      icon={item.icon}
-                      icon_state={item.icon_state}
-                      verticalAlign="middle"
-                      height="36px"
-                      width="36px"
-                      fallback={<Icon name="spinner" size={2} spin />}
+              <Stack.Item key={item.ref}>
+                <Stack>
+                  <span
+                    style={{
+                      verticalAlign: 'middle',
+                    }}
+                  />{' '}
+                  {!condensed && (
+                    <Stack.Item>
+                      <DmIcon
+                        icon={item.icon}
+                        icon_state={item.icon_state}
+                        verticalAlign="middle"
+                        height={'36px'}
+                        width={'36px'}
+                        fallback={<Icon name="spinner" size={2} spin />}
+                      />
+                    </Stack.Item>
+                  )}
+                  <Stack.Item grow>{capitalize(item.name)}</Stack.Item>
+                  <Stack.Item color="label" fontSize="10px">
+                    <Button
+                      mt={-1}
+                      color="transparent"
+                      icon="info"
+                      tooltipPosition="right"
+                      tooltip={item.desc}
                     />
-                  </Table.Cell>
-                )}
-                <Table.Cell color="label">{capitalize(item.name)}</Table.Cell>
-                <Table.Cell color="label" fontSize="10px" collapsing>
-                  <Button
-                    color="transparent"
-                    icon="info"
-                    tooltipPosition="top"
-                    tooltip={item.desc}
-                  />
-                </Table.Cell>
-                <Table.Cell fontSize="10px" collapsing textAlign="right">
-                  <Tooltip
-                    content={`Costs ${item.cost} ${credit_type} per order`}
-                    position="top"
-                  >
-                    {item.cost} <CreditIcon credit_type={credit_type} />
-                  </Tooltip>
-                </Table.Cell>
-                <Table.Cell collapsing>
-                  <Button
-                    icon="minus"
-                    onClick={() =>
-                      act('remove_one', {
-                        target: item.ref,
-                      })
-                    }
-                  />
-                  <Button
-                    icon="plus"
-                    onClick={() =>
-                      act('add_one', {
-                        target: item.ref,
-                      })
-                    }
-                  />
-                  <NumberInput
-                    value={findAmount(item_amts, item.name)}
-                    width="41px"
-                    minValue={0}
-                    maxValue={20}
-                    step={1}
-                    onChange={(value) =>
-                      act('cart_set', {
-                        target: item.ref,
-                        amt: value,
-                      })
-                    }
-                  />
-                </Table.Cell>
-              </Table.Row>
+                    <br />
+                  </Stack.Item>
+                  <Stack.Item mt={-1.5} align="right">
+                    <Box fontSize="10px" color="label">
+                      {item.cost + credit_type + ' per order.'}
+                    </Box>
+                    <Button
+                      icon="minus"
+                      ml={2}
+                      onClick={() =>
+                        act('remove_one', {
+                          target: item.ref,
+                        })
+                      }
+                    />
+                    <Button
+                      icon="plus"
+                      onClick={() =>
+                        act('add_one', {
+                          target: item.ref,
+                        })
+                      }
+                    />
+                    <NumberInput
+                      value={findAmount(item_amts, item.name) || 0}
+                      width="41px"
+                      minValue={0}
+                      maxValue={20}
+                      step={1}
+                      onChange={(value) =>
+                        act('cart_set', {
+                          target: item.ref,
+                          amt: value,
+                        })
+                      }
+                    />
+                  </Stack.Item>
+                </Stack>
+                <Divider />
+              </Stack.Item>
             ))}
-          </Table>
+          </Stack>
         </Section>
       </Stack.Item>
     </Stack>
   );
-}
+};
 
-function CheckoutTab(props) {
+const CheckoutTab = (props) => {
   const { data, act } = useBackend<Data>();
   const {
     credit_type,
@@ -219,23 +209,17 @@ function CheckoutTab(props) {
     express_cost_multiplier,
     item_amts,
   } = data;
-
   const total_cargo_cost = Math.floor(total_cost * cargo_cost_multiplier);
-
   const checkout_list = order_datums.filter(
-    (food) => food && findAmount(item_amts, food.name),
+    (food) => food && (findAmount(item_amts, food.name) || 0),
   );
-
   return (
     <Stack vertical fill>
       <Stack.Item grow>
         <Section fill scrollable>
-          <Table>
-            <Table.Row>
-              <Table.Cell header colSpan={3} textAlign="center" color="label">
-                Checkout list:
-              </Table.Cell>
-            </Table.Row>
+          <Stack vertical fill>
+            <Stack.Item textAlign="center">Checkout list:</Stack.Item>
+            <Divider />
             {!checkout_list.length && (
               <>
                 <Box align="center" mt="15%" fontSize="40px">
@@ -247,51 +231,58 @@ function CheckoutTab(props) {
                 </Box>
               </>
             )}
-            {checkout_list.map((item, index) => (
-              <Table.Row
-                key={item.ref}
-                style={{ borderBottom: 'thin solid #333' }}
-              >
-                <Table.Cell collapsing>{capitalize(item.name)}</Table.Cell>
-                <Table.Cell color="label" fontSize="10px">
-                  {`"${item.desc}"`}
-                </Table.Cell>
-                <Table.Cell fontSize="10px" collapsing textAlign="right">
-                  <Tooltip
-                    content={`Costs ${item.cost} ${credit_type} per order`}
-                    position="top"
-                  >
-                    {item.cost} <CreditIcon credit_type={credit_type} />
-                  </Tooltip>
-                </Table.Cell>
-                <Table.Cell collapsing>
-                  <NumberInput
-                    value={findAmount(item_amts, item.name)}
-                    width="41px"
-                    minValue={0}
-                    maxValue={(item.cost > 10 && 50) || 10}
-                    step={1}
-                    onChange={(value) =>
-                      act('cart_set', {
-                        target: item.ref,
-                        amt: value,
-                      })
-                    }
-                  />
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table>
+            <Stack.Item grow>
+              {checkout_list.map((item, key) => (
+                <Stack.Item key={key}>
+                  <Stack>
+                    <Stack.Item>{capitalize(item.name)}</Stack.Item>
+                    <Stack.Item grow color="label" fontSize="10px">
+                      {'"' + item.desc + '"'}
+                      <br />
+                      <Box textAlign="right">
+                        {item.name +
+                          ' costs ' +
+                          item.cost +
+                          credit_type +
+                          ' per order.'}
+                      </Box>
+                    </Stack.Item>
+                    <Stack.Item mt={-0.5}>
+                      <NumberInput
+                        value={findAmount(item_amts, item.name) || 0}
+                        width="41px"
+                        minValue={0}
+                        maxValue={(item.cost > 10 && 50) || 10}
+                        step={1}
+                        onChange={(value) =>
+                          act('cart_set', {
+                            target: item.ref,
+                            amt: value,
+                          })
+                        }
+                      />
+                    </Stack.Item>
+                  </Stack>
+                  <Divider />
+                </Stack.Item>
+              ))}
+            </Stack.Item>
+          </Stack>
         </Section>
       </Stack.Item>
       <Stack.Item>
-        <Section fill>
-          <Stack fill>
+        <Section>
+          <Stack>
+            <Stack.Item grow mt={0.5}>
+              Total:{total_cargo_cost}&#40;Express:
+              {total_cost * express_cost_multiplier}&#41;
+            </Stack.Item>
             {!forced_express && (
               <Stack.Item grow textAlign="center">
                 <Button
                   fluid
                   icon="plane-departure"
+                  content="Purchase"
                   disabled={total_cargo_cost < cargo_value}
                   tooltip={
                     total_cargo_cost < cargo_value
@@ -300,10 +291,7 @@ function CheckoutTab(props) {
                   }
                   tooltipPosition="top"
                   onClick={() => act('purchase')}
-                >
-                  Purchase: {total_cargo_cost}{' '}
-                  <CreditIcon credit_type={credit_type} color="white" />
-                </Button>
+                />
               </Stack.Item>
             )}
             <Stack.Item grow textAlign="center">
@@ -311,25 +299,23 @@ function CheckoutTab(props) {
                 fluid
                 icon="parachute-box"
                 color="yellow"
+                content="Express"
                 disabled={total_cost <= 0}
                 tooltip={
                   total_cost <= 0 ? 'Order atleast 1 item' : express_tooltip
                 }
                 tooltipPosition="top-start"
                 onClick={() => act('express')}
-              >
-                Express: {total_cost * express_cost_multiplier}{' '}
-                <CreditIcon credit_type={credit_type} color="black" />
-              </Button>
+              />
             </Stack.Item>
           </Stack>
         </Section>
       </Stack.Item>
     </Stack>
   );
-}
+};
 
-function OrderSent(props) {
+const OrderSent = (props) => {
   return (
     <Dimmer>
       <Stack vertical>
@@ -342,19 +328,14 @@ function OrderSent(props) {
       </Stack>
     </Dimmer>
   );
-}
+};
 
-enum Tab {
-  Shopping,
-  Checkout,
-}
-
-export function ProduceConsole(props) {
+export const ProduceConsole = (props) => {
   const { data } = useBackend<Data>();
-  const { credit_type, points = 0, off_cooldown, order_categories } = data;
-
-  const [tabIndex, setTabIndex] = useState(Tab.Shopping);
-  const [condensed, setCondensed] = useAtom(condensedAtom);
+  const { credit_type, points, off_cooldown, order_categories } = data;
+  const [tabIndex, setTabIndex] = useState(1);
+  const [condensed, setCondensed] = useLocalState('condensed', false);
+  const TabComponent = TAB2NAME[tabIndex - 1].component();
 
   return (
     <Window width={Math.max(order_categories.length * 125, 500)} height={400}>
@@ -363,57 +344,49 @@ export function ProduceConsole(props) {
         <Stack vertical fill>
           <Stack.Item>
             <Section fill>
-              <Stack fill vertical>
-                <Stack.Item>
-                  <Stack textAlign="center">
-                    <Stack.Item grow={3}>
-                      <Button
-                        fluid
-                        color="green"
-                        lineHeight={buttonWidth}
-                        icon="cart-plus"
-                        onClick={() => setTabIndex(Tab.Shopping)}
-                      >
-                        Shopping
-                      </Button>
-                    </Stack.Item>
-                    <Stack.Item grow>
-                      <Button
-                        fluid
-                        color="green"
-                        lineHeight={buttonWidth}
-                        icon="dollar-sign"
-                        onClick={() => setTabIndex(Tab.Checkout)}
-                      >
-                        Checkout
-                      </Button>
-                    </Stack.Item>
-                  </Stack>
+              <Stack textAlign="center">
+                <Stack.Item grow={3}>
+                  <Button
+                    fluid
+                    color="green"
+                    lineHeight={buttonWidth}
+                    icon="cart-plus"
+                    content="Shopping"
+                    onClick={() => setTabIndex(1)}
+                  />
                 </Stack.Item>
-                <Stack.Item>
-                  <Stack>
-                    <Stack.Item grow>
-                      <Button
-                        color={condensed ? 'green' : 'red'}
-                        onClick={() => setCondensed(!condensed)}
-                      >
-                        {condensed ? 'Expand' : 'Condense'}
-                      </Button>
-                    </Stack.Item>
-                    <Stack.Item>
-                      {points} <CreditIcon credit_type={credit_type} />
-                    </Stack.Item>
-                  </Stack>
+                <Stack.Item grow>
+                  <Button
+                    fluid
+                    color="green"
+                    lineHeight={buttonWidth}
+                    icon="dollar-sign"
+                    content="Checkout"
+                    onClick={() => setTabIndex(2)}
+                  />
                 </Stack.Item>
               </Stack>
             </Section>
           </Stack.Item>
+          <Section>
+            <Stack direction="column">
+              <Stack.Item grow>
+                Currently available balance: {points || 0} {credit_type}
+              </Stack.Item>
+              <Stack.Item textAlign="right">
+                <Button
+                  color={condensed ? 'green' : 'red'}
+                  content={condensed ? 'Uncondense' : 'Condense'}
+                  onClick={() => setCondensed(!condensed)}
+                />
+              </Stack.Item>
+            </Stack>
+          </Section>
           <Stack.Item grow>
-            {tabIndex === Tab.Shopping && <ShoppingTab />}
-            {tabIndex === Tab.Checkout && <CheckoutTab />}
+            <TabComponent />
           </Stack.Item>
         </Stack>
       </Window.Content>
     </Window>
   );
-}
+};

@@ -222,11 +222,6 @@
 	greyscale_colors = CIRCUIT_COLOR_ENGINEERING
 	build_path = /obj/machinery/computer/message_monitor
 
-/obj/item/circuitboard/computer/modular_shield_console
-	name = "Modular Shield Generator Console"
-	greyscale_colors = CIRCUIT_COLOR_ENGINEERING
-	build_path = /obj/machinery/computer/modular_shield
-
 /obj/item/circuitboard/computer/powermonitor
 	name = "Power Monitor"  //name fixed 250810
 	greyscale_colors = CIRCUIT_COLOR_ENGINEERING
@@ -336,8 +331,7 @@
 	name = "Syndicate Shuttle"
 	greyscale_colors = CIRCUIT_COLOR_GENERIC
 	build_path = /obj/machinery/computer/shuttle/syndicate
-	/// If operatives declared war this will be the time challenge was started
-	var/challenge_start_time
+	var/challenge = FALSE
 	var/moved = FALSE
 
 /obj/item/circuitboard/computer/syndicate_shuttle/Initialize(mapload)
@@ -410,11 +404,6 @@
 	name = "PanD.E.M.I.C. 2200"
 	greyscale_colors = CIRCUIT_COLOR_MEDICAL
 	build_path = /obj/machinery/computer/pandemic
-
-/obj/item/circuitboard/computer/experimental_cloner
-	name = "Experimental Cloner Control Console"
-	greyscale_colors = CIRCUIT_COLOR_MEDICAL
-	build_path = /obj/machinery/computer/experimental_cloner
 
 //Science
 
@@ -494,7 +483,7 @@
 /obj/item/circuitboard/computer/scan_consolenew
 	name = "DNA Console"
 	greyscale_colors = CIRCUIT_COLOR_SCIENCE
-	build_path = /obj/machinery/computer/dna_console
+	build_path = /obj/machinery/computer/scan_consolenew
 
 /obj/item/circuitboard/computer/mechpad
 	name = "Mecha Orbital Pad Console"

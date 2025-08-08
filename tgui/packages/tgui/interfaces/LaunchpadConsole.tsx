@@ -137,7 +137,7 @@ function LaunchpadTitle(props) {
           <Input
             value={pad_name}
             width="170px"
-            onBlur={(value) =>
+            onChange={(e, value) =>
               act('rename', {
                 name: value,
               })

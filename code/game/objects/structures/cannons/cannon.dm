@@ -53,7 +53,7 @@
 	default_unfasten_wrench(user, tool)
 	return ITEM_INTERACT_SUCCESS
 
-/obj/structure/cannon/attackby(obj/item/used_item, mob/user, list/modifiers, list/attack_modifiers)
+/obj/structure/cannon/attackby(obj/item/used_item, mob/user, params)
 	if(charge_ignited)
 		balloon_alert(user, "it's gonna fire!")
 		return
@@ -85,7 +85,7 @@
 		var/obj/item/reagent_containers/powder_keg = used_item
 		if(!(powder_keg.reagent_flags & OPENCONTAINER))
 			return ..()
-		if(istype(powder_keg, /obj/item/rag))
+		if(istype(powder_keg, /obj/item/reagent_containers/cup/rag))
 			return ..()
 
 		if(!powder_keg.reagents.total_volume)

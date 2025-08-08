@@ -9,7 +9,7 @@
 	/// Are we holding the two handed item properly
 	var/wielded = FALSE
 	/// The multiplier applied to force when wielded, does not work with force_wielded, and force_unwielded
-	var/force_multiplier = 1
+	var/force_multiplier = 0
 	/// The force of the item when weilded
 	var/force_wielded = 0
 	/// The force of the item when unweilded
@@ -52,7 +52,7 @@
 	wieldsound = FALSE,
 	unwieldsound = FALSE,
 	attacksound = FALSE,
-	force_multiplier = 1,
+	force_multiplier = 0,
 	force_wielded = 0,
 	force_unwielded = 0,
 	icon_wielded = FALSE,
@@ -99,15 +99,7 @@
 )
 	if(!original)
 		return
-	var/obj/item/parent_item = parent
-	if(wielded)
-		if(sharpened_increase)
-			parent_item.force -= sharpened_increase
-		if(force_multiplier)
-			parent_item.force /= force_multiplier
-		else if(!isnull(force_unwielded))
-			parent_item.force = force_unwielded
-	if(!isnull(require_twohands))
+	if(require_twohands)
 		src.require_twohands = require_twohands
 	if(wieldsound)
 		src.wieldsound = wieldsound
@@ -117,9 +109,9 @@
 		src.attacksound = attacksound
 	if(force_multiplier)
 		src.force_multiplier = force_multiplier
-	if(!isnull(force_wielded))
+	if(force_wielded)
 		src.force_wielded = force_wielded
-	if(isnull(force_unwielded))
+	if(force_unwielded)
 		src.force_unwielded = force_unwielded
 	if(icon_wielded)
 		src.icon_wielded = icon_wielded
@@ -127,14 +119,6 @@
 		src.wield_callback = wield_callback
 	if(unwield_callback)
 		src.unwield_callback = unwield_callback
-	if(!wielded)
-		return
-	if(!isnull(force_multiplier))
-		parent_item.force *= force_multiplier
-	else if(!isnull(force_wielded))
-		parent_item.force = force_wielded
-	if(!isnull(sharpened_increase))
-		parent_item.force += sharpened_increase
 
 // register signals withthe parent item
 /datum/component/two_handed/RegisterWithParent()
@@ -166,16 +150,16 @@
 /datum/component/two_handed/proc/on_equip(datum/source, mob/user, slot)
 	SIGNAL_HANDLER
 
-	if(HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS) && (slot & ITEM_SLOT_HANDS)) // force equip the item
+	if(require_twohands && (slot & ITEM_SLOT_HANDS)) // force equip the item
 		wield(user)
-	if(!user.is_holding(parent) && wielded && !HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS))
+	if(!user.is_holding(parent) && wielded && !require_twohands)
 		unwield(user)
 
 /// Triggered on drop of item containing the component
 /datum/component/two_handed/proc/on_drop(datum/source, mob/user)
 	SIGNAL_HANDLER
 
-	if(HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS)) //Don't let the item fall to the ground and cause bugs if it's actually being equipped on another slot.
+	if(require_twohands) //Don't let the item fall to the ground and cause bugs if it's actually being equipped on another slot.
 		unwield(user, FALSE, FALSE)
 	if(wielded)
 		unwield(user)
@@ -192,7 +176,7 @@
 /datum/component/two_handed/proc/on_attack_self(datum/source, mob/user)
 	SIGNAL_HANDLER
 
-	if(!HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS))
+	if(!require_twohands)
 		if(wielded)
 			unwield(user)
 		else if(user.is_holding(parent))
@@ -210,21 +194,21 @@
 
 	var/atom/atom_parent = parent
 	if(HAS_TRAIT(user, TRAIT_NO_TWOHANDING))
-		if(HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS))
+		if(require_twohands)
 			atom_parent.balloon_alert(user, "can't wield!")
 			user.dropItemToGround(parent, force = TRUE)
 		else
 			atom_parent.balloon_alert(user, "can't wield with both hands!")
 		return COMPONENT_EQUIPPED_FAILED
 	if(user.get_inactive_held_item())
-		if(HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS))
+		if(require_twohands)
 			atom_parent.balloon_alert(user, "can't carry in one hand!")
 			user.dropItemToGround(parent, force = TRUE)
 		else
 			atom_parent.balloon_alert(user, "holding something in other hand!")
 		return COMPONENT_EQUIPPED_FAILED
 	if(user.usable_hands < 2)
-		if(HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS))
+		if(require_twohands)
 			user.dropItemToGround(parent, force = TRUE)
 		atom_parent.balloon_alert(user, "not enough hands!")
 		return COMPONENT_EQUIPPED_FAILED
@@ -241,9 +225,9 @@
 
 	// update item stats and name
 	var/obj/item/parent_item = parent
-	if(force_multiplier != 1)
+	if(force_multiplier)
 		parent_item.force *= force_multiplier
-	else if(force_wielded != force_unwielded)
+	else if(force_wielded)
 		parent_item.force = force_wielded
 	if(sharpened_increase)
 		parent_item.force += sharpened_increase
@@ -291,9 +275,9 @@
 	var/obj/item/parent_item = parent
 	if(sharpened_increase)
 		parent_item.force -= sharpened_increase
-	if(force_multiplier != 1)
+	if(force_multiplier)
 		parent_item.force /= force_multiplier
-	else if(force_unwielded != force_wielded)
+	else if(force_unwielded)
 		parent_item.force = force_unwielded
 
 	// update the items name to remove the wielded status
@@ -313,14 +297,14 @@
 			user.update_held_items()
 
 		// if the item requires two handed drop the item on unwield
-		if(HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS) && can_drop)
+		if(require_twohands && can_drop)
 			user.dropItemToGround(parent, force=TRUE)
 
 		// Show message if requested
 		if(show_message)
 			if(iscyborg(user))
 				to_chat(user, span_notice("You free up your module."))
-			else if(HAS_TRAIT(parent, TRAIT_NEEDS_TWO_HANDS))
+			else if(require_twohands)
 				to_chat(user, span_notice("You drop [parent]."))
 			else
 				to_chat(user, span_notice("You are now carrying [parent] with one hand."))

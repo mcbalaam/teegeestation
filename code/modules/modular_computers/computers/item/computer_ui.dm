@@ -193,10 +193,7 @@
 					if(!inserted_disk)
 						return
 
-					if(!user || !Adjacent(user))
-						inserted_disk.forceMove(drop_location())
-					else
-						user.put_in_hands(inserted_disk)
+					user.put_in_hands(inserted_disk)
 					inserted_disk = null
 					playsound(src, 'sound/machines/card_slide.ogg', 50)
 					return TRUE

@@ -30,7 +30,7 @@
 		name = "[label] sign"
 		desc = "It reads: [label]"
 
-/obj/item/picket_sign/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
+/obj/item/picket_sign/attackby(obj/item/W, mob/user, params)
 	if(IS_WRITING_UTENSIL(W))
 		retext(user, W)
 	else

@@ -162,12 +162,12 @@
 	injection_cooldown = 0
 	replenish_cooldown = 300
 
-/obj/machinery/implantchair/genepurge/implant_action(mob/living/carbon/human/human, mob/user)
-	if(!istype(human))
+/obj/machinery/implantchair/genepurge/implant_action(mob/living/carbon/human/H,mob/user)
+	if(!istype(H))
 		return FALSE
-	human.dna.remove_all_mutations()//hulks out
-	human.set_species(/datum/species/human, 1)//lizards go home
-	purrbation_remove(human)//remove cats
+	H.set_species(/datum/species/human, 1)//lizards go home
+	purrbation_remove(H)//remove cats
+	H.dna.remove_all_mutations()//hulks out
 	return TRUE
 
 

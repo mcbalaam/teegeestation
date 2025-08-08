@@ -13,7 +13,7 @@
 
 import { perf } from 'common/perf';
 import { createAction } from 'common/redux';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 
 import { setupDrag } from './drag';
 import { focusMap } from './focus';
@@ -77,7 +77,7 @@ export const backendReducer = (state = initialState, action) => {
     // Merge shared states
     const shared = { ...state.shared };
     if (payload.shared) {
-      for (const key of Object.keys(payload.shared)) {
+      for (let key of Object.keys(payload.shared)) {
         const value = payload.shared[key];
         if (value === '') {
           shared[key] = undefined;
@@ -209,16 +209,9 @@ export const backendMiddleware = (store) => {
       suspendRenderer();
       clearInterval(suspendInterval);
       suspendInterval = undefined;
-      // Tiny window in hell to not show previous content when resumed
-Byond.winset(Byond.windowId, {
-        size: '1x1',
-        // Due to this, if you have a monitor /below/ the one you play SS13 on,
-        // that will become the 'closest' screen.
-        // If it's a different resolution, TGUI windows will spawn slightly off-center
-        // (positioned relatively to the lower monitor sizing)
-        pos: '1,1000000000',
-'is-visible': false,
-});
+      Byond.winset(Byond.windowId, {
+        'is-visible': false,
+      });
       setTimeout(() => focusMap());
     }
 
@@ -323,7 +316,7 @@ const chunkSplitter = {
   [Symbol.split]: (string: string) => {
     const charSeq = string[Symbol.iterator]().toArray();
     const length = charSeq.length;
-    const chunks: string[] = [];
+    let chunks: string[] = [];
     let startIndex = 0;
     let endIndex = 1024;
     while (startIndex < length) {
@@ -367,7 +360,7 @@ export const sendAct = (action: string, payload: object = {}) => {
 
   const stringifiedPayload = JSON.stringify(payload);
   const urlSize = Object.entries({
-    type: `act/${action}`,
+    type: 'act/' + action,
     payload: stringifiedPayload,
     tgui: 1,
     windowId: Byond.windowId,
@@ -378,18 +371,18 @@ export const sendAct = (action: string, payload: object = {}) => {
     '',
   ).length;
   if (urlSize > 2048) {
-    const chunks: string[] = stringifiedPayload.split(chunkSplitter);
+    let chunks: string[] = stringifiedPayload.split(chunkSplitter);
     const id = `${Date.now()}`;
     globalStore?.dispatch(backendCreatePayloadQueue({ id, chunks }));
     Byond.sendMessage('oversizedPayloadRequest', {
-      type: `act/${action}`,
+      type: 'act/' + action,
       id,
       chunkCount: chunks.length,
     });
     return;
   }
 
-  Byond.sendMessage(`act/${action}`, payload);
+  Byond.sendMessage('act/' + action, payload);
 };
 
 type BackendState<TData> = {

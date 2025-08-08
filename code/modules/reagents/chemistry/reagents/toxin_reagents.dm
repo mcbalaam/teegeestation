@@ -214,7 +214,7 @@
 /datum/reagent/toxin/slimejelly
 	name = "Slime Jelly"
 	description = "A gooey semi-liquid produced from one of the deadliest lifeforms in existence. SO REAL."
-	color = "#a6959d"
+	color = "#801E28" // rgb: 128, 30, 40
 	toxpwr = 0
 	taste_description = "slime"
 	taste_mult = 1.3
@@ -241,11 +241,6 @@
 	ph = 12
 	chemical_flags = REAGENT_CAN_BE_SYNTHESIZED
 
-/datum/reagent/toxin/carpotoxin/on_mob_add(mob/living/affected_mob, amount)
-	. = ..()
-	if (HAS_TRAIT(affected_mob, TRAIT_CARPOTOXIN_IMMUNE))
-		toxpwr = 0
-
 /datum/reagent/toxin/zombiepowder
 	name = "Zombie Powder"
 	description = "A strong neurotoxin that puts the subject into a death-like state."
@@ -269,15 +264,13 @@
 	. = ..()
 	affected_mob.cure_fakedeath(type)
 
-/datum/reagent/toxin/zombiepowder/expose_mob(mob/living/exposed_mob, methods, reac_volume, show_message, touch_protection)
+/datum/reagent/toxin/zombiepowder/on_transfer(atom/target_atom, methods, trans_volume)
 	. = ..()
-	if(!(methods & (INGEST|INHALE)))
+	var/datum/reagent/zombiepowder = target_atom.reagents.has_reagent(/datum/reagent/toxin/zombiepowder)
+	if(!zombiepowder || !(methods & (INGEST|INHALE)))
 		return
-
-	var/datum/reagent/zombiepowder = exposed_mob.reagents.has_reagent(/datum/reagent/toxin/zombiepowder)
-	if(zombiepowder)
-		LAZYINITLIST(zombiepowder.data)
-		zombiepowder.data["method"] |= (INGEST|INHALE)
+	LAZYINITLIST(zombiepowder.data)
+	zombiepowder.data["method"] |= (INGEST|INHALE)
 
 /datum/reagent/toxin/zombiepowder/on_mob_life(mob/living/affected_mob, seconds_per_tick, times_fired)
 	. = ..()
@@ -448,22 +441,7 @@
 	color = "#9ACD32"
 	toxpwr = 1
 	ph = 11
-	liver_damage_multiplier = 0.7
-	taste_description = "spores"
 	chemical_flags = REAGENT_CAN_BE_SYNTHESIZED|REAGENT_NO_RANDOM_RECIPE
-
-/datum/reagent/toxin/spore/expose_mob(mob/living/spore_lung_victim, methods, reac_volume, show_message, touch_protection)
-	. = ..()
-
-	if(!(methods & INHALE))
-		return
-	if(!(spore_lung_victim.mob_biotypes & (MOB_HUMANOID | MOB_BEAST)))
-		return
-
-	if(prob(min(reac_volume * 10, 80)))
-		to_chat(spore_lung_victim, span_danger("[pick("You have a coughing fit!", "You hack and cough!", "Your lungs burn!")]"))
-		spore_lung_victim.Stun(1 SECONDS)
-		spore_lung_victim.emote("cough")
 
 /datum/reagent/toxin/spore/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, times_fired)
 	. = ..()
@@ -709,15 +687,9 @@
 		if(affected_mob.adjustToxLoss(-1 * REM * seconds_per_tick, updating_health = FALSE, required_biotype = affected_biotype)) //it counteracts its own toxin damage.
 			return UPDATE_MOB_HEALTH
 		return
-	else if(SPT_PROB(2.5, seconds_per_tick) && !HAS_TRAIT(affected_mob, TRAIT_BLOCK_FORMALDEHYDE_METABOLISM))
+	else if(SPT_PROB(2.5, seconds_per_tick))
 		holder.add_reagent(/datum/reagent/toxin/histamine, pick(5,15))
 		holder.remove_reagent(/datum/reagent/toxin/formaldehyde, 1.2)
-	return ..()
-
-/datum/reagent/toxin/formaldehyde/metabolize_reagent(mob/living/carbon/affected_mob, seconds_per_tick, times_fired)
-	if(HAS_TRAIT(affected_mob, TRAIT_BLOCK_FORMALDEHYDE_METABOLISM))
-		return
-
 	return ..()
 
 /datum/reagent/toxin/venom
@@ -1269,7 +1241,7 @@
 
 /datum/reagent/toxin/bonehurtingjuice/used_on_fish(obj/item/fish/fish)
 	if(HAS_TRAIT(fish, TRAIT_FISH_MADE_OF_BONE))
-		fish.damage_fish(30)
+		fish.adjust_health(fish.health - 30)
 		return TRUE
 
 /datum/reagent/toxin/bungotoxin
@@ -1288,7 +1260,7 @@
 		. = UPDATE_MOB_HEALTH
 
 	// If our mob's currently dizzy from anything else, we will also gain confusion
-	var/mob_dizziness = affected_mob.get_timed_status_effect_duration(/datum/status_effect/dizziness)
+	var/mob_dizziness = affected_mob.get_timed_status_effect_duration(/datum/status_effect/confusion)
 	if(mob_dizziness > 0)
 		// Gain confusion equal to about half the duration of our current dizziness
 		affected_mob.set_confusion(mob_dizziness / 2)

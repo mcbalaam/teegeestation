@@ -18,7 +18,6 @@
 	bubble_icon = "alien"
 	combat_mode = TRUE
 	faction = list(ROLE_ALIEN)
-	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 1, STAMINA = 0, OXY = 1)
 
 	// Going for a dark purple here
 	lighting_cutoff_red = 30
@@ -47,7 +46,6 @@
 	unsuitable_heat_damage = 20
 
 	ai_controller = /datum/ai_controller/basic_controller/alien
-	blood_volume = BLOOD_VOLUME_NORMAL
 
 	///List of loot items to drop when deleted, if this is set then we apply DEL_ON_DEATH
 	var/list/loot
@@ -76,6 +74,9 @@
 	visible_message(span_alertalien("[src] plants some alien weeds!"))
 	new /obj/structure/alien/weeds/node(loc)
 
+/mob/living/basic/alien/create_splatter(splatter_dir)
+	new /obj/effect/temp_visual/dir_setting/bloodsplatter/xenosplatter(get_turf(src), splatter_dir)
+
 ///Lays an egg on the turf the mob is currently standing on.
 /mob/living/basic/alien/proc/lay_alien_egg()
 	if(!isturf(loc) || isspaceturf(loc))
@@ -84,11 +85,3 @@
 		return
 	visible_message(span_alertalien("[src] lays an egg!"))
 	new /obj/structure/alien/egg(loc)
-
-/mob/living/basic/alien/get_bloodtype()
-	return get_blood_type(BLOOD_TYPE_XENO)
-
-/mob/living/basic/alien/get_gibs_type(drop_bitflags = NONE)
-	if(drop_bitflags & DROP_BODYPARTS)
-		return /obj/effect/gibspawner/xeno
-	return /obj/effect/gibspawner/xeno/bodypartless

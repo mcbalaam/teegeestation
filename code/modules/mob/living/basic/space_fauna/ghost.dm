@@ -4,13 +4,12 @@
 	icon = 'icons/mob/simple/mob.dmi'
 	icon_state = "ghost"
 	icon_living = "ghost"
-	mob_biotypes = MOB_SPIRIT | MOB_UNDEAD
+	mob_biotypes = MOB_SPIRIT
 	speak_emote = list("wails", "weeps")
 	response_help_continuous = "passes through"
 	response_help_simple = "pass through"
 	combat_mode = TRUE
 	basic_mob_flags = DEL_ON_DEATH
-	status_flags = CANPUSH
 	maxHealth = 40
 	health = 40
 	melee_damage_lower = 15
@@ -27,7 +26,6 @@
 	light_range = 2.5 // same glowing as visible player ghosts
 	light_power = 0.6
 	ai_controller = /datum/ai_controller/basic_controller/ghost
-	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 1, STAMINA = 0, OXY = 1)
 
 	///What hairstyle will this ghost have
 	var/ghost_hairstyle
@@ -103,7 +101,6 @@
 	idle_behavior = /datum/idle_behavior/idle_random_walk
 
 	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
 		/datum/ai_planning_subtree/target_retaliate,
 		/datum/ai_planning_subtree/basic_melee_attack_subtree,
 	)

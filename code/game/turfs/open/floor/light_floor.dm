@@ -129,7 +129,7 @@
 	currentcolor = choice
 	update_appearance()
 
-/turf/open/floor/light/attackby(obj/item/C, mob/user, list/modifiers)
+/turf/open/floor/light/attackby(obj/item/C, mob/user, params)
 	if(..())
 		return
 	if(istype(C, /obj/item/light/bulb)) //only for light tiles

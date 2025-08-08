@@ -12,7 +12,7 @@ import {
   Stack,
   Tabs,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 import { capitalize } from 'tgui-core/string';
 
 import { useBackend } from '../backend';
@@ -256,10 +256,11 @@ const PetTricks = (props) => {
       title={capitalize(TrickName)}
       buttons={
         <Button.Input
-          buttonText="Rename Trick"
           color="transparent"
-          onCommit={setTrickName}
-        />
+          onCommit={(_, value) => setTrickName(value)}
+        >
+          Rename Trick
+        </Button.Input>
       }
     >
       <LabeledList>
@@ -346,7 +347,7 @@ const Customization = (props) => {
               fluid
               maxLength={30}
               value={selectedName}
-              onChange={setSelectedName}
+              onInput={(_, value) => setSelectedName(value)}
             />
           </Section>
         </Stack.Item>
@@ -497,7 +498,7 @@ const PetIcon = (props) => {
   const { pet_state_icons = [] } = data;
   const { our_pet_state } = props;
 
-  const icon_display = pet_state_icons.find(
+  let icon_display = pet_state_icons.find(
     (pet_icon) => pet_icon.name === our_pet_state,
   );
 

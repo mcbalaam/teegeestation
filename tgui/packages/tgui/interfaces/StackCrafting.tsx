@@ -122,10 +122,9 @@ export const StackCrafting = (_props) => {
         <Section
           fill
           scrollable
-          title={`Amount: ${amount}`}
+          title={'Amount: ' + amount}
           buttons={
             <SearchBar
-              expensive
               style={{ width: '15em' }}
               query={searchText}
               onSearch={(value) => setSearchText(value)}
@@ -212,7 +211,7 @@ const Multipliers = (props: MultiplierProps) => {
             })
           }
         >
-          {`${multiplier * recipe.res_amount}x`}
+          {multiplier * recipe.res_amount + 'x'}
         </Button>,
       );
     }
@@ -232,7 +231,7 @@ const Multipliers = (props: MultiplierProps) => {
           })
         }
       >
-        {`${maxM * recipe.res_amount}x`}
+        {maxM * recipe.res_amount + 'x'}
       </Button>,
     );
   }

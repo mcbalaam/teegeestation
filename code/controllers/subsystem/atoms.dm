@@ -4,7 +4,7 @@ SUBSYSTEM_DEF(atoms)
 		/datum/controller/subsystem/processing/reagents,
 		/datum/controller/subsystem/fluids,
 		/datum/controller/subsystem/mapping,
-		/datum/controller/subsystem/job,
+		/datum/controller/subsystem/job
 	)
 	flags = SS_NO_FIRE
 
@@ -162,7 +162,6 @@ SUBSYSTEM_DEF(atoms)
 		initialized = base_initialized
 		base_initialized = INITIALIZATION_INNEW_REGULAR
 		return
-
 	initialized = initialized_state[length(initialized_state)][2]
 
 /// Returns TRUE if anything is currently being initialized
@@ -177,11 +176,11 @@ SUBSYSTEM_DEF(atoms)
 	BadInitializeCalls = SSatoms.BadInitializeCalls
 
 /datum/controller/subsystem/atoms/proc/setupGenetics()
-	var/list/mutations = subtypesof(/datum/mutation)
+	var/list/mutations = subtypesof(/datum/mutation/human)
 	shuffle_inplace(mutations)
 	for(var/i in 1 to LAZYLEN(mutations))
 		var/path = mutations[i] //byond gets pissy when we do it in one line
-		var/datum/mutation/B = new path ()
+		var/datum/mutation/human/B = new path ()
 		B.alias = "Mutation [i]"
 		GLOB.all_mutations[B.type] = B
 		GLOB.full_sequences[B.type] = generate_gene_sequence(B.blocks)

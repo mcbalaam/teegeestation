@@ -6,15 +6,10 @@
 
 	/// Map template to load when the dock is loaded
 	var/datum/map_template/shuttle/roundstart_template
-	/// The shuttle template id to use after roundstart
-	var/shuttle_template_id
 	/// Used to check if the shuttle template is enabled in the config file
 	var/json_key
 	///If true, the shuttle can always dock at this docking port, despite its area checks, or if something is already docked
 	var/override_can_dock_checks = FALSE
-
-/obj/docking_port/stationary/get_save_vars()
-	return ..() + NAMEOF(src, roundstart_template)
 
 /obj/docking_port/stationary/Initialize(mapload)
 	. = ..()
@@ -81,18 +76,18 @@
 /obj/docking_port/stationary/proc/load_roundstart()
 	if(json_key)
 		var/sid = SSmapping.current_map.shuttles[json_key]
-		shuttle_template_id = SSmapping.shuttle_templates[sid]
-		if(!shuttle_template_id)
+		roundstart_template = SSmapping.shuttle_templates[sid]
+		if(!roundstart_template)
 			CRASH("json_key:[json_key] value \[[sid]\] resulted in a null shuttle template for [src]")
 	else if(roundstart_template) // passed a PATH
 		var/sid = "[initial(roundstart_template.port_id)]_[initial(roundstart_template.suffix)]"
 
-		shuttle_template_id = SSmapping.shuttle_templates[sid]
-		if(!shuttle_template_id)
-			CRASH("Invalid path ([sid]/[shuttle_template_id]) passed to docking port.")
+		roundstart_template = SSmapping.shuttle_templates[sid]
+		if(!roundstart_template)
+			CRASH("Invalid path ([sid]/[roundstart_template]) passed to docking port.")
 
-	if(shuttle_template_id)
-		SSshuttle.action_load(shuttle_template_id, src)
+	if(roundstart_template)
+		SSshuttle.action_load(roundstart_template, src)
 
 //returns first-found touching shuttleport
 /obj/docking_port/stationary/get_docked()

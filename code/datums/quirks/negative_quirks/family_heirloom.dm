@@ -34,13 +34,12 @@
 	give_item_to_holder(
 		new_heirloom,
 		list(
-			LOCATION_LPOCKET,
-			LOCATION_RPOCKET,
-			LOCATION_BACKPACK,
-			LOCATION_HANDS,
+			LOCATION_LPOCKET = ITEM_SLOT_LPOCKET,
+			LOCATION_RPOCKET = ITEM_SLOT_RPOCKET,
+			LOCATION_BACKPACK = ITEM_SLOT_BACKPACK,
+			LOCATION_HANDS = ITEM_SLOT_HANDS,
 		),
 		flavour_text = "This is a precious family heirloom, passed down from generation to generation. Keep it safe!",
-		notify_player = TRUE,
 	)
 
 /datum/quirk/item_quirk/family_heirloom/post_add()

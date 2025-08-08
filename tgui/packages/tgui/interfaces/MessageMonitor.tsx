@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import {
   Box,
   Button,
@@ -8,7 +8,7 @@ import {
   Stack,
   Table,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
@@ -178,7 +178,7 @@ const MainScreenAuth = (props: AuthScreenProps) => {
         <Section>
           <Input
             value={auth_password}
-            onChange={setPassword}
+            onChange={(e, value) => setPassword(value)}
             placeholder="Password"
           />
           <Button
@@ -281,7 +281,7 @@ const MainScreenNotAuth = (props: AuthScreenProps) => {
         <Section>
           <Input
             value={auth_password}
-            onChange={setPassword}
+            onChange={(e, value) => setPassword(value)}
             placeholder="Password"
           />
           <Button onClick={() => act('auth', { auth_password: auth_password })}>

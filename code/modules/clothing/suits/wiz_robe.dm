@@ -70,12 +70,10 @@
 /obj/item/clothing/head/wizard/marisa
 	name = "witch hat"
 	desc = "Strange-looking hat-wear. Makes you want to cast fireballs."
-	icon = 'icons/map_icons/clothing/head/_head.dmi'
-	icon_state = "/obj/item/clothing/head/wizard/marisa"
-	post_init_icon_state = "witch_hat"
+	icon_state = "witch_hat"
+	greyscale_colors = "#343640#e0cab8#e0cab8"
 	greyscale_config = /datum/greyscale_config/witch_hat
 	greyscale_config_worn = /datum/greyscale_config/witch_hat/worn
-	greyscale_colors = "#343640#e0cab8#e0cab8"
 	flags_1 = IS_PLAYER_COLORABLE_1
 	dog_fashion = null
 
@@ -200,7 +198,6 @@
 
 /obj/item/clothing/head/wizard/marisa/fake
 	name = "witch hat"
-	flags_1 = parent_type::flags_1 | NO_NEW_GAGS_PREVIEW_1
 	armor_type = /datum/armor/none
 	resistance_flags = FLAMMABLE
 	fishing_modifier = -2
@@ -296,6 +293,14 @@
 
 	var/mob/living/stickman = new /mob/living/basic/stickman/lesser(get_turf(summoner))
 
-	stickman.faction |= summoner.faction - FACTION_NEUTRAL //These bad boys shouldn't inherit the neutral faction from the crew
+	stickman.faction += summoner.faction
 
 	COOLDOWN_START(src, summoning_cooldown, 3 SECONDS)
+
+
+// The actual code for this is handled in the shielded component, see [/datum/component/shielded/proc/check_recharge_rune]
+/obj/item/wizard_armour_charge
+	name = "battlemage shield charges"
+	desc = "A powerful rune that will increase the number of hits a suit of battlemage armour can take before failing.."
+	icon = 'icons/effects/anomalies.dmi'
+	icon_state = "flux"

@@ -12,68 +12,65 @@ import { createUuid } from 'tgui-core/uuid';
 
 import { useBackend } from '../../backend';
 import { POD_GREY } from './constants';
-import type { PodLauncherData } from './types';
+import { PodLauncherData } from './types';
 
 type Preset = {
   hue: number;
-  id: string;
+  id: number;
   title: string;
 };
 
 async function saveDataToPreset(id: string, data: any) {
-  await storage.set(`podlauncher_preset_${id}`, data);
+  await storage.set('podlauncher_preset_' + id, data);
 }
 
 export function PresetsPage(props) {
-  const { act, data } = useBackend<PodLauncherData>();
+  const { act, data } = useBackend();
 
   const [editing, setEditing] = useState(false);
   const [hue, setHue] = useState(0);
   const [name, setName] = useState('');
-  const [presetID, setPresetID] = useState('');
+  const [presetID, setPresetID] = useState(0);
   const [presets, setPresets] = useState<Preset[]>([]);
 
-  async function deletePreset(deleteID: string) {
-    const newPresets: Preset[] = presets.filter(
-      (preset) => preset.id !== deleteID,
-    );
-    await storage.set('podlauncher_presetlist', newPresets);
-    setPresets(newPresets);
-    if (presetID === deleteID) {
-      setPresetID('');
+  async function deletePreset(deleteID: number) {
+    const newPresets: any[] = [...presets];
+    for (let i = 0; i < presets.length; i++) {
+      if (presets[i].id === deleteID) {
+        newPresets.splice(i, 1);
+        break;
+      }
     }
+    await storage.set('podlauncher_presetlist', presets);
   }
 
-  async function loadPreset(id: string) {
-    const presetData = await storage.get(`podlauncher_preset_${id}`);
-    if (presetData !== null && presetData !== undefined) {
-      act('loadDataFromPreset', { payload: presetData });
-    }
+  async function loadPreset(id) {
+    act('loadDataFromPreset', {
+      payload: await storage.get('podlauncher_preset_' + id),
+    });
   }
 
   async function newPreset(presetName: string, hue: number, data: any) {
-    if (!presetName.trim()) {
-      return;
+    const newPresets: any[] = [...presets];
+
+    if (!presets) {
+      newPresets.push('hi!');
     }
-
     const id = createUuid();
-    const newPresetEntry: Preset = { id, title: presetName, hue };
-    const newPresets: Preset[] = [...presets, newPresetEntry];
-
-    await storage.set('podlauncher_presetlist', newPresets);
-    setPresets(newPresets);
+    const thing = { id, title: presetName, hue };
+    newPresets.push(thing);
+    await storage.set('podlauncher_presetlist', presets);
 
     saveDataToPreset(id, data);
   }
 
   useEffect(() => {
     async function getPresets() {
-      const storedPresets = await storage.get('podlauncher_presetlist');
-      if (Array.isArray(storedPresets)) {
-        setPresets(storedPresets);
-      } else {
-        setPresets([]);
+      let thing = await storage.get('podlauncher_presetlist');
+      if (thing === undefined) {
+        thing = [];
       }
+      setPresets(thing);
     }
 
     getPresets();
@@ -86,7 +83,7 @@ export function PresetsPage(props) {
           deletePreset={deletePreset}
           editing={editing}
           loadPreset={loadPreset}
-          presetId={presetID}
+          presetIndex={presetID}
           setEditing={setEditing}
         />
       }
@@ -97,7 +94,11 @@ export function PresetsPage(props) {
       {editing && (
         <Stack vertical>
           <Stack.Item>
-            <Input autoFocus onChange={setName} placeholder="Preset Name" />
+            <Input
+              autoFocus
+              onChange={(e, value) => setName(value)}
+              placeholder="Preset Name"
+            />
             <Button
               icon="check"
               inline
@@ -130,13 +131,6 @@ export function PresetsPage(props) {
               value={hue}
               width="40px"
             />
-            <Stack.Item
-              inline
-              backgroundColor={`hsl(${hue}, 50%, 50%)`}
-              width="20px"
-              height="20px"
-              verticalAlign="middle"
-            />
           </Stack.Item>
           <Divider />
         </Stack>
@@ -148,27 +142,26 @@ export function PresetsPage(props) {
           rounds/servers!
         </span>
       )}
-      {Array.isArray(presets) &&
-        presets.map((preset, i) => (
-          <Button
-            backgroundColor={`hsl(${preset.hue}, 50%, 50%)`}
-            key={i}
-            onClick={() => setPresetID(preset.id)}
-            onDoubleClick={() => loadPreset(preset.id)}
-            style={
-              presetID === preset.id
-                ? {
-                    borderWidth: '1px',
-                    borderStyle: 'solid',
-                    borderColor: `hsl(${preset.hue}, 80%, 80%)`,
-                  }
-                : {}
-            }
-            width="100%"
-          >
-            {preset.title}
-          </Button>
-        ))}
+      {presets.map((preset, i) => (
+        <Button
+          backgroundColor={`hsl(${preset.hue}, 50%, 50%)`}
+          key={i}
+          onClick={() => setPresetID(preset.id)}
+          onDoubleClick={() => loadPreset(preset.id)}
+          style={
+            presetID === preset.id
+              ? {
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: `hsl(${preset.hue}, 80%, 80%)`,
+                }
+              : {}
+          }
+          width="100%"
+        >
+          {preset.title}
+        </Button>
+      ))}
       <span style={POD_GREY}>
         <br />
         <br />
@@ -179,16 +172,16 @@ export function PresetsPage(props) {
 }
 
 type PresetButtonsProps = {
-  deletePreset: (id: string) => void;
+  deletePreset: (id: number) => void;
   editing: boolean;
-  loadPreset: (id: string) => void;
-  presetId: string;
+  loadPreset: (id: number) => void;
+  presetIndex: number;
   setEditing: (status: boolean) => void;
 };
 
 function PresetButtons(props: PresetButtonsProps) {
   const { data } = useBackend<PodLauncherData>();
-  const { editing, deletePreset, loadPreset, presetId, setEditing } = props;
+  const { editing, deletePreset, loadPreset, presetIndex, setEditing } = props;
 
   return (
     <>
@@ -204,7 +197,7 @@ function PresetButtons(props: PresetButtonsProps) {
         color="transparent"
         icon="download"
         inline
-        onClick={() => saveDataToPreset(presetId, data)}
+        onClick={() => saveDataToPreset(presetIndex.toString(), data)}
         tooltip="Saves preset"
         tooltipPosition="bottom"
       />
@@ -213,7 +206,7 @@ function PresetButtons(props: PresetButtonsProps) {
         icon="upload"
         inline
         onClick={() => {
-          loadPreset(presetId);
+          loadPreset(presetIndex);
         }}
         tooltip="Loads preset"
       />
@@ -221,7 +214,7 @@ function PresetButtons(props: PresetButtonsProps) {
         color="transparent"
         icon="trash"
         inline
-        onClick={() => deletePreset(presetId)}
+        onClick={() => deletePreset(presetIndex)}
         tooltip="Deletes the selected preset"
         tooltipPosition="bottom-start"
       />

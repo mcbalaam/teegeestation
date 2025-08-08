@@ -1,8 +1,8 @@
-import { sortBy } from 'es-toolkit';
+import { sortBy } from 'common/collections';
 import {
-  type ComponentType,
+  ComponentType,
   createElement,
-  type ReactNode,
+  ReactNode,
   useEffect,
   useState,
 } from 'react';
@@ -16,13 +16,13 @@ import {
   Slider,
   Stack,
 } from 'tgui-core/components';
-import type { BooleanLike } from 'tgui-core/react';
+import { BooleanLike } from 'tgui-core/react';
 
-import { createSetPreference, type PreferencesMenuData } from '../../types';
+import { createSetPreference, PreferencesMenuData } from '../../types';
 import { useServerPrefs } from '../../useServerPrefs';
 
 export function sortChoices(array: [string, ReactNode][]) {
-  return sortBy(array, [([name]) => name]);
+  return sortBy(array, ([name]) => name);
 }
 
 export type Feature<
@@ -252,10 +252,11 @@ export function FeatureShortTextInput(
   return (
     <Input
       disabled={!serverData}
-      fluid
+      width="100%"
       value={value}
       maxLength={serverData?.maximum_length}
-      onBlur={handleSetValue}
+      updateOnPropsChange
+      onChange={(_, value) => handleSetValue(value)}
     />
   );
 }

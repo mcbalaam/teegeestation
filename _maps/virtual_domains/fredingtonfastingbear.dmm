@@ -65,7 +65,7 @@
 "dN" = (
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/effect/turf_decal/tile/blue/opposingcorners,
-/obj/effect/decal/cleanable/blood/tracks/xeno,
+/obj/effect/decal/cleanable/blood/xtracks,
 /turf/open/floor/iron/kitchen,
 /area/virtual_domain)
 "dV" = (

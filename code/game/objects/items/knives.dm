@@ -23,7 +23,7 @@
 	sharpness = SHARP_EDGED
 	armor_type = /datum/armor/item_knife
 	wound_bonus = 5
-	exposed_wound_bonus = 15
+	bare_wound_bonus = 15
 	tool_behaviour = TOOL_KNIFE
 	var/list/alt_continuous = list("stabs", "pierces", "shanks")
 	var/list/alt_simple = list("stab", "pierce", "shank")
@@ -88,7 +88,7 @@
 	/// Bleed stacks applied when an organic mob target is hit
 	var/bleed_stacks_per_hit = 3
 
-/obj/item/knife/bloodletter/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
+/obj/item/knife/bloodletter/afterattack(atom/target, mob/user, click_parameters)
 	if(!isliving(target))
 		return
 	var/mob/living/M = target
@@ -295,7 +295,7 @@
 	throw_speed = 4
 	throw_range = 8
 	wound_bonus = 10
-	exposed_wound_bonus = 20
+	bare_wound_bonus = 20
 	armor_type = /datum/armor/shiv_plastitanium
 	custom_materials = list(/datum/material/glass= SMALL_MATERIAL_AMOUNT * 4, /datum/material/alloy/plastitanium= SMALL_MATERIAL_AMOUNT * 2)
 
@@ -335,3 +335,4 @@
 	inhand_icon_state = "rootshiv"
 	icon_angle = -45
 	custom_materials = null
+

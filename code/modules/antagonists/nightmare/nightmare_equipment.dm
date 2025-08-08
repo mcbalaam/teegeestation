@@ -18,7 +18,7 @@
 	tool_behaviour = TOOL_MINING
 	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	wound_bonus = -30
-	exposed_wound_bonus = 20
+	bare_wound_bonus = 20
 	///If this is true, our next hit will be critcal, temporarily stunning our target
 	var/has_crit = FALSE
 	///The timer which controls our next crit
@@ -48,7 +48,7 @@
 	UnregisterSignal(user, COMSIG_MOB_AFTER_EXIT_JAUNT)
 	remove_crit()
 
-/obj/item/light_eater/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
+/obj/item/light_eater/attack(mob/living/target, mob/living/user, params)
 	. = ..()
 	if(!has_crit)
 		return

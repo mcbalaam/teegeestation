@@ -115,7 +115,7 @@
 	return MANUAL_SUICIDE
 
 /obj/item/fish/starfish/proc/ascension(mob/living/user)
-	user.apply_status_effect(/datum/status_effect/go_away/deletes_mob)
+	user.apply_status_effect(/datum/status_effect/go_away/deluxe)
 	qdel(src)
 
 /obj/item/fish/baby_carp
@@ -215,7 +215,7 @@
 /obj/item/fish/baby_carp/proc/growth_checks(datum/source, seconds_per_tick, growth, result_path)
 	SIGNAL_HANDLER
 	var/hunger = CLAMP01((world.time - last_feeding) / feeding_frequency)
-	if(get_health_percentage() <= 0.6 || hunger >= 0.6) //if too hurt or hungry, don't grow.
+	if(health <= initial(health) * 0.6 || hunger >= 0.6) //if too hurt or hungry, don't grow.
 		return COMPONENT_DONT_GROW
 
 	if(!loc || !HAS_TRAIT(loc, TRAIT_IS_AQUARIUM))

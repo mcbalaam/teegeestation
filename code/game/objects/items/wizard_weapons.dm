@@ -57,7 +57,7 @@
 				step_towards(A,pull)
 				step_towards(A,pull)
 
-/obj/item/singularityhammer/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
+/obj/item/singularityhammer/afterattack(atom/target, mob/user, click_parameters)
 	if(!HAS_TRAIT(src, TRAIT_WIELDED))
 		return
 	if(!charged)

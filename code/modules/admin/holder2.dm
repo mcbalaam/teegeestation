@@ -21,10 +21,9 @@ GLOBAL_PROTECT(href_token)
 
 	var/spamcooldown = 0
 
-	///Randomly generated signature used for security records authorization name. Not code security critical
+	///Randomly generated signature used for security records authorization name.
 	var/admin_signature
 
-	/// Code security critcal token used for authorizing href topic calls
 	var/href_token
 
 	/// Link from the database pointing to the admin's feedback forum
@@ -81,11 +80,6 @@ GLOBAL_PROTECT(href_token)
 		alert_to_permissions_elevation_attempt(usr)
 		return QDEL_HINT_LETMELIVE
 	QDEL_NULL(path_debug)
-	return ..()
-
-/datum/admins/can_vv_get(var_name)
-	if(var_name == NAMEOF(src, href_token))
-		return FALSE
 	return ..()
 
 /datum/admins/proc/activate()

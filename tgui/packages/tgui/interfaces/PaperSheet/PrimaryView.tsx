@@ -1,11 +1,11 @@
-import { Component, createRef, type RefObject } from 'react';
+import { Component, createRef, RefObject } from 'react';
 import { Box, Button, Flex, Section, TextArea } from 'tgui-core/components';
 
 import { useBackend, useLocalState } from '../../backend';
 import { TEXTAREA_INPUT_HEIGHT } from './constants';
 import { PreviewView } from './Preview';
 import { PaperSheetStamper } from './Stamper';
-import { InteractionType, type PaperContext, type PaperInput } from './types';
+import { InteractionType, PaperContext, PaperInput } from './types';
 
 // Overarching component that holds the primary view for papercode.
 export class PrimaryView extends Component {
@@ -74,8 +74,6 @@ export class PrimaryView extends Component {
 
     const tooManyCharacters = usedCharacters > max_length;
 
-    const canEdit = interactMode === InteractionType.writing;
-
     return (
       <>
         <PaperSheetStamper scrollableRef={this.scrollableRef} />
@@ -88,11 +86,10 @@ export class PrimaryView extends Component {
               scrollableRef={this.scrollableRef}
               handleOnScroll={this.onScrollHandler}
               textArea={textAreaText}
-              canEdit={canEdit}
             />
           </Flex.Item>
-          {canEdit && (
-            <Flex.Item shrink={1} height={`${TEXTAREA_INPUT_HEIGHT}px`}>
+          {interactMode === InteractionType.writing && (
+            <Flex.Item shrink={1} height={TEXTAREA_INPUT_HEIGHT + 'px'}>
               <Section
                 title="Insert Text"
                 fitted
@@ -108,6 +105,7 @@ export class PrimaryView extends Component {
                     </Box>
                     <Button.Confirm
                       disabled={!savableData || tooManyCharacters}
+                      content="Save"
                       color="good"
                       onClick={() => {
                         if (textAreaText.length) {
@@ -121,26 +119,24 @@ export class PrimaryView extends Component {
                           setInputFieldData({});
                         }
                       }}
-                    >
-                      Save
-                    </Button.Confirm>
+                    />
                   </>
                 }
               >
                 <TextArea
-                  style={{ border: 'none' }}
+                  scrollbar
+                  noborder
                   value={textAreaText}
                   textColor={useColor}
                   fontFamily={useFont}
                   bold={useBold}
                   height="100%"
-                  fluid
                   backgroundColor={paper_color}
-                  onChange={(value) => {
-                    setTextAreaText(value);
+                  onInput={(e, text) => {
+                    setTextAreaText(text);
 
                     if (this.scrollableRef.current) {
-                      const thisDistFromBottom =
+                      let thisDistFromBottom =
                         this.scrollableRef.current.scrollHeight -
                         this.scrollableRef.current.scrollTop;
                       this.scrollableRef.current.scrollTop +=

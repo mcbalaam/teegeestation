@@ -80,19 +80,6 @@
 	dir = 8
 	},
 /area/ruin/space/has_grav/film_studio/starboard)
-"bu" = (
-/obj/effect/turf_decal/tile/bar/opposingcorners,
-/obj/structure/table,
-/obj/item/rag,
-/obj/item/reagent_containers/cup/glass/bottle/beer{
-	pixel_x = 5;
-	pixel_y = -2
-	},
-/obj/effect/turf_decal/siding/dark_green{
-	dir = 8
-	},
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/film_studio/dorms)
 "bx" = (
 /obj/structure/railing/corner/end/flip,
 /turf/open/floor/iron/white/smooth_large,
@@ -127,6 +114,10 @@
 /obj/machinery/light/dim/directional/east,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/film_studio/stage)
+"cx" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/closed/wall,
+/area/ruin/space/has_grav/film_studio/solars)
 "cC" = (
 /obj/machinery/door/window/right/directional/west,
 /turf/open/floor/pod/light,
@@ -912,6 +903,19 @@
 /obj/machinery/light/floor,
 /turf/open/floor/iron/large,
 /area/ruin/space/has_grav/film_studio/starboard)
+"rQ" = (
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/structure/table,
+/obj/item/reagent_containers/cup/rag,
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/film_studio/dorms)
 "rZ" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
@@ -2050,7 +2054,7 @@
 /turf/open/floor/iron/showroomfloor,
 /area/ruin/space/has_grav/film_studio/dorms)
 "Ki" = (
-/obj/item/clothing/head/beret/frenchberet{
+/obj/item/clothing/head/frenchberet{
 	pixel_x = 15
 	},
 /turf/open/floor/plating,
@@ -2885,7 +2889,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/film_studio/backstage)
 "Xk" = (
-/obj/machinery/photocopier/prebuilt,
+/obj/machinery/photocopier,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/film_studio/director)
 "Xl" = (
@@ -3951,7 +3955,7 @@ MU
 hY
 XK
 tq
-bu
+rQ
 XY
 vD
 LG
@@ -5246,7 +5250,7 @@ dd
 dd
 BK
 BK
-BK
+cx
 fu
 uc
 Ei

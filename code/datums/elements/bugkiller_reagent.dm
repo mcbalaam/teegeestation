@@ -69,8 +69,6 @@
 	if(owner.stat == DEAD || QDELETED(owner))
 		return
 
-	ADD_TRAIT(owner, TRAIT_BUGKILLER_DEATH, REF(src))
-
 	if(isbasicmob(owner))
 		var/mob/living/basic/basic_owner = owner
 		basic_owner.basic_mob_flags &= ~DEL_ON_DEATH

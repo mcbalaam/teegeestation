@@ -257,7 +257,7 @@
 				if(!isnum(number))//Default to 1
 					number = 1
 				for(var/i in 1 to number)
-					user.equip_to_storage(SSwardrobe.provide_type(path, user), ITEM_SLOT_BACK, indirect_action = TRUE, del_on_fail = TRUE)
+					EQUIP_OUTFIT_ITEM(path, ITEM_SLOT_BACKPACK)
 
 		if(belt_contents)
 			for(var/path in belt_contents)
@@ -265,7 +265,7 @@
 				if(!isnum(number))//Default to 1
 					number = 1
 				for(var/i in 1 to number)
-					user.equip_to_storage(SSwardrobe.provide_type(path, user), ITEM_SLOT_BELT, indirect_action = TRUE, del_on_fail = TRUE)
+					EQUIP_OUTFIT_ITEM(path, ITEM_SLOT_BELTPACK)
 
 	post_equip(user, visuals_only)
 

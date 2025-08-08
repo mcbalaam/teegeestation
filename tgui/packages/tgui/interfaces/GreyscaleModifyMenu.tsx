@@ -17,7 +17,7 @@ import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
 type ColorEntry = {
-  index: number;
+  index: Number;
   value: string;
 };
 
@@ -25,7 +25,7 @@ type SpriteData = {
   icon_states: string[];
   finished: string;
   steps: SpriteEntry[];
-  time_spent: number;
+  time_spent: Number;
 };
 
 type SpriteEntry = {
@@ -77,7 +77,7 @@ const ConfigDisplay = (props) => {
           <Button icon="cogs" onClick={() => act('select_config')} />
           <Input
             value={data.greyscale_config}
-            onBlur={(value) =>
+            onChange={(_, value) =>
               act('load_config_from_string', { config_string: value })
             }
           />
@@ -101,7 +101,7 @@ const ColorDisplay = (props) => {
           />
           <Input
             value={colors.map((item) => item.value).join('')}
-            onBlur={(value) =>
+            onChange={(_, value) =>
               act('recolor_from_string', { color_string: value })
             }
           />
@@ -126,7 +126,7 @@ const ColorDisplay = (props) => {
             <Input
               value={item.value}
               width={7}
-              onBlur={(value) =>
+              onChange={(_, value) =>
                 act('recolor', { color_index: item.index, new_color: value })
               }
             />
@@ -138,6 +138,7 @@ const ColorDisplay = (props) => {
 };
 
 const PreviewCompassSelect = (props) => {
+  const { act, data } = useBackend<GreyscaleMenuData>();
   return (
     <Box>
       <Stack vertical>
@@ -171,16 +172,15 @@ const SingleDirection = (props) => {
   return (
     <Flex.Item grow={1} basis={0}>
       <Button
+        content={DirectionAbbreviation[dir]}
         tooltip={`Sets the direction of the preview sprite to ${dir}`}
-        disabled={`${dir}` === data.sprites_dir}
+        disabled={`${dir}` === data.sprites_dir ? true : false}
         textAlign="center"
         onClick={() => act('change_dir', { new_sprite_dir: dir })}
         lineHeight={3}
         m={-0.2}
         fluid
-      >
-        {DirectionAbbreviation[dir]}
-      </Button>
+      />
     </Flex.Item>
   );
 };
