@@ -299,7 +299,7 @@
 	var/drop_turf = drop_point.interaction_turf
 	var/throw_range = drop_point.throw_range
 
-	if((!(isitem(target) || isliving(target))) && !emagged)
+	if((!(isitem(target) || isliving(target))) && !(obj_flags & EMAGGED))
 		target.forceMove(drop_turf)
 		target.dir = get_dir(get_turf(target), get_turf(src))
 		finish_manipulation()

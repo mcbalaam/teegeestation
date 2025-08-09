@@ -36,8 +36,7 @@
 	var/id_locked = FALSE
 	/// The manipulator's arm.
 	var/obj/effect/big_manipulator_arm/manipulator_arm
-	/// Has this manipulator been emagged?
-	var/emagged = FALSE
+    /// Has this manipulator been emagged? Use EMAGGED flag in obj_flags instead.
 
 	/// How should the manipulator interact with the object?
 	var/interaction_mode = INTERACT_DROP
@@ -126,7 +125,8 @@
 		if(TRANSFER_TYPE_DROPOFF)
 			dropoff_points += new_interaction_point
 
-	if(emagged)
+	// If emagged, allow interacting with living mobs as well
+	if(obj_flags & EMAGGED)
 		new_interaction_point.type_filters += /mob/living
 
 	// Обновляем HUD только если манипулятор работает
@@ -262,7 +262,8 @@
 		return FALSE
 	balloon_alert(user, "overloaded")
 	obj_flags |= EMAGGED
-	type_filters += /mob/living
+	// Update existing points to accept living mobs as targets
+	update_all_points_on_emag_act()
 	return TRUE
 
 /obj/machinery/big_manipulator/wrench_act(mob/living/user, obj/item/tool)
@@ -528,6 +529,15 @@
 		if("drop")
 			drop_held_object()
 			return TRUE
+		if("changeDelay")
+			var/new_delay = text2num(params["new_delay"])
+			if(isnull(new_delay))
+				return FALSE
+			var/min_d = BASE_INTERACTION_TIME * minimal_interaction_multiplier
+			var/max_d = MAX_DELAY
+			interaction_delay = clamp(new_delay, min_d, max_d)
+			SStgui.update_uis(src)
+			return TRUE
 		if("change_mode")
 			change_mode()
 			return TRUE
@@ -549,10 +559,10 @@
 			cycle_throw_range()
 			return TRUE
 		if("create_pickup_point")
-			create_new_interaction_point(null, null, null, null, TRANSFER_TYPE_PICKUP)
+			create_new_interaction_point(null, list(), FALSE, null, TRANSFER_TYPE_PICKUP)
 			return TRUE
 		if("create_dropoff_point")
-			create_new_interaction_point(null, null, null, null, TRANSFER_TYPE_DROPOFF)
+			create_new_interaction_point(null, list(), FALSE, INTERACT_DROP, TRANSFER_TYPE_DROPOFF)
 			return TRUE
 		if("move_point")
 			var/index = params["index"]
@@ -571,6 +581,8 @@
 
 				return FALSE
 
+			// Remove old HUD for this point before moving
+			remove_hud_for_point(point)
 			point.interaction_turf = new_turf
 			update_hud_for_point(point, is_pickup ? TRANSFER_TYPE_PICKUP : TRANSFER_TYPE_DROPOFF)
 			return TRUE

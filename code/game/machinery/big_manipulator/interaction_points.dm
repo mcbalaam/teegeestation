@@ -118,7 +118,9 @@ couple more things.
 			return ishuman(target)
 
 		if(TAKE_ITEMS)
-			return target in atom_filters
+			if(filters_status == FILTERS_REQUIRED)
+				return target in atom_filters
+			return isitem(target)
 
 	return FALSE
 
