@@ -520,9 +520,6 @@
 			interaction_delay = clamp(new_delay, min_d, max_d)
 			SStgui.update_uis(src)
 			return TRUE
-		if("change_mode")
-			change_mode()
-			return TRUE
 		if("highest_priority_change")
 			override_priority = !override_priority
 			return TRUE

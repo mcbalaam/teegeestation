@@ -11,43 +11,16 @@ import {
 } from 'tgui-core/components';
 import { BooleanLike } from 'tgui-core/react';
 
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
+import { useBackend } from '../../backend';
+import { Window } from '../../layouts';
 
-type ManipulatorData = {
-  active: BooleanLike;
-  interaction_delay: number;
-  worker_interaction: string;
-  highest_priority: BooleanLike;
-  interaction_mode: string;
-  settings_list: PrioritySettings[];
-  throw_range: number;
-  item_as_filter: string;
-  selected_type: string;
-  delay_step: number;
-  min_delay: number;
-  max_delay: number;
-  current_task_type: string;
-  current_task_duration: number;
-  pickup_points: PointData[];
-  dropoff_points: PointData[];
-  manipulator_position: string;
-};
+import type { ManipulatorData, PrioritySettings, InteractionPoint } from './types';
 
-type PrioritySettings = {
-  name: string;
-  priority_width: number;
-};
-
-type PointData = {
-  name: string;
-  turf: string;
-  mode: string;
-  filters: string[];
-  item_filters: string[];
-  filters_status: boolean;
-  filtering_mode: number;
-};
+const taskingSchedules = {
+  "Round Robin": "list-ol",
+  "Strict Robin": "arrows-spin",
+  "Prefer First": "arrow-down-1-9"
+}
 
 const MasterControls = () => {
   const { act, data } = useBackend<ManipulatorData>();
@@ -151,16 +124,16 @@ const ConfigRow = (props: ConfigRowProps) => {
 
 const PointSection = (props: {
   title: string;
-  points: PointData[];
+  points: InteractionPoint[];
   onAdd: () => void;
   act: (action: string, params?: Record<string, any>) => void;
 }) => {
   const { data } = useBackend<ManipulatorData>();
   const { title, points, onAdd, act } = props;
-  const [editingPoint, setEditingPoint] = useState<PointData | null>(null);
+  const [editingPoint, setEditingPoint] = useState<InteractionPoint | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  const handleEditPoint = (point: PointData, index: number) => {
+  const handleEditPoint = (point: InteractionPoint, index: number) => {
     setEditingPoint(point);
     setEditingIndex(index);
   };
@@ -188,7 +161,7 @@ const PointSection = (props: {
   };
 
   const getPointDirection = (
-    point: PointData,
+    point: InteractionPoint,
   ): { dx: number; dy: number } | null => {
     if (!point || !point.turf) return null;
 
@@ -232,7 +205,7 @@ const PointSection = (props: {
     <>
       <Section
         title={title}
-        buttons={<Button icon="plus" color="transparent" onClick={onAdd} />}
+        buttons={<><Button tooltip="Cycle tasking schedule" icon="clipboard-list" color="transparent">Round Robin</Button> <Button icon="plus" color="transparent" onClick={onAdd} /></>}
       >
         <Stack vertical>
           {points.map((point, index) => (
@@ -247,13 +220,11 @@ const PointSection = (props: {
                 <Stack>
                   <Stack.Item grow>
                     <Box>
-                      <strong>{point.name}</strong>
-                      <br />
-                      <small>Mode: {point.mode.toUpperCase()}</small>
-                      <br />
-                      <small>
+                      <Box bold>{point.name} <Button icon="edit" color="transparent" /></Box>
+                      <Box color="label">Mode: {point.mode.toUpperCase()}</Box>
+                      <Box color="label">
                         Filters: {point.filters_status ? 'ACTIVE' : 'INACTIVE'}
-                      </small>
+                      </Box>
                     </Box>
                   </Stack.Item>
                   <Stack vertical>
