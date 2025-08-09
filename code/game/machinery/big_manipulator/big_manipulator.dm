@@ -1,4 +1,8 @@
-/// The Big Manipulator's core. Main part of the mechanism that carries out the entire process.
+//   ___   _   __  __ _  _ _  _ _  _ _  _ _  _ _  _ _  _ _  _ _  _ _  _
+//  |   \ /_\ |  \/  | \| | \| | \| | \| | \| | \| | \| | \| | \| | \| |
+//  | |) / _ \| |\/| | .` | .` | .` | .` | .` | .` | .` | .` | .` | .` |
+//  |___/_/ \_\_|  |_|_|\_|_|\_|_|\_|_|\_|_|\_|_|\_|_|\_|_|\_|_|\_|_|\_|
+//
 /obj/machinery/big_manipulator
 	name = "big manipulator"
 	desc = "Operates different objects. Truly, a groundbreaking innovation..."
@@ -14,8 +18,6 @@
 	var/minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_1
 	/// Base interaction delay (between repeating actions and adjacent points)
 	var/interaction_delay = BASE_INTERACTION_TIME * STARTING_MULTIPLIER
-	/// The interaction time modifier - faster to slower.
-	var/interaction_multiplier = STARTING_MULTIPLIER
 
 	/// The status of the manipulator - `IDLE` or `BUSY`.
 	var/status = STATUS_IDLE
@@ -28,31 +30,16 @@
 
 	/// The object inside the manipulator.
 	var/datum/weakref/held_object
-	/// The poor monkey that needs to use mode works.
+	/// The chimp worker that uses the manipulator (handles USE cases).
 	var/datum/weakref/monkey_worker
-	/// weakref to id that locked this manipualtor.
-	var/datum/weakref/locked_by_this_id
-	/// Is manipulator locked by identity id.
-	var/id_locked = FALSE
+	/// Weakref to the ID that locked this manipulator.
+	var/datum/weakref/id_lock = null
 	/// The manipulator's arm.
 	var/obj/effect/big_manipulator_arm/manipulator_arm
-    /// Has this manipulator been emagged? Use EMAGGED flag in obj_flags instead.
-
-	/// How should the manipulator interact with the object?
-	var/interaction_mode = INTERACT_DROP
-	/// How should the worker interact with the object?
-	var/worker_interaction = WORKER_NORMAL_USE
-	/// The distance the thrown object should travel when thrown.
-	var/manipulator_throw_range = 1
 	/// Overrides the priority selection, only accessing the top priority list element.
 	var/override_priority = FALSE
 	/// Is the power access wire cut? Disables the power button if `TRUE`.
 	var/power_access_wire_cut = FALSE
-	/// List where we can set selected type. Taking items by Initialize.
-	var/list/type_filters = list(
-		/obj/item,
-		/obj/structure/closet,
-	)
 
 	/// History of accessed pickup points for round-robin tasking.
 	var/list/roundrobin_history_pickup = 1
@@ -231,7 +218,7 @@
 	var/mob/monkey_resolve = monkey_worker?.resolve()
 	if(!isnull(monkey_resolve))
 		monkey_resolve.forceMove(get_turf(monkey_resolve))
-	locked_by_this_id = null
+	id_lock = null
 	return ..()
 
 /obj/machinery/big_manipulator/Exited(atom/movable/gone, direction)
@@ -243,8 +230,6 @@
 	if(!is_type_in_list(poor_monkey, manipulator_arm.vis_contents))
 		return
 	manipulator_arm.vis_contents -= poor_monkey
-	if(interaction_mode == INTERACT_USE)
-		change_mode()
 	poor_monkey.remove_offsets(type)
 	monkey_worker = null
 
@@ -355,20 +340,15 @@
 	if(!isidcard(is_card))
 		return
 	var/obj/item/card/id/clicked_by_this_id = is_card
-	if(!isnull(locked_by_this_id))
-		var/obj/item/card/id/resolve_id = locked_by_this_id.resolve()
+	if(id_lock)
+		var/obj/item/card/id/resolve_id = id_lock.resolve()
 		if(clicked_by_this_id != resolve_id)
 			balloon_alert(user, "locked by another id")
 			return
-		locked_by_this_id = null
-		change_id_locked_status(user)
-		return
-	locked_by_this_id = WEAKREF(clicked_by_this_id)
-	change_id_locked_status(user)
-
-/obj/machinery/big_manipulator/proc/change_id_locked_status(mob/user)
-	id_locked = !id_locked
-	balloon_alert(user, "successfully [!id_locked ? "un" : ""]locked")
+		id_lock = null
+	else
+		id_lock = WEAKREF(clicked_by_this_id)
+	balloon_alert(user, "successfully [id_lock ? "" : "un"]locked")
 
 /// Creat manipulator hand effect on manipulator core.
 /obj/machinery/big_manipulator/proc/create_manipulator_arm()
@@ -381,15 +361,6 @@
 	SIGNAL_HANDLER
 
 	deconstruct(TRUE)
-
-/// Proc called when we changing item interaction mode.
-/obj/machinery/big_manipulator/proc/change_mode()
-	var/list/available_modes = list(INTERACT_DROP, INTERACT_USE, INTERACT_THROW)
-
-	if(isnull(monkey_worker))
-		available_modes = list(INTERACT_DROP, INTERACT_THROW)
-
-	interaction_mode = cycle_value(interaction_mode, available_modes)
 
 /obj/machinery/big_manipulator/proc/switch_power_state(mob/user)
 	var/new_power_state = !on
@@ -453,7 +424,7 @@
 	finish_manipulation()
 
 /obj/machinery/big_manipulator/ui_interact(mob/user, datum/tgui/ui)
-	if(id_locked)
+	if(id_lock)
 		to_chat(user, span_warning("[src] is locked behind id authentication!"))
 		ui?.close()
 		return
@@ -469,10 +440,7 @@
 /obj/machinery/big_manipulator/ui_data(mob/user)
 	var/list/data = list()
 	data["active"] = on
-	data["interaction_mode"] = interaction_mode
-	data["worker_interaction"] = worker_interaction
 	data["highest_priority"] = override_priority
-	data["throw_range"] = manipulator_throw_range
 	data["current_task_type"] = current_task_type
 	data["current_task_duration"] = current_task_duration
 	data["min_delay"] = minimal_interaction_multiplier
@@ -545,7 +513,7 @@
 			override_priority = !override_priority
 			return TRUE
 		if("worker_interaction_change")
-			cycle_worker_interaction()
+			// TODO: cycle interaction on the interaction point
 			return TRUE
 		if("change_priority")
 			var/new_priority_number = params["priority"]
@@ -556,7 +524,7 @@
 						break
 			return TRUE
 		if("change_throw_range")
-			cycle_throw_range()
+			// cycle_throw_range() should be handled in interaction_points.dm
 			return TRUE
 		if("create_pickup_point")
 			create_new_interaction_point(null, list(), FALSE, null, TRANSFER_TYPE_PICKUP)
@@ -640,15 +608,6 @@
 	var/next_index = (current_index % possible_values.len) + 1
 	to_chat(world, span_notice("DEBUG: Value cycled to [possible_values[next_index]]"))
 	return possible_values[next_index]
-
-
-/obj/machinery/big_manipulator/proc/cycle_worker_interaction()
-	var/list/worker_modes = list(WORKER_NORMAL_USE, WORKER_SINGLE_USE, WORKER_EMPTY_USE)
-	worker_interaction = cycle_value(worker_interaction, worker_modes)
-
-/obj/machinery/big_manipulator/proc/cycle_throw_range()
-	var/list/possible_ranges = list(1, 2, 3, 4, 5, 6, 7)
-	manipulator_throw_range = cycle_value(manipulator_throw_range, possible_ranges)
 
 /// Begins a new task with the specified type and duration
 /obj/machinery/big_manipulator/proc/start_task(task_type, duration)

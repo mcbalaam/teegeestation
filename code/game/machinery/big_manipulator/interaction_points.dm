@@ -1,10 +1,7 @@
 #define DIAG_INTERACTION_POINT_HUD "interaction_point"
 
-/***
-A basic interaction point representing an open turf. Contains data about how it \
-should be interacted with, including filters, turf objects enumerating and a \
-couple more things.
-***/
+/// A basic interaction point representing an open turf.
+/// Contains data about how it should be interacted with, including filters, turf objects enumerating and a couple more things.
 /datum/interaction_point
 	var/name = "interaction point"
 
@@ -16,15 +13,11 @@ couple more things.
 	var/interaction_mode = INTERACT_DROP
 	/// How far should the manipulator throw the object?
 	var/throw_range = 1
-	/***
-	Which items are supposed to be picked up from `interaction_turf` if this is a pickup point \
-	or looked for in the `interaction_turf` if this is a dropoff point.
-	***/
+	/// Which items are supposed to be picked up from `interaction_turf` if this is a pickup point
+	/// or looked for in the `interaction_turf` if this is a dropoff point.
 	var/list/atom_filters = list()
-	/***
-	If this is a dropoff point, influences which interaction endpoints are preferred over which \
-	by the manipulator.
-	***/
+	/// If this is a dropoff point, influences which interaction endpoints are preferred over which
+	/// by the manipulator.
 	var/list/interaction_priorities = list()
 	/// Which object category should the filters be looking out for.
 	var/filtering_mode = TAKE_ITEMS
@@ -86,13 +79,21 @@ couple more things.
 	if(!is_valid())
 		return FALSE
 
-	if(filters_status == FILTERS_SKIPPED)
+	// All atoms on the turf that can be interacted with.
+	var/list/fitting_atoms = list()
+	for(var/atom/movable/movable_atom in interaction_turf.contents)
+		fitting_atoms += movable_atom
+
+	// If the atom filters are skipped and there are any atoms on the turf, we can (potentially) interact with anything.
+	if(filters_status == FILTERS_SKIPPED && length(fitting_atoms))
 		return TRUE
 
-	for(var/atom/movable/movable_atom in interaction_turf.contents)
+	// If the atom filters are required, we need to check if any atom on the turf fits the filters.
+	for(var/atom/movable/movable_atom in fitting_atoms)
 		if(check_filters_for_atom(movable_atom))
 			return interaction_mode == INTERACT_DROP ? FALSE : TRUE
 
+	// No interaction is possible - the interaction point is unavailable.
 	return FALSE
 
 /// Checks if the interaction point is valid.
