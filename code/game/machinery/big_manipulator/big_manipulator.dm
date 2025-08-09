@@ -18,6 +18,8 @@
 	var/minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_1
 	/// Base interaction delay (between repeating actions and adjacent points)
 	var/interaction_delay = BASE_INTERACTION_TIME * STARTING_MULTIPLIER
+	/// How many interaction points of each kind can we have?
+	var/interaction_point_limit = MAX_INTERACTION_POINTS_TIER_1
 
 	/// The status of the manipulator - `IDLE` or `BUSY`.
 	var/status = STATUS_IDLE
@@ -101,6 +103,13 @@
 			balloon_alert(usr, "no suitable turfs found!")
 			return FALSE
 
+	if(transfer_type == TRANSFER_TYPE_PICKUP && length(pickup_points) + 1 > interaction_point_limit)
+		balloon_alert(usr, "pickup point limit reached!")
+		return FALSE
+	if(transfer_type == TRANSFER_TYPE_DROPOFF && length(dropoff_points) + 1 > interaction_point_limit)
+		balloon_alert(usr, "dropoff point limit reached!")
+		return FALSE
+
 	var/datum/interaction_point/new_interaction_point = new(new_turf, new_filters, new_filters_status, new_interaction_mode)
 
 	if(QDELETED(new_interaction_point))
@@ -112,13 +121,14 @@
 		if(TRANSFER_TYPE_DROPOFF)
 			dropoff_points += new_interaction_point
 
-	// If emagged, allow interacting with living mobs as well
+	// If emagged, allow interacting with living mobs as well.
 	if(obj_flags & EMAGGED)
 		new_interaction_point.type_filters += /mob/living
 
-	// Обновляем HUD только если манипулятор работает
+	// Update HUD only when the manipulator is operational.
 	if(is_operational)
 		update_hud_for_point(new_interaction_point, transfer_type)
+
 	return new_interaction_point
 
 /obj/machinery/big_manipulator/proc/update_all_points_on_emag_act()
@@ -151,21 +161,25 @@
 		if(-INFINITY to 1)
 			minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_1
 			interaction_delay = BASE_INTERACTION_TIME * MIN_ROTATION_MULTIPLIER_TIER_1
+			interaction_point_limit = MAX_INTERACTION_POINTS_TIER_1
 			set_greyscale(COLOR_YELLOW)
 			manipulator_arm?.set_greyscale(COLOR_YELLOW)
 		if(2)
 			minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_2
 			interaction_delay = BASE_INTERACTION_TIME * MIN_ROTATION_MULTIPLIER_TIER_2
+			interaction_point_limit = MAX_INTERACTION_POINTS_TIER_2
 			set_greyscale(COLOR_ORANGE)
 			manipulator_arm?.set_greyscale(COLOR_ORANGE)
 		if(3)
 			minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_3
 			interaction_delay = BASE_INTERACTION_TIME * MIN_ROTATION_MULTIPLIER_TIER_3
+			interaction_point_limit = MAX_INTERACTION_POINTS_TIER_3
 			set_greyscale(COLOR_RED)
 			manipulator_arm?.set_greyscale(COLOR_RED)
 		if(4 to INFINITY)
 			minimal_interaction_multiplier = MIN_ROTATION_MULTIPLIER_TIER_4
 			interaction_delay = BASE_INTERACTION_TIME * MIN_ROTATION_MULTIPLIER_TIER_4
+			interaction_point_limit = MAX_INTERACTION_POINTS_TIER_4
 			set_greyscale(COLOR_PURPLE)
 			manipulator_arm?.set_greyscale(COLOR_PURPLE)
 
