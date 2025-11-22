@@ -1,0 +1,4 @@
+#include "_vectorcrafts.dm"
+
+#include "code/vectorcrafts.dm"
+#include "code/_SSvectorcraft.dm"
