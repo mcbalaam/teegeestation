@@ -142,7 +142,7 @@
 			loaded++
 			LAZYADD(added_ingredients, tray_item)
 	if(loaded)
-		to_chat(user, span_notice("You insert [loaded] items into \the [src]."))
+		to_chat(user, span_notice("You dump [loaded] items into \the [src]."))
 		update_appearance(UPDATE_OVERLAYS)
 	return TRUE
 
@@ -244,3 +244,21 @@
 
 	filled_overlay.color = mix_color_from_reagents(reagents.reagent_list + food_reagents)
 	. += filled_overlay
+
+/obj/item/reagent_containers/cup/soup_pot/tea_kettle
+	name = "tea kettle"
+	desc = "A large steel kitchen kettle for boiling large amounts of water and tea brewing."
+	icon = 'icons/obj/service/kitchen.dmi'
+	icon_state = "pot"
+	base_icon_state = "pot"
+	volume = 150
+	possible_transfer_amounts = list(15, 30, 50, 75)
+	amount_per_transfer_from_this = 30
+	custom_price = PAYCHECK_LOWER * 4
+
+	max_ingredients = 12
+
+/obj/item/reagent_containers/cup/soup_pot/tea_kettle/can_add_ingredient(obj/item/ingredient)
+	if(ingredient.w_class >= WEIGHT_CLASS_NORMAL)
+		return FALSE
+	return ..()
