@@ -1,0 +1,103 @@
+[
+  {
+    "label": "tgdm: Build All",
+    "command": "tools/build/build.bat",
+    "env": {
+      "DM_EXE": "${config:dreammaker.byondPath}"
+    },
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgdm: Build All (low memory mode)",
+    "command": "tools/build/build.bat",
+    "args": ["-DLOWMEMORYMODE"],
+    "env": {
+      "DM_EXE": "${config:dreammaker.byondPath}"
+    },
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgdm: Build All (absolute minimum)",
+    "command": "tools/build/build.bat",
+    "args": ["-DLOWMEMORYMODE", "-DABSOLUTE_MINIMUM"],
+    "env": {
+      "DM_EXE": "${config:dreammaker.byondPath}"
+    },
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgdm: Build All (testing)",
+    "command": "tools/build/build.bat",
+    "args": [
+      "-DTESTING",
+      "-DREAGENTS_TESTING",
+      "-DTIMER_DEBUG",
+      "-DREFERENCE_DOING_IT_LIVE"
+    ],
+    "env": {
+      "DM_EXE": "${config:dreammaker.byondPath}"
+    },
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgdm: Build All (testing + low memory mode)",
+    "command": "tools/build/build.bat",
+    "args": [
+      "-DLOWMEMORYMODE",
+      "-DTESTING",
+      "-DREAGENTS_TESTING",
+      "-DTIMER_DEBUG",
+      "-DREFERENCE_DOING_IT_LIVE"
+    ],
+    "env": {
+      "DM_EXE": "${config:dreammaker.byondPath}"
+    },
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgdm: Build All (map testing)",
+    "command": "tools/build/build.bat",
+    "args": ["-DTESTING", "-DMAP_TEST"],
+    "env": {
+      "DM_EXE": "${config:dreammaker.byondPath}"
+    },
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgui: build",
+    "command": "bin/tgui-build",
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgui: dev server",
+    "command": "bin/tgui-dev",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgui: bench",
+    "command": "bin/tgui-bench",
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgui: sonar",
+    "command": "bin/tgui-sonar",
+    "use_new_terminal": false,
+    "reveal": "always"
+  },
+  {
+    "label": "tgui: rebuild tgfont",
+    "command": "bin/tgfont",
+    "use_new_terminal": false,
+    "reveal": "always"
+  }
+]
