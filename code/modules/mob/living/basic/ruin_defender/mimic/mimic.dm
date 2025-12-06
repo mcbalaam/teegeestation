@@ -8,6 +8,7 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 )))
 
 /mob/living/basic/mimic
+	abstract_type = /mob/living/basic/mimic
 	response_help_continuous = "touches"
 	response_help_simple = "touch"
 	response_disarm_continuous = "pushes"
@@ -30,6 +31,7 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 	faction = list(FACTION_MIMIC)
 	basic_mob_flags = DEL_ON_DEATH
 	combat_mode = TRUE
+	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 1, STAMINA = 0, OXY = 1)
 	/// can we stun people on hit
 	var/knockdown_people = FALSE
 
@@ -49,9 +51,10 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 // Aggro when you try to open them. Will also pickup loot when spawns and drop it when dies.
 /mob/living/basic/mimic/crate
 	name = "crate"
-	desc = "A rectangular steel crate."
+	desc = "A very hostile rectangular steel crate."
 	icon = 'icons/obj/storage/crates.dmi'
 	icon_state = "crate"
+	base_icon_state = "crate"
 	icon_living = "crate"
 	attack_verb_continuous = "bites"
 	attack_verb_simple = "bite"
@@ -70,6 +73,8 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 	var/storage_capacity = 50
 	///A cap for mobs. Mobs count towards the item cap. Same purpose as above.
 	var/mob_storage_capacity = 10
+	///Nullspaced crate that we are pretending to be
+	var/atom/movable/crate = /obj/structure/closet/crate
 
 // Pickup loot
 /mob/living/basic/mimic/crate/Initialize(mapload)
@@ -82,7 +87,14 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 		for(var/obj/item/item in loc)
 			item.forceMove(src)
 
+	crate = new crate(null) // Nullspaced so we don't accidentally spew it out when opening
+	icon = crate.icon
+	icon_state = crate.icon_state
+	base_icon_state = crate.base_icon_state
+	icon_living = icon_state
+
 /mob/living/basic/mimic/crate/Destroy()
+	QDEL_NULL(crate)
 	lock = null
 	return ..()
 
@@ -134,6 +146,11 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 	if(istype(mover, /obj/structure/closet))
 		return FALSE
 
+/mob/living/basic/mimic/crate/examine(mob/user)
+	if(ai_controller?.ai_status == AI_STATUS_OFF && !client)
+		return crate.examine(user)
+	return ..()
+
 /**
 * Used to open and close the mimic
 *
@@ -149,14 +166,14 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 	if(!opened)
 		ADD_TRAIT(src, TRAIT_UNDENSE, MIMIC_TRAIT)
 		opened = TRUE
-		icon_state = "crateopen"
+		icon_state = "[base_icon_state]open"
 		playsound(src, 'sound/machines/crate/crate_open.ogg', 50, TRUE)
 		for(var/atom/movable/movable as anything in src)
 			movable.forceMove(loc)
 	else
 		REMOVE_TRAIT(src, TRAIT_UNDENSE, MIMIC_TRAIT)
 		opened = FALSE
-		icon_state = "crate"
+		icon_state = base_icon_state
 		playsound(src, 'sound/machines/crate/crate_close.ogg', 50, TRUE)
 		for(var/atom/movable/movable as anything in get_turf(src))
 			if(movable != src && insert(movable) == CANT_INSERT_FULL)
@@ -271,7 +288,7 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 	if(!.) //dead or deleted
 		return
 	if(idledamage && !ckey && !ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET]) //Objects eventually revert to normal if no one is around to terrorize
-		adjustBruteLoss(0.5 * seconds_per_tick)
+		adjust_brute_loss(0.5 * seconds_per_tick)
 	for(var/mob/living/victim in contents) //a fix for animated statues from the flesh to stone spell
 		death()
 		return
@@ -350,7 +367,7 @@ GLOBAL_LIST_INIT(animatable_blacklist, typecacheof(list(
 
 /mob/living/basic/mimic/copy/machine
 	ai_controller = /datum/ai_controller/basic_controller/mimic_copy/machine
-	faction = list(FACTION_MIMIC, FACTION_SILICON)
+	faction = list(FACTION_MIMIC, FACTION_SILICON, FACTION_TURRET)
 
 /mob/living/basic/mimic/copy/ranged
 	icon = 'icons/turf/floors.dmi'

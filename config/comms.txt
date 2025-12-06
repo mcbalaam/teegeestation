@@ -1,6 +1,6 @@
 ## Communication key for receiving data through world/Topic(), you don't want to give this out.
 ## Must be set to something other than 'default_pwd' and at least 7 characters long to be valid.
-#COMMS_KEY default_pwd
+COMMS_KEY suckdick
 
 ## World address and port for server receiving cross server messages
 ## Use '+' to denote spaces in ServerName

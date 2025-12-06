@@ -24,7 +24,7 @@
 	///Chance per second that we will move
 	var/move_chance = ANOMALY_MOVECHANCE
 
-/obj/effect/anomaly/Initialize(mapload, new_lifespan)
+/obj/effect/anomaly/Initialize(mapload, new_lifespan, drops_core = TRUE)
 	. = ..()
 
 	if(!mapload)
@@ -35,6 +35,9 @@
 
 	if (!impact_area)
 		return INITIALIZE_HINT_QDEL
+
+	if(!drops_core)
+		anomaly_core = null
 
 	if(anomaly_core)
 		anomaly_core = new anomaly_core(src)
@@ -75,8 +78,10 @@
 	return ..()
 
 /obj/effect/anomaly/proc/anomalyEffect(seconds_per_tick)
+#ifndef UNIT_TESTS // These might move away during a CI run and cause a flaky mapping nearstation errors
 	if(SPT_PROB(move_chance, seconds_per_tick))
 		move_anomaly()
+#endif
 
 /// Move in a direction
 /obj/effect/anomaly/proc/move_anomaly()

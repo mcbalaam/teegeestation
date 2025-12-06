@@ -82,4 +82,11 @@
 
 #define MARKET_EVENT_PROBABILITY 8 //Probability of a market event firing, in percent. Fires once per material, every stock market tick.
 
-#define MARKET_PROFIT_MODIFIER 0.8 //We don't make every sale a 1-1 of the actual buy price value, like with real life taxes and to encourage more smart trades
+/// The symbol for the default type of money used in the code.
+#define MONEY_SYMBOL "cr"
+/// The name for the default type of money used in the code.
+#define MONEY_NAME "credits"
+#define MONEY_NAME_SINGULAR "credit"
+
+#define MONEY_MINING_SYMBOL "mp"
+#define MONEY_BITRUNNING_SYMBOL "np"

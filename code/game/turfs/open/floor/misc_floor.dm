@@ -4,9 +4,10 @@
 /turf/open/floor/circuit
 	icon = 'icons/turf/floors.dmi'
 	icon_state = "bcircuit"
-	var/icon_normal = "bcircuit"
+	base_icon_state = "bcircuit"
 	light_color = LIGHT_COLOR_BABY_BLUE
 	floor_tile = /obj/item/stack/tile/circuit
+	rust_resistance = RUST_RESISTANCE_REINFORCED
 	/// If we want to ignore our area's power status and just be always off
 	/// Mostly for mappers doing asthetic things, or cases where the floor should be broken
 	var/always_off = FALSE
@@ -40,7 +41,7 @@
 	set_light(2, 1.5)
 
 /turf/open/floor/circuit/update_icon_state()
-	icon_state = on ? (LAZYLEN(SSmapping.nuke_threats) ? "rcircuitanim" : icon_normal) : "[icon_normal]off"
+	icon_state = on ? (LAZYLEN(SSmapping.nuke_threats) ? "rcircuitanim" : initial(icon_state)) : "[base_icon_state]off"
 	return ..()
 
 /turf/open/floor/circuit/on_change_area(area/old_area, area/new_area)
@@ -88,7 +89,7 @@
 
 /turf/open/floor/circuit/green
 	icon_state = "gcircuit"
-	icon_normal = "gcircuit"
+	base_icon_state = "gcircuit"
 	light_color = LIGHT_COLOR_VIVID_GREEN
 	floor_tile = /obj/item/stack/tile/circuit/green
 
@@ -98,7 +99,6 @@
 
 /turf/open/floor/circuit/green/anim
 	icon_state = "gcircuitanim"
-	icon_normal = "gcircuitanim"
 	floor_tile = /obj/item/stack/tile/circuit/green/anim
 
 /turf/open/floor/circuit/green/airless
@@ -112,7 +112,7 @@
 
 /turf/open/floor/circuit/red
 	icon_state = "rcircuit"
-	icon_normal = "rcircuit"
+	base_icon_state = "rcircuit"
 	light_color = LIGHT_COLOR_INTENSE_RED
 	floor_tile = /obj/item/stack/tile/circuit/red
 
@@ -122,7 +122,6 @@
 
 /turf/open/floor/circuit/red/anim
 	icon_state = "rcircuitanim"
-	icon_normal = "rcircuitanim"
 	floor_tile = /obj/item/stack/tile/circuit/red/anim
 
 /turf/open/floor/circuit/red/airless
@@ -239,6 +238,7 @@
 	desc = "This one takes you back."
 	icon_state = "eighties"
 	floor_tile = /obj/item/stack/tile/eighties
+	rust_resistance = RUST_RESISTANCE_BASIC
 
 /turf/open/floor/eighties/broken_states()
 	return list("eighties_damaged")
