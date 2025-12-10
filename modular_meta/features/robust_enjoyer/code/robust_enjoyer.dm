@@ -63,7 +63,7 @@
 
 /obj/item/clothing/accessory/robust_pin/gigarobust
 	name = "\improper GigaRobust Pin"
-	desc = "An even more impressive pin for the ultimate robust enjoyer!"
+	desc = "A pin for the ultimate robust enjoyer. Reach for the top, fall to the bottom."
 	icon_state = "robust2"
 
 /obj/item/clothing/accessory/robust_pin/gigarobust/accessory_equipped(obj/item/clothing/under/clothes, mob/living/user)
@@ -80,12 +80,12 @@
 		human_equipper.fan_hud_set_fandom()
 
 /datum/mood_event/robust_pin
-	description = span_nicegreen("I'm showing off my robust spirit!\n")
+	description = span_nicegreen("I'm showing off my robust spirit!")
 	mood_change = 3
 	timeout = 3 MINUTES
 
 /datum/mood_event/gigarobust_pin
-	description = span_nicegreen("I'm the ultimate robust. I'm unstoppable.\n")
+	description = span_nicegreen("I'm the ultimate robust. I'm unstoppable.")
 	mood_change = 5
 	timeout = 3 MINUTES
 
@@ -108,4 +108,3 @@
 /obj/item/clothing/accessory/robust_pin/loadout
 	name = "Robust Pin"
 	desc = "A pin to show off your appreciation for robust combat!"
-	loadout_flags = LOADOUT_CAN_EQUIP

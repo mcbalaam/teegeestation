@@ -1,5 +1,4 @@
 #include "code\robust_enjoyer.dm"
-#include "code\loadout_robust_pin.dm"
 
 /datum/modpack/robust_enjoyer
 	id = "robust_enjoyer"
