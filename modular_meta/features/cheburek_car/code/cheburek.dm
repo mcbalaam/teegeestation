@@ -86,7 +86,7 @@ Some memes and gags included.
 			decrease_gear()
 	var/mob/living/carbon/human/rammed = bumped
 	rammed.Paralyze(80)
-	rammed.adjustStaminaLoss(30)
+	rammed.adjust_stamina_loss(30)
 	rammed.apply_damage(rand(15,30), BRUTE)
 	if(!gopmode)
 		if(prob(5) && blood_layer_intensity < 3)
@@ -150,7 +150,7 @@ Some memes and gags included.
 ///Leak oil when the cheburek moves if was damaged
 /obj/vehicle/sealed/car/cheburek/proc/cover_in_oil()
 	SIGNAL_HANDLER
-	new /obj/effect/decal/cleanable/oil/slippery(loc)
+	new /obj/effect/decal/cleanable/blood/oil/slippery(loc)
 
 ///Stops dropping oil after the time has run up
 /obj/vehicle/sealed/car/cheburek/proc/stop_dropping_oil()

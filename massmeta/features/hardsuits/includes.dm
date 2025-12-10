@@ -3,3 +3,8 @@
 #include "code\hardsuit.dm"
 #include "code\helmet.dm"
 #include "code\space_suit_beacon.dm"
+#include "code\order_mining.dm"
+#include "code\suit_storage_unit.dm"
+#include "code\engineering.dm"
+#include "code\uplink.dm"
+#include "code\combat_medic.dm"

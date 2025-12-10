@@ -320,9 +320,9 @@
 /area/ruin/powered/beach)
 "hO" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/pill/lsd,
-/obj/item/reagent_containers/pill/lsd,
-/obj/item/reagent_containers/pill/lsd,
+/obj/item/reagent_containers/applicator/pill/lsd,
+/obj/item/reagent_containers/applicator/pill/lsd,
+/obj/item/reagent_containers/applicator/pill/lsd,
 /turf/open/floor/wood,
 /area/ruin/powered/beach)
 "hS" = (
@@ -344,7 +344,7 @@
 /area/ruin/powered/beach)
 "jc" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/pill/morphine,
+/obj/item/reagent_containers/applicator/pill/morphine,
 /obj/item/storage/fancy/donut_box,
 /turf/open/floor/wood,
 /area/ruin/powered/beach)
@@ -515,9 +515,9 @@
 /area/ruin/powered/beach)
 "qy" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/pill/zoom,
-/obj/item/reagent_containers/pill/zoom,
-/obj/item/reagent_containers/pill/zoom,
+/obj/item/reagent_containers/applicator/pill/zoom,
+/obj/item/reagent_containers/applicator/pill/zoom,
+/obj/item/reagent_containers/applicator/pill/zoom,
 /turf/open/floor/wood,
 /area/ruin/powered/beach)
 "qF" = (
@@ -631,10 +631,9 @@
 /turf/open/floor/pod/light,
 /area/ruin/powered/beach)
 "xa" = (
-/obj/structure/sign/warning/secure_area,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
-/turf/closed/wall/mineral/sandstone,
+/obj/effect/mapping_helpers/broken_floor,
+/obj/structure/sign/warning/secure_area/directional/west,
+/turf/open/floor/plating,
 /area/ruin/powered/beach)
 "xe" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4{
@@ -694,9 +693,9 @@
 /area/ruin/powered/beach)
 "zm" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/pill/morphine,
-/obj/item/reagent_containers/pill/morphine,
-/obj/item/reagent_containers/pill/morphine,
+/obj/item/reagent_containers/applicator/pill/morphine,
+/obj/item/reagent_containers/applicator/pill/morphine,
+/obj/item/reagent_containers/applicator/pill/morphine,
 /turf/open/floor/wood,
 /area/ruin/powered/beach)
 "zv" = (
@@ -1145,7 +1144,7 @@
 /obj/structure/table,
 /obj/item/book/manual/wiki/barman_recipes,
 /obj/item/reagent_containers/cup/glass/shaker,
-/obj/item/reagent_containers/cup/rag,
+/obj/item/rag,
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/wood,
 /area/ruin/powered/beach)
@@ -1343,7 +1342,7 @@
 /area/ruin/powered/beach)
 "Wd" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/pill/happy,
+/obj/item/reagent_containers/applicator/pill/happy,
 /obj/item/toy/figure/bartender{
 	pixel_x = -8;
 	pixel_y = -1
@@ -1506,7 +1505,7 @@ Cs
 Cs
 aj
 Zi
-xa
+BE
 BE
 Mf
 FO
@@ -1538,7 +1537,7 @@ Wa
 as
 pE
 mh
-Wa
+xa
 gs
 VI
 VI

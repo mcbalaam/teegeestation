@@ -192,10 +192,16 @@
 	..()
 
 /obj/item/clothing/suit/armor/reactive/stealth/reactive_activation(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK)
-	var/mob/living/simple_animal/hostile/illusion/escape/decoy = new(owner.loc)
-	decoy.Copy_Parent(owner, 50)
-	decoy.GiveTarget(owner) //so it starts running right away
-	decoy.Goto(owner, decoy.move_to_delay, decoy.minimum_distance)
+	var/mob/living/basic/illusion/escape/decoy = new(owner.loc)
+	decoy.full_setup(
+		owner,
+		target_mob = owner,
+		faction = owner.faction,
+		life = 5 SECONDS,
+		hp = owner.health / 4,
+		damage = 5,
+		replicate = 0,
+	)
 	owner.alpha = 0
 	in_stealth = TRUE
 	owner.visible_message(span_danger("[owner] is hit by [attack_text] in the chest!")) //We pretend to be hit, since blocking it would stop the message otherwise
@@ -349,7 +355,7 @@
 
 /obj/item/clothing/suit/armor/reactive/hallucinating/emp_activation(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK)
 	owner.visible_message(span_danger("[src] blocks [attack_text], but pulls a massive charge of mental energy into [owner] from the surrounding environment!"))
-	owner.adjust_hallucinations_up_to(50 SECONDS, 300 SECONDS)
+	owner.adjust_hallucinations_up_to(50 SECONDS, 240 SECONDS)
 	reactivearmor_cooldown = world.time + reactivearmor_cooldown_duration
 	return TRUE
 

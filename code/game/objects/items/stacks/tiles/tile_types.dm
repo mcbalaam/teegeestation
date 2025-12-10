@@ -137,6 +137,7 @@
 		/obj/item/stack/tile/wood/tile,
 		/obj/item/stack/tile/wood/parquet,
 	)
+	mats_per_unit = list(/datum/material/wood = HALF_SHEET_MATERIAL_AMOUNT / 2)
 
 /obj/item/stack/tile/wood/parquet
 	name = "parquet wood floor tile"
@@ -175,6 +176,7 @@
 		/obj/item/stack/tile/bamboo/tatami/purple,
 		/obj/item/stack/tile/bamboo/tatami/black,
 	)
+	mats_per_unit = list(/datum/material/bamboo = HALF_SHEET_MATERIAL_AMOUNT / 2)
 
 /obj/item/stack/tile/bamboo/tatami
 	name = "Tatami with green rim"
@@ -207,6 +209,7 @@
 	inhand_icon_state = "tile-basalt"
 	turf_type = /turf/open/floor/fakebasalt
 	merge_type = /obj/item/stack/tile/basalt
+	mats_per_unit = list(/datum/material/sand = SHEET_MATERIAL_AMOUNT * 2)
 
 //Carpets
 /obj/item/stack/tile/carpet
@@ -217,7 +220,7 @@
 	inhand_icon_state = "tile-carpet"
 	turf_type = /turf/open/floor/carpet
 	resistance_flags = FLAMMABLE
-	tableVariant = /obj/structure/table/wood/fancy
+	table_type = /obj/structure/table/wood/fancy
 	merge_type = /obj/item/stack/tile/carpet
 	tile_reskin_types = list(
 		/obj/item/stack/tile/carpet,
@@ -247,7 +250,7 @@
 	icon_state = "tile-carpet-black"
 	inhand_icon_state = "tile-carpet-black"
 	turf_type = /turf/open/floor/carpet/black
-	tableVariant = /obj/structure/table/wood/fancy/black
+	table_type = /obj/structure/table/wood/fancy/black
 	merge_type = /obj/item/stack/tile/carpet/black
 	tile_reskin_types = null
 
@@ -256,7 +259,7 @@
 	icon_state = "tile-carpet-blue"
 	inhand_icon_state = "tile-carpet-blue"
 	turf_type = /turf/open/floor/carpet/blue
-	tableVariant = /obj/structure/table/wood/fancy/blue
+	table_type = /obj/structure/table/wood/fancy/blue
 	merge_type = /obj/item/stack/tile/carpet/blue
 	tile_reskin_types = null
 
@@ -265,7 +268,7 @@
 	icon_state = "tile-carpet-cyan"
 	inhand_icon_state = "tile-carpet-cyan"
 	turf_type = /turf/open/floor/carpet/cyan
-	tableVariant = /obj/structure/table/wood/fancy/cyan
+	table_type = /obj/structure/table/wood/fancy/cyan
 	merge_type = /obj/item/stack/tile/carpet/cyan
 	tile_reskin_types = null
 
@@ -274,7 +277,7 @@
 	icon_state = "tile-carpet-green"
 	inhand_icon_state = "tile-carpet-green"
 	turf_type = /turf/open/floor/carpet/green
-	tableVariant = /obj/structure/table/wood/fancy/green
+	table_type = /obj/structure/table/wood/fancy/green
 	merge_type = /obj/item/stack/tile/carpet/green
 	tile_reskin_types = null
 
@@ -283,7 +286,7 @@
 	icon_state = "tile-carpet-orange"
 	inhand_icon_state = "tile-carpet-orange"
 	turf_type = /turf/open/floor/carpet/orange
-	tableVariant = /obj/structure/table/wood/fancy/orange
+	table_type = /obj/structure/table/wood/fancy/orange
 	merge_type = /obj/item/stack/tile/carpet/orange
 	tile_reskin_types = null
 
@@ -292,7 +295,7 @@
 	icon_state = "tile-carpet-purple"
 	inhand_icon_state = "tile-carpet-purple"
 	turf_type = /turf/open/floor/carpet/purple
-	tableVariant = /obj/structure/table/wood/fancy/purple
+	table_type = /obj/structure/table/wood/fancy/purple
 	merge_type = /obj/item/stack/tile/carpet/purple
 	tile_reskin_types = null
 
@@ -301,7 +304,7 @@
 	icon_state = "tile-carpet-red"
 	inhand_icon_state = "tile-carpet-red"
 	turf_type = /turf/open/floor/carpet/red
-	tableVariant = /obj/structure/table/wood/fancy/red
+	table_type = /obj/structure/table/wood/fancy/red
 	merge_type = /obj/item/stack/tile/carpet/red
 	tile_reskin_types = null
 
@@ -310,7 +313,7 @@
 	icon_state = "tile-carpet-royalblack"
 	inhand_icon_state = "tile-carpet-royalblack"
 	turf_type = /turf/open/floor/carpet/royalblack
-	tableVariant = /obj/structure/table/wood/fancy/royalblack
+	table_type = /obj/structure/table/wood/fancy/royalblack
 	merge_type = /obj/item/stack/tile/carpet/royalblack
 	tile_reskin_types = null
 
@@ -319,7 +322,7 @@
 	icon_state = "tile-carpet-royalblue"
 	inhand_icon_state = "tile-carpet-royalblue"
 	turf_type = /turf/open/floor/carpet/royalblue
-	tableVariant = /obj/structure/table/wood/fancy/royalblue
+	table_type = /obj/structure/table/wood/fancy/royalblue
 	merge_type = /obj/item/stack/tile/carpet/royalblue
 	tile_reskin_types = null
 
@@ -1079,6 +1082,7 @@
 		/obj/item/stack/tile/circuit/green,
 		/obj/item/stack/tile/circuit/red,
 	)
+	mats_per_unit = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 1.05, /datum/material/glass = SHEET_MATERIAL_AMOUNT * 1.05)
 
 /obj/item/stack/tile/circuit/green
 	name = "green circuit tile"
@@ -1142,7 +1146,7 @@
 	singular_name = "plastic floor tile"
 	desc = "A tile of cheap, flimsy plastic flooring."
 	icon_state = "tile_plastic"
-	mats_per_unit = list(/datum/material/plastic=SMALL_MATERIAL_AMOUNT*5)
+	mats_per_unit = list(/datum/material/plastic = HALF_SHEET_MATERIAL_AMOUNT / 2)
 	turf_type = /turf/open/floor/plastic
 	merge_type = /obj/item/stack/tile/plastic
 
@@ -1191,13 +1195,13 @@
 	desc = "A clangy tile made of high-quality bronze. Clockwork construction techniques allow the clanging to be minimized."
 	icon_state = "tile_brass"
 	turf_type = /turf/open/floor/bronze
-	mats_per_unit = list(/datum/material/bronze=SMALL_MATERIAL_AMOUNT*5)
+	mats_per_unit = list(/datum/material/bronze = HALF_SHEET_MATERIAL_AMOUNT / 2)
 	merge_type = /obj/item/stack/tile/bronze
 	tile_reskin_types = list(
 		/obj/item/stack/tile/bronze,
 		/obj/item/stack/tile/bronze/flat,
 		/obj/item/stack/tile/bronze/filled,
-		)
+	)
 
 /obj/item/stack/tile/bronze/flat
 	name = "flat bronze tile"
@@ -1257,7 +1261,7 @@
 	desc = "Flooring that shows its contents underneath. Engineers love it!"
 	icon_state = "maint_catwalk"
 	inhand_icon_state = "tile-catwalk"
-	mats_per_unit = list(/datum/material/iron=SMALL_MATERIAL_AMOUNT)
+	mats_per_unit = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 1.2)
 	turf_type = /turf/open/floor/catwalk_floor
 	merge_type = /obj/item/stack/tile/catwalk_tile //Just to be cleaner, these all stack with each other
 	tile_reskin_types = list(
@@ -1324,7 +1328,7 @@
 	inhand_icon_state = "tile-rglass"
 	turf_type = /turf/open/floor/glass/reinforced
 	merge_type = /obj/item/stack/tile/rglass
-	mats_per_unit = list(/datum/material/iron=SHEET_MATERIAL_AMOUNT * 0.125, /datum/material/glass=SHEET_MATERIAL_AMOUNT * 0.25) // 4 tiles per sheet
+	mats_per_unit = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 0.125, /datum/material/glass=SHEET_MATERIAL_AMOUNT * 0.25) // 4 tiles per sheet
 
 /obj/item/stack/tile/rglass/sixty
 	amount = 60

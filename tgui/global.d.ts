@@ -47,11 +47,6 @@ type ByondType = {
   IS_BYOND: boolean;
 
   /**
-   * Version of Trident engine of Internet Explorer. Null if N/A.
-   */
-  TRIDENT: number | null;
-
-  /**
    * Version of Blink engine of WebView2. Null if N/A.
    */
   BLINK: number | null;
@@ -67,6 +62,11 @@ type ByondType = {
    * It is recommended that you keep this ON to detect hard to find bugs.
    */
   strictMode: boolean;
+
+  /**
+   * The external URL for the IndexedDB IFrame to use as the origin
+   */
+  storageCdn: string;
 
   /**
    * Makes a BYOND call.
@@ -178,6 +178,11 @@ type ByondType = {
    * Maps icons to their ref
    */
   iconRefMap: Record<string, string>;
+
+  /**
+   * Downloads a blob, platform-agnostic
+   */
+  saveBlob(blob: Blob, filename: string, ext: string): void;
 };
 
 /**

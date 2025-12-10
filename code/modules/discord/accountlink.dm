@@ -13,6 +13,7 @@
 	var/prefix = CONFIG_GET(string/discordbotcommandprefix)
 	if(!prefix)
 		to_chat(src, span_warning("This feature is disabled."))
+		return
 
 	if(!SSdiscord || !SSdiscord.reverify_cache)
 		to_chat(src, span_warning("Wait for the Discord subsystem to finish initialising"))
@@ -31,7 +32,7 @@
 		message = "Ваш одноразовый токен: [one_time_token]. Теперь вы можете пройти верификацию, перейдя в канал #верификация в дискорде, нажав соответствующую кнопку у Бота и вписав там данный токен: <span class='code user-select'>[one_time_token]</span>" //MASSMETA EDIT CHANGE (discord verification)
 
 	//Now give them a browse window so they can't miss whatever we told them
-	var/datum/browser/window = new/datum/browser(usr, "discordverification", "Discord Verification")
+	var/datum/browser/window = new /datum/browser(usr, "discordverification", "Discord Verification")
 	window.set_content("<div>[message]</div>")
 	window.open()
 

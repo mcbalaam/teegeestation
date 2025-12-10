@@ -81,9 +81,10 @@
 #define DOCKING_NULL_SOURCE (1<<4)
 
 //Docking turf movements
-#define MOVE_TURF 1
-#define MOVE_AREA 2
-#define MOVE_CONTENTS 4
+#define MOVE_TURF (1<<0)
+#define MOVE_AREA (1<<1)
+#define MOVE_CONTENTS (1<<2)
+#define MOVE_SPECIAL (1<<3)
 
 //Rotation params
 #define ROTATE_DIR 1
@@ -141,6 +142,7 @@
 #define ABOVE_MAX_SHUTTLE_SIZE 1 << 2
 #define CUSTOM_AREA_NOT_COMPLETELY_CONTAINED 1 << 3
 #define INTERSECTS_NON_WHITELISTED_AREA 1 << 4
+#define CONTAINS_APC_OF_NON_CUSTOM_AREA 1 << 5
 
 // Custom shuttle engine defines
 #define CUSTOM_ENGINE_COEFF_MIN 0.5
