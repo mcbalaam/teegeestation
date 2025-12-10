@@ -8,6 +8,7 @@
 
 /// FEATURES
 #define CHEBUREK_CAR 1
+#define ROBUST_ENJOYER 1
 
 /// PEREVODY
 #define RU_CRAYONS 1
