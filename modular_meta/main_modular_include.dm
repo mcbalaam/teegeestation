@@ -13,13 +13,16 @@
 	#include "features\cheburek_car\includes.dm"
 #endif
 #include "features\venom_knife\includes.dm"
+#include "features\skill_issue\includes.dm"
 /* -- REVERTS -- */
 
 #include "reverts\revert_glasses_protect_welding\includes.dm"
+#include "reverts\old_clothing\includes.dm"
 
 /* --TRANSLATIONS-- */
 
 #include "ru_translate\ru_ai_laws\includes.dm"
+#include "ru_translate\ru_codewords\includes.dm"
 
 #if RU_CRAYONS
 	#include "ru_translate\ru_crayons\includes.dm"

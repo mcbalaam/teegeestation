@@ -7,8 +7,9 @@
 	lefthand_file = 'icons/mob/inhands/equipment/security_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
 	icon_state = "pressureplate"
+	layer = ABOVE_OPEN_TURF_LAYER
 	plane = FLOOR_PLANE
-	layer = HIGH_TURF_LAYER
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 1.75, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 0.7)
 	var/trigger_mob = TRUE
 	var/trigger_item = FALSE
 	var/specific_item = null

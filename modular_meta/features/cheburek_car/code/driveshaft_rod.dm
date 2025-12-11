@@ -36,4 +36,4 @@
 		span_userdanger("The [src] penetrates you!"),
 		span_danger("You hear a CRANG!"),
 		)
-	penetrated.adjustBruteLoss(50)
+	penetrated.apply_damage(50, damagetype = BRUTE, blocked = armor, spread_damage = TRUE)
