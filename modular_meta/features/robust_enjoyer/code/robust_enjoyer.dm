@@ -37,8 +37,8 @@
 	. = ..()
 	if(!.)
 		return FALSE
-	if(LAZYLEN(attach_to.attached_accessories))
-    	return FALSE
+	if(!LAZYLEN(attach_to.attached_accessories))
+    	return TRUE
 	if(locate(/obj/item/clothing/accessory/clown_enjoyer_pin) in attach_to.attached_accessories)
 		if(user)
 			attach_to.balloon_alert(user, "pathetic.")
