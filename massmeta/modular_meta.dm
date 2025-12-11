@@ -21,7 +21,6 @@
 
 //master files (unsorted, TODO: need modularization)
 
-#include "interface\interface.dm"
 #include "code\modules\clothing\clothing.dm"
 #include "code\modules\surgery\organs\tongue.dm"
 #include "code\modules\surgery\bodyparts\head.dm"
