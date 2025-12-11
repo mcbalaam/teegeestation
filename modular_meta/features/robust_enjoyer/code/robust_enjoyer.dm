@@ -36,9 +36,9 @@
 /obj/item/clothing/accessory/robust_pin/can_attach_accessory(obj/item/clothing/under/attach_to, mob/living/user)
 	. = ..()
 	if(!.)
-		return
-if(!LAZYLEN(attach_to.attached_accessories))
-    return TRUE
+		return FALSE
+	if(LAZYLEN(attach_to.attached_accessories))
+    	return FALSE
 	if(locate(/obj/item/clothing/accessory/clown_enjoyer_pin) in attach_to.attached_accessories)
 		if(user)
 			attach_to.balloon_alert(user, "pathetic.")
