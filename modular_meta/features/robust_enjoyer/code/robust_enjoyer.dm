@@ -93,6 +93,9 @@
 /mob/living/carbon/human/fan_hud_set_fandom()
 	. = ..()
 	var/obj/item/clothing/under/undershirt = w_uniform
+	if(!undershirt)
+		return
+
 	for(var/obj/item/clothing/accessory in undershirt.attached_accessories)
 		if(istype(accessory, /obj/item/clothing/accessory/robust_pin/gigarobust))
 			set_hud_image_state(FAN_HUD, "robustpin2")
