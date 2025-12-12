@@ -91,6 +91,8 @@ GLOBAL_LIST_EMPTY(features_by_species)
 	var/obj/item/organ/stomach/mutantstomach = /obj/item/organ/stomach
 	///Replaces default appendix with a different organ.
 	var/obj/item/organ/appendix/mutantappendix = /obj/item/organ/appendix
+	///Replaces default butt with a different organ
+	var/obj/item/organ/internal/butt/mutantbutt = /obj/item/organ/internal/butt //MASSMETA EDIT ADDITION (butts)
 
 	/// Store body marking defines. See mobs.dm for bitflags
 	var/list/body_markings = list()
@@ -268,6 +270,10 @@ GLOBAL_LIST_EMPTY(features_by_species)
 			return mutantliver
 		if(ORGAN_SLOT_STOMACH)
 			return mutantstomach
+		//MASSMETA EDIT ADDITION BEGIN (butts)
+		if(ORGAN_SLOT_BUTT)
+			return mutantbutt
+		//MASSMETA EDIT ADDITION END (butts)
 		else
 			// Non-standard organs we might have
 			for(var/obj/item/organ/extra_organ as anything in mutant_organs)
@@ -1472,6 +1478,7 @@ GLOBAL_LIST_EMPTY(features_by_species)
 	mut_organs += mutantliver
 	mut_organs += mutantstomach
 	mut_organs += mutantappendix
+	mut_organs += mutantbutt //MASSMETA ADD (butt_farts)
 	list_clear_nulls(mut_organs)
 	return mut_organs
 

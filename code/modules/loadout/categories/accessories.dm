@@ -80,6 +80,6 @@
 	item_path = /obj/item/clothing/accessory/pocketprotector/full
 
 /datum/loadout_item/accessory/pride
-	name = "Pride Pin"
+	name = "Patriotic Pin" //MASSMETA EDIT CHANGE - ORIGINAL: "Pride Pin"
 	item_path = /obj/item/clothing/accessory/pride
 	reskin_datum = /datum/atom_skin/pride_pin
