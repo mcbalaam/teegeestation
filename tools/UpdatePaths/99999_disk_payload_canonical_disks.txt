@@ -1,0 +1,9 @@
+# Update legacy disk paths to canonical /obj/item/disk/data/* paths.
+#
+# This is optional: legacy paths remain valid in code, but updating maps keeps future mapping consistent.
+
+/obj/item/disk/tech_disk : /obj/item/disk/data/tech_disk {@OLD}
+/obj/item/disk/tech_disk/@SUBTYPES : /obj/item/disk/data/tech_disk/@SUBTYPES {@OLD}
+
+/obj/item/disk/design_disk : /obj/item/disk/data/design_disk {@OLD}
+/obj/item/disk/design_disk/@SUBTYPES : /obj/item/disk/data/design_disk/@SUBTYPES {@OLD}

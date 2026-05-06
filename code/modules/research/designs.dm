@@ -122,18 +122,12 @@ other types of metals and chemistry for reagents).
 	icon_state = "datadisk1"
 	custom_materials = list(/datum/material/iron =SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass =SMALL_MATERIAL_AMOUNT)
 
-	///List of all `/datum/design` stored on the disk.
-	var/list/blueprints = list()
-
 /obj/item/disk/data/design_disk/Initialize(mapload)
 	. = ..()
 	var/datum/disk_payload/research_designs/payload = get_payload(/datum/disk_payload/research_designs)
 	if(!payload)
 		payload = new
 		add_payload(payload)
-	if(!LAZYLEN(payload.blueprints) && LAZYLEN(blueprints))
-		payload.blueprints = blueprints
-	blueprints = payload.blueprints
 
 	if(mapload)
 		pixel_x = base_pixel_x + rand(-5, 5)
@@ -161,10 +155,18 @@ other types of metals and chemistry for reagents).
 	. = ..()
 	var/bepis_id = pick(SSresearch.techweb_nodes_experimental)
 	bepis_node = (SSresearch.techweb_node_by_id(bepis_id))
+	if(!bepis_node)
+		return
+
+	var/datum/disk_payload/research_designs/payload = get_payload(/datum/disk_payload/research_designs)
+	if(!payload)
+		payload = new
+		add_payload(payload)
 
 	for(var/entry in bepis_node.design_ids)
 		var/datum/design/new_entry = SSresearch.techweb_design_by_id(entry)
-		blueprints += new_entry
+		if(new_entry)
+			payload.blueprints += new_entry
 
 ///Unhide and research our node so we show up in the R&D console.
 /obj/item/disk/data/design_disk/bepis/on_upload(datum/techweb/stored_research, atom/research_source)
@@ -182,6 +184,8 @@ other types of metals and chemistry for reagents).
 
 /obj/item/disk/data/design_disk/bepis/remove_tech/Initialize(mapload)
 	. = ..()
+	if(!bepis_node)
+		return
 	SSresearch.techweb_nodes_experimental -= bepis_node.id
 	log_research("[bepis_node.display_name] has been removed from experimental nodes through the BEPIS techweb's \"remove tech\" feature.")
 

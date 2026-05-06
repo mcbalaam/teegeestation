@@ -358,7 +358,7 @@
 
 /obj/item/modular_computer/pda/clown/proc/AfterSlip(mob/living/carbon/human/M)
 	if (istype(M) && (M.real_name != saved_identification))
-		var/datum/disk_payload/virus/clown/cart = inserted_disk?.get_payload(/datum/disk_payload/virus/clown, include_hidden = TRUE)
+		var/datum/disk_payload/virus/clown/cart = inserted_disk?.get_payload(/datum/disk_payload/virus/clown)
 		if(istype(cart) && cart.charges < 5)
 			cart.charges++
 			playsound(src,'sound/machines/ping.ogg',30,TRUE)

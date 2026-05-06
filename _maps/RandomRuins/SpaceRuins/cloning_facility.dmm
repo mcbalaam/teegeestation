@@ -286,7 +286,7 @@
 /area/ruin/space/has_grav/powered/ancient_shuttle)
 "Q" = (
 /obj/structure/table/glass,
-/obj/item/disk/design_disk/limbs/felinid,
+/obj/item/disk/data/design_disk/limbs/felinid,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered/ancient_shuttle)
 "R" = (

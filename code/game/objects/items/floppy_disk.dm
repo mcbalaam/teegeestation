@@ -207,8 +207,6 @@
 		return ITEM_INTERACT_SUCCESS
 
 /obj/item/disk/data
-	name = "data disk"
-	desc = "A floppy disk containing data."
 
 /obj/item/disk/upgrade
 	name = "upgrade disk"
@@ -488,7 +486,7 @@
 
 /obj/item/delivery/small/floppy/Initialize(mapload)
 	. = ..()
-	new /obj/item/disk/data(src)
+	new /obj/item/disk(src)
 
 #undef STARTING_STICKER
 #undef MAX_DISK_STACK_SIZE

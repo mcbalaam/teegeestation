@@ -6,8 +6,9 @@
 
 /obj/item/disk/design_disk/knight_gear/Initialize(mapload)
 	. = ..()
-	blueprints += new /datum/design/knight_armour
-	blueprints += new /datum/design/knight_helmet
+	var/datum/disk_payload/research_designs/payload = get_payload(/datum/disk_payload/research_designs)
+	payload?.blueprints += new /datum/design/knight_armour
+	payload?.blueprints += new /datum/design/knight_helmet
 
 //Free Golems
 
@@ -18,7 +19,8 @@
 
 /obj/item/disk/design_disk/golem_shell/Initialize(mapload)
 	. = ..()
-	blueprints += new /datum/design/golem_shell
+	var/datum/disk_payload/research_designs/payload = get_payload(/datum/disk_payload/research_designs)
+	payload?.blueprints += new /datum/design/golem_shell
 
 /datum/design/golem_shell
 	name = "Golem Shell Construction"

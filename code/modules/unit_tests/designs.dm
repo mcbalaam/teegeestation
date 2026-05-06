@@ -55,13 +55,15 @@
 	// Designs can also be disk-exclusive
 	for (var/obj/item/disk/design_disk/design_disk as anything in subtypesof(/obj/item/disk/design_disk))
 		design_disk = new design_disk()
-		for (var/datum/design/design as anything in design_disk.blueprints)
+		var/datum/disk_payload/research_designs/design_payload = design_disk.get_payload(/datum/disk_payload/research_designs)
+		for (var/datum/design/design as anything in design_payload?.blueprints)
 			all_designs -= design.id
 		qdel(design_disk)
 
 	for (var/obj/item/disk/surgery/design_disk as anything in subtypesof(/obj/item/disk/surgery))
 		design_disk = new design_disk()
-		for (var/surgery_type in design_disk.surgeries)
+		var/datum/disk_payload/surgery_procedures/surgery_payload = design_disk.get_payload(/datum/disk_payload/surgery_procedures, include_hidden = TRUE)
+		for (var/surgery_type as anything in surgery_payload?.surgeries)
 			for (var/design_id in all_designs)
 				var/datum/design/surgery/design = all_designs[design_id]
 				if (ispath(design, /datum/design/surgery) && design::surgery == surgery_type)

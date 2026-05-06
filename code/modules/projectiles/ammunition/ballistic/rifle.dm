@@ -78,10 +78,11 @@
 /obj/item/disk/design_disk/tear_gas_40mm
 	name = "40mm riot suppression grenade shells design disk"
 
-/obj/item/disk/design_disk/liberator/Initialize(mapload)
+/obj/item/disk/design_disk/tear_gas_40mm/Initialize(mapload)
 	. = ..()
-	blueprints += new /datum/design/tear_gas_40mm
-	blueprints += new /datum/design/rubber_40mm
+	var/datum/disk_payload/research_designs/payload = get_payload(/datum/disk_payload/research_designs)
+	payload?.blueprints += new /datum/design/tear_gas_40mm
+	payload?.blueprints += new /datum/design/rubber_40mm
 
 // Rebar Bolts
 

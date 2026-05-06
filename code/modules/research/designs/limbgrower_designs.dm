@@ -231,9 +231,13 @@
 
 /obj/item/disk/design_disk/limbs/Initialize(mapload)
 	. = ..()
+	var/datum/disk_payload/research_designs/payload = get_payload(/datum/disk_payload/research_designs)
+	if(!payload)
+		payload = new
+		add_payload(payload)
 	for(var/design in limb_designs)
 		var/datum/design/new_design = design
-		blueprints += new new_design
+		payload.blueprints += new new_design
 
 /datum/design/limb_disk
 	name = "Limb Design Disk"

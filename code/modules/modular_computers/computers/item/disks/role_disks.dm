@@ -3,7 +3,7 @@
  */
 /obj/item/disk/computer/command
 	icon_state = "datadisk7"
-	max_capacity = 32
+	filesystem_capacity = 32
 	///Static list of programss ALL command tablets have.
 	var/static/list/datum/computer_file/command_programs = list(
 		/datum/computer_file/program/science,
@@ -12,9 +12,12 @@
 
 /obj/item/disk/computer/command/Initialize(mapload)
 	. = ..()
+	var/datum/disk_payload/ntos_filesystem/fs = get_payload(/datum/disk_payload/ntos_filesystem, include_hidden = TRUE)
+	if(!fs)
+		return
 	for(var/programs in command_programs)
 		var/datum/computer_file/program/program_type = new programs
-		add_file(program_type)
+		fs.add_file(program_type, src)
 
 /obj/item/disk/computer/command/captain
 	name = "captain data disk"

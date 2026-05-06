@@ -2227,8 +2227,8 @@
 "jr" = (
 /obj/structure/table,
 /obj/item/folder/white,
-/obj/item/disk/tech_disk,
-/obj/item/disk/design_disk,
+/obj/item/disk/data/tech_disk,
+/obj/item/disk/data/design_disk,
 /turf/open/floor/iron/white,
 /area/awaymission/undergroundoutpost45/research)
 "ju" = (

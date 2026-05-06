@@ -35831,13 +35831,13 @@
 	dir = 6
 	},
 /obj/structure/table,
-/obj/item/disk/tech_disk{
+/obj/item/disk/data/tech_disk{
 	pixel_x = 6
 	},
-/obj/item/disk/tech_disk{
+/obj/item/disk/data/tech_disk{
 	pixel_x = -6
 	},
-/obj/item/disk/tech_disk{
+/obj/item/disk/data/tech_disk{
 	pixel_y = 6
 	},
 /obj/item/flatpack{

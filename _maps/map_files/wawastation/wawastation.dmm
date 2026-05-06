@@ -45624,7 +45624,7 @@
 /obj/item/stack/sheet/glass,
 /obj/item/stack/sheet/iron/fifty,
 /obj/item/clothing/glasses/welding,
-/obj/item/disk/tech_disk{
+/obj/item/disk/data/tech_disk{
 	pixel_y = 6
 	},
 /obj/item/reagent_containers/dropper,

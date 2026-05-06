@@ -2341,7 +2341,7 @@
 /turf/open/floor/iron,
 /area/station/hallway/primary/central)
 "OU" = (
-/obj/item/disk/tech_disk/debug,
+/obj/item/disk/data/tech_disk/debug,
 /turf/open/floor/iron,
 /area/station/science)
 "Pc" = (
