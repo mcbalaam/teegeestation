@@ -201,8 +201,6 @@
 		// Set the new diskette.
 		diskette = item
 		to_chat(user, span_notice("You insert [item]."))
-		if(!diskette.get_payload(/datum/disk_payload/genetics))
-			to_chat(user, span_warning("The console cannot read this disk's format."))
 		return
 
 	// Recycle non-activator used injectors

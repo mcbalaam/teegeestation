@@ -93,7 +93,7 @@
 	update_appearance(UPDATE_OVERLAYS)
 
 /obj/item/disk/setup_reskins()
-	AddComponent(/datum/component/reskinable_item, /datum/atom_skin/floppy_disk, infinite = TRUE)
+	AddComponent(/datum/component/reskinable_item, /datum/atom_skin/floppy_disk)
 
 /obj/item/disk/update_overlays()
 	. = ..()

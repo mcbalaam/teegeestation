@@ -110,7 +110,7 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 		if("PRG_usbdeletefile")
 			if(!computer.inserted_disk)
 				return
-			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem, include_hidden = TRUE)
 			if(!fs)
 				return
 			var/datum/computer_file/file = computer.find_file_by_name(params["name"], computer.inserted_disk)
@@ -142,7 +142,7 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 		if("PRG_copytousb")
 			if(!computer.inserted_disk)
 				return
-			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem, include_hidden = TRUE)
 			if(!fs)
 				return
 			var/datum/computer_file/F = computer.find_file_by_name(params["name"])
@@ -258,9 +258,13 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 				"image_height" = image_height,
 			))
 		data["files"] = files
+		data["usbconnected"] = FALSE
+		data["usberror"] = null
+		data["unreadable_data_present"] = FALSE
+		data["usbfiles"] = list()
 		if(computer.inserted_disk)
 			data["usbconnected"] = TRUE
-			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem, include_hidden = TRUE)
 			if(!fs)
 				var/datum/disk_payload/data_blob/blob = computer.inserted_disk.get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE)
 				if(blob)
@@ -268,7 +272,6 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 					data["unreadable_data_present"] = TRUE
 				else
 					data["usberror"] = "Unsupported media"
-				data["usbfiles"] = list()
 			else
 				var/list/usbfiles = list()
 				for(var/datum/computer_file/F as anything in fs.stored_files)

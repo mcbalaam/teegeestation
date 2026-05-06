@@ -259,25 +259,28 @@ export const NtosFileManager = (props) => {
         </Section>
         {usbconnected && (
           <Section title="Data Disk">
-            {!!usberror && <Box color="average">{usberror}</Box>}
-            <FileTable
-              usbmode
-              files={usbfiles}
-              usbconnected={usbconnected}
-              onUpload={(file) => act('PRG_copyfromusb', { name: file })}
-              onDelete={(file) => act('PRG_usbdeletefile', { name: file })}
-              onRename={(file, newName) =>
-                act('PRG_usbrenamefile', {
-                  name: file,
-                  new_name: newName,
-                })
-              }
-              onDuplicate={(file) => act('PRG_clone', { file: file })}
-              onPrint={(file) => {
-                setToPrint(file);
-                setPrintingFromUsb(true);
-              }}
-            />
+            {!!usberror ? (
+              <Box color="average">{usberror}</Box>
+            ) : (
+              <FileTable
+                usbmode
+                files={usbfiles}
+                usbconnected={usbconnected}
+                onUpload={(file) => act('PRG_copyfromusb', { name: file })}
+                onDelete={(file) => act('PRG_usbdeletefile', { name: file })}
+                onRename={(file, newName) =>
+                  act('PRG_usbrenamefile', {
+                    name: file,
+                    new_name: newName,
+                  })
+                }
+                onDuplicate={(file) => act('PRG_clone', { file: file })}
+                onPrint={(file) => {
+                  setToPrint(file);
+                  setPrintingFromUsb(true);
+                }}
+              />
+            )}
           </Section>
         )}
       </NtosWindow.Content>

@@ -469,7 +469,11 @@
 	if(machine_stat)
 		return ..()
 
-	if(!istype(tool, /obj/item/disk/design_disk))
+	if(!istype(tool, /obj/item/disk))
+		return ..()
+	var/obj/item/disk/disk = tool
+	var/datum/disk_payload/research_designs/design_payload = disk.get_payload(/datum/disk_payload/research_designs)
+	if(!design_payload)
 		return ..()
 
 	if(panel_open)
@@ -487,9 +491,8 @@
 		balloon_alert(user, "interrupted!")
 		return ITEM_INTERACT_BLOCKING
 
-	var/obj/item/disk/design_disk/disky = tool
 	var/list/not_imported
-	for(var/datum/design/blueprint as anything in disky.blueprints)
+	for(var/datum/design/blueprint as anything in design_payload.blueprints)
 		if(!blueprint)
 			continue
 		if(blueprint.build_type & AUTOLATHE)

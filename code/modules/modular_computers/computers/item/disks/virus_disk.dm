@@ -8,7 +8,7 @@
 	var/charges = 5
 
 /datum/disk_payload/virus/is_hidden(obj/item/disk/disk)
-	return !!disk.read_only
+	return !disk.read_only
 
 /datum/disk_payload/virus/proc/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
 	if(charges <= 0)
@@ -124,7 +124,8 @@
 /obj/item/disk/computer/virus
 	name = "\improper generic virus disk"
 	max_capacity = 0
-	read_only = TRUE
+	read_only = FALSE
+	read_only_locked = FALSE
 
 /obj/item/disk/computer/virus/proc/ensure_virus_payload(typepath)
 	var/datum/disk_payload/virus/existing = get_payload(/datum/disk_payload/virus, include_hidden = TRUE)
@@ -135,47 +136,23 @@
 	add_payload(new_payload)
 	return new_payload
 
-/obj/item/disk/computer/virus/proc/ensure_filesystem_payload()
-	var/datum/disk_payload/ntos_filesystem/fs = get_payload(/datum/disk_payload/ntos_filesystem, include_hidden = TRUE)
-	if(fs)
-		return fs
-	fs = new
-	fs.max_capacity = 16
-	add_payload(fs)
-	return fs
-
-/obj/item/disk/computer/virus/proc/add_junk_files(datum/disk_payload/ntos_filesystem/fs)
-	if(!fs)
-		return
-	var/list/names = list("dna_backup", "bio_scan", "holopad_cache", "crew_notes", "readme")
-	var/list/texts = list(
-		"NT-Genetics export incomplete.\nChecksum mismatch.",
-		"Hologram preset index rebuilt.\nStatus: OK.",
-		"Do not remove.\nProperty of Nanotrasen.",
-		"[pick("A", "B", "C")][rand(100,999)]-[pick("X", "Y", "Z")]: archived.",
-		"Nothing to see here."
-	)
-	var/attempts = rand(2, 4)
-	for(var/i in 1 to attempts)
-		var/datum/computer_file/data/text/T = new
-		T.filename = pick(names)
-		T.stored_text = pick(texts)
-		T.calculate_size()
-		if(!fs.add_file(T, src))
-			qdel(T)
-			break
 
 /obj/item/disk/computer/virus/proc/ensure_blob_payload()
 	if(get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE))
 		return
-	var/datum/disk_payload/data_blob/blob = new("[rand(1000,9999)]-[pick("NT", "BIO", "HLO", "SYS")]", rand(1,5))
+	var/datum/disk_payload/data_blob/blob = new("[rand(1000,9999)]-[pick("NT", "BIO", "HLO", "SYS")]", rand(8,20))
 	add_payload(blob)
 
 /obj/item/disk/computer/virus/Initialize(mapload)
 	. = ..()
 	ensure_virus_payload(/datum/disk_payload/virus)
+	ensure_blob_payload()
 
 	// disguise as a normal data disk
+	name = "data disk"
+	desc = "A floppy disk containing data."
+	read_only = FALSE
+	max_capacity = 0
 	icon_state = "datadisk[rand(0, 7)]"
 	// randomize disk color/reskin
 	if(prob(75))
@@ -194,33 +171,26 @@
 			allowed = list("o_text1", "o_text2", "o_text3", "o_code")
 		set_sticker_icon_state(pick(allowed))
 
-	var/datum/disk_payload/ntos_filesystem/fs = ensure_filesystem_payload()
-	add_junk_files(fs)
-	ensure_blob_payload()
 
 /obj/item/disk/computer/virus/clown
-	name = "\improper H.O.N.K. disk"
 
 /obj/item/disk/computer/virus/clown/Initialize(mapload)
 	. = ..()
 	ensure_virus_payload(/datum/disk_payload/virus/clown)
 
 /obj/item/disk/computer/virus/mime
-	name = "\improper sound of silence disk"
 
 /obj/item/disk/computer/virus/mime/Initialize(mapload)
 	. = ..()
 	ensure_virus_payload(/datum/disk_payload/virus/mime)
 
 /obj/item/disk/computer/virus/detomatix
-	name = "\improper D.E.T.O.M.A.T.I.X. disk"
 
 /obj/item/disk/computer/virus/detomatix/Initialize(mapload)
 	. = ..()
 	ensure_virus_payload(/datum/disk_payload/virus/detomatix)
 
 /obj/item/disk/computer/virus/frame
-	name = "\improper F.R.A.M.E. disk"
 
 /obj/item/disk/computer/virus/frame/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
 	. = ..()

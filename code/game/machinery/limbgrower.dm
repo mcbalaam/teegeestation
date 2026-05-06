@@ -50,9 +50,11 @@
 			context[SCREENTIP_CONTEXT_LMB] = "[anchored ? "Unan" : "An"]chor"
 			. = CONTEXTUAL_SCREENTIP_SET
 
-	if(istype(held_item, /obj/item/disk/design_disk/limbs))
-		context[SCREENTIP_CONTEXT_LMB] = "Load limb designs"
-		. = CONTEXTUAL_SCREENTIP_SET
+	if(istype(held_item, /obj/item/disk))
+		var/obj/item/disk/disk = held_item
+		if(disk.get_payload(/datum/disk_payload/research_designs))
+			context[SCREENTIP_CONTEXT_LMB] = "Load limb designs"
+			. = CONTEXTUAL_SCREENTIP_SET
 
 /// Emagging a limbgrower allows you to build synthetic armblades.
 /obj/machinery/limbgrower/emag_act(mob/user, obj/item/card/emag/emag_card)
@@ -149,14 +151,18 @@
 	if(check_busy(user))
 		return ITEM_INTERACT_BLOCKING
 
-	if(istype(tool, /obj/item/disk/design_disk/limbs))
+	if(istype(tool, /obj/item/disk))
+		var/obj/item/disk/disk = tool
+		var/datum/disk_payload/research_designs/design_payload = disk.get_payload(/datum/disk_payload/research_designs)
+		if(!design_payload)
+			return .
+
 		user.visible_message(span_notice("[user] begins to load \the [tool] in \the [src]..."),
 			span_notice("You begin to load designs from \the [tool]..."),
 			span_hear("You hear the clatter of a floppy drive."))
 		busy = TRUE
-		var/obj/item/disk/design_disk/limbs/limb_design_disk = tool
 		if(do_after(user, 2 SECONDS, target = src))
-			for(var/datum/design/found_design in limb_design_disk.blueprints)
+			for(var/datum/design/found_design as anything in design_payload.blueprints)
 				imported_designs[found_design.id] = TRUE
 			update_static_data(user)
 		busy = FALSE
