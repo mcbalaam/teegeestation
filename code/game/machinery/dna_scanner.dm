@@ -152,29 +152,50 @@
 	set_linked_console(null)
 
 //Just for transferring between genetics machines.
-/obj/item/disk/data
-	name = "\improper DNA data disk"
-	icon_state = "datadisk0" //Gosh I hope syndies don't mistake them for the nuke disk.
+/datum/disk_payload/genetics
 	var/list/genetic_makeup_buffer = list()
 	var/list/mutations = list()
 	var/max_mutations = 10
+
+/obj/item/disk/data/genetics
+	name = "\improper DNA data disk"
+	icon_state = "datadisk0" //Gosh I hope syndies don't mistake them for the nuke disk.
 	read_only = FALSE //Well,it's still a floppy disk
 
-/obj/item/disk/data/Initialize(mapload)
+	// Legacy vars (kept for save compatibility) are now stored in the disk payload.
+	var/list/genetic_makeup_buffer
+	var/list/mutations
+	var/max_mutations
+
+/obj/item/disk/data/genetics/Initialize(mapload)
 	. = ..()
 	icon_state = "datadisk[rand(0,7)]"
 	set_sticker_icon_state(pick("o_dna1", "o_dna2"))
-	if(length(genetic_makeup_buffer))
-		var/datum/blood_type = genetic_makeup_buffer["blood_type"]
+
+	var/datum/disk_payload/genetics/payload = get_payload(/datum/disk_payload/genetics)
+	if(!payload)
+		payload = new
+		add_payload(payload)
+
+	payload.genetic_makeup_buffer ||= genetic_makeup_buffer || list()
+	payload.mutations ||= mutations || list()
+	payload.max_mutations = payload.max_mutations || max_mutations || 10
+
+	genetic_makeup_buffer = payload.genetic_makeup_buffer
+	mutations = payload.mutations
+	max_mutations = payload.max_mutations
+
+	if(length(payload.genetic_makeup_buffer))
+		var/datum/blood_type = payload.genetic_makeup_buffer["blood_type"]
 		if(blood_type)
 			blood_type = get_blood_type(blood_type) || random_human_blood_type()
 
-/obj/item/disk/data/debug
+/obj/item/disk/data/genetics/debug
 	name = "\improper CentCom DNA disk"
 	desc = "A debug item for genetics"
 	custom_materials = null
 
-/obj/item/disk/data/debug/Initialize(mapload)
+/obj/item/disk/data/genetics/debug/Initialize(mapload)
 	. = ..()
 	// Grabs all instances of mutations and adds them to the disk
 	for(var/datum/mutation/mut as anything in subtypesof(/datum/mutation))

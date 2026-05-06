@@ -50,6 +50,9 @@
 	drop_sound = 'sound/items/handling/disk_drop.ogg'
 	pickup_sound = 'sound/items/handling/disk_pickup.ogg'
 
+	/// Payloads stored on this disk
+	var/list/datum/disk_payload/payloads
+
 	/// Sticker icons to choose from (as icon states)
 	var/static/list/sticker_variants = list(
 		"One" = "o_one",
@@ -86,6 +89,7 @@
 
 /obj/item/disk/Initialize(mapload)
 	. = ..()
+	payloads = payloads || list()
 	update_appearance(UPDATE_OVERLAYS)
 
 /obj/item/disk/setup_reskins()
@@ -201,6 +205,14 @@
 		if(should_put_in_hand)
 			user.put_in_hands(new_stack)
 		return ITEM_INTERACT_SUCCESS
+
+/obj/item/disk/data
+	name = "data disk"
+	desc = "A floppy disk containing data."
+
+/obj/item/disk/upgrade
+	name = "upgrade disk"
+	desc = "A floppy disk containing upgrade data."
 
 /obj/item/disk_stack
 	name = "stack of floppy disks"
@@ -344,6 +356,70 @@
 
 /obj/item/disk/can_be_package_wrapped()
 	return TRUE
+
+/obj/item/disk/Destroy(force)
+	QDEL_LIST(payloads)
+	return ..()
+
+/obj/item/disk/proc/add_payload(datum/disk_payload/payload)
+	if(!payload)
+		return FALSE
+	payloads = payloads || list()
+	payloads += payload
+	payload.disk_host = src
+	return TRUE
+
+/obj/item/disk/proc/get_payload(typepath, include_hidden = FALSE)
+	if(!LAZYLEN(payloads))
+		return null
+	for(var/datum/disk_payload/payload as anything in payloads)
+		if(istype(payload, typepath) && (include_hidden || !payload.is_hidden(src)))
+			return payload
+	return null
+
+/obj/item/disk/proc/get_payloads(typepath, include_hidden = FALSE)
+	var/list/found = list()
+	if(!LAZYLEN(payloads))
+		return found
+	for(var/datum/disk_payload/payload as anything in payloads)
+		if(istype(payload, typepath) && (include_hidden || !payload.is_hidden(src)))
+			found += payload
+	return found
+
+/datum/disk_payload
+	/// Back-reference to the disk holding this payload.
+	var/obj/item/disk/disk_host
+
+/datum/disk_payload/proc/is_hidden(obj/item/disk/disk)
+	return FALSE
+
+/datum/disk_payload/Destroy(force)
+	disk_host = null
+	return ..()
+
+/datum/disk_payload/ntos_filesystem
+	/// The amount of free storage space
+	var/max_capacity = 16
+	/// The amount of storage space occupied
+	var/used_capacity = 0
+	/// List of stored files on this drive.
+	var/list/datum/computer_file/stored_files = list()
+
+/datum/disk_payload/ntos_filesystem/Destroy(force)
+	QDEL_LIST(stored_files)
+	return ..()
+
+/datum/disk_payload/data_blob
+	/// Opaque data identifier for UIs/logs.
+	var/blob_id
+	/// Approximate blob size in arbitrary units.
+	var/blob_size = 1
+
+/datum/disk_payload/data_blob/New(blob_id, blob_size)
+	..()
+	src.blob_id = blob_id
+	if(isnum(blob_size))
+		src.blob_size = max(1, blob_size)
 
 /obj/item/disk_stack/can_be_package_wrapped()
 	return FALSE

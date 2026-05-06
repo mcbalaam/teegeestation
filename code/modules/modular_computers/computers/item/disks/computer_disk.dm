@@ -1,9 +1,7 @@
 /obj/item/disk/computer
-	/// The amount of free storage space
+	/// Legacy vars are now stored in the disk payload.
 	var/max_capacity = 16
-	/// The amount of storage space occupied
 	var/used_capacity = 0
-	/// List of stored files on this drive. Do NOT directly modify; use setters instead.
 	var/list/datum/computer_file/stored_files = list()
 
 	/// List of all programs that the disk should start with
@@ -11,37 +9,48 @@
 
 /obj/item/disk/computer/Initialize(mapload)
 	. = ..()
+	var/datum/disk_payload/ntos_filesystem/fs = get_payload(/datum/disk_payload/ntos_filesystem)
+	if(!fs)
+		fs = new
+		add_payload(fs)
+
+	fs.max_capacity = max_capacity
+	fs.used_capacity = used_capacity
+	if(!LAZYLEN(stored_files))
+		fs.stored_files = stored_files
+	max_capacity = fs.max_capacity
+	used_capacity = fs.used_capacity
+	stored_files = fs.stored_files
+
 	for(var/programs in starting_programs)
 		var/datum/computer_file/program_type = new programs
 		add_file(program_type)
 
 /obj/item/disk/computer/Destroy(force)
 	. = ..()
-	QDEL_LIST(stored_files)
+	stored_files = null
 
-/**
- * add_file
- *
- * Attempts to add an already existing file to the computer disk, then adds that capacity to the used capicity.
- */
 /obj/item/disk/computer/proc/add_file(datum/computer_file/file)
-	if((file.size + used_capacity) > max_capacity)
+	var/datum/disk_payload/ntos_filesystem/fs = get_payload(/datum/disk_payload/ntos_filesystem)
+	if(!fs)
 		return FALSE
-	stored_files.Add(file)
+	if((file.size + fs.used_capacity) > fs.max_capacity)
+		return FALSE
+	fs.stored_files.Add(file)
 	file.disk_host = src
-	used_capacity += file.size
+	fs.used_capacity += file.size
+	used_capacity = fs.used_capacity
 	return TRUE
 
-/**
- * remove_file
- *
- * Removes an app from the stored_files list, then removes their size from the capacity.
- */
 /obj/item/disk/computer/proc/remove_file(datum/computer_file/file)
-	if(!(file in stored_files))
+	var/datum/disk_payload/ntos_filesystem/fs = get_payload(/datum/disk_payload/ntos_filesystem)
+	if(!fs)
 		return FALSE
-	stored_files.Remove(file)
-	used_capacity -= file.size
+	if(!(file in fs.stored_files))
+		return FALSE
+	fs.stored_files.Remove(file)
+	fs.used_capacity -= file.size
+	used_capacity = fs.used_capacity
 	qdel(file)
 	return TRUE
 

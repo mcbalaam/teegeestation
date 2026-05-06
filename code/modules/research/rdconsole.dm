@@ -25,10 +25,10 @@ Nothing else in the console has ID requirements.
 	req_access = list(ACCESS_RESEARCH) // Locking and unlocking the console requires research access
 	/// Reference to global science techweb
 	var/datum/techweb/stored_research
-	/// The stored technology disk, if present
-	var/obj/item/disk/tech_disk/t_disk
-	/// The stored design disk, if present
-	var/obj/item/disk/design_disk/d_disk
+	/// Disk inserted into the tech slot, if present. May be unreadable.
+	var/obj/item/disk/t_disk
+	/// Disk inserted into the design slot, if present. May be unreadable.
+	var/obj/item/disk/d_disk
 	/// Determines if the console is locked, and consequently if actions can be performed with it
 	var/locked = FALSE
 	/// Used for compressing data sent to the UI via static_data as payload size is of concern
@@ -74,33 +74,45 @@ Nothing else in the console has ID requirements.
 	if(!istype(tool, /obj/item/disk))
 		return NONE
 
-	if(istype(tool, /obj/item/disk/tech_disk))
-		if(t_disk)
-			to_chat(user, span_warning("A technology disk is already loaded!"))
-			return ITEM_INTERACT_BLOCKING
-
-		if(!user.transferItemToLoc(tool, src))
-			to_chat(user, span_warning("[tool] is stuck to your hand!"))
-			return ITEM_INTERACT_BLOCKING
-
-		t_disk = tool
-		to_chat(user, span_notice("You insert [tool] into \the [src]!"))
-		return ITEM_INTERACT_SUCCESS
-
-	if (!istype(tool, /obj/item/disk/design_disk))
-		to_chat(user, span_warning("Machine cannot accept disks in that format."))
+	if(t_disk && d_disk)
+		to_chat(user, span_warning("All disk bays are occupied!"))
 		return ITEM_INTERACT_BLOCKING
 
-	if(d_disk)
-		to_chat(user, span_warning("A design disk is already loaded!"))
-		return ITEM_INTERACT_BLOCKING
+	var/is_tech_disk = !!tool.get_payload(/datum/disk_payload/research_techweb)
+	var/is_design_disk = !!tool.get_payload(/datum/disk_payload/research_designs)
+
+	// Prefer the slot that matches the disk's format; otherwise, insert into the first free bay.
+	var/slot_type
+	if(is_tech_disk && !t_disk)
+		slot_type = RND_TECH_DISK
+	else if(is_design_disk && !d_disk)
+		slot_type = RND_DESIGN_DISK
+	else if(!t_disk)
+		slot_type = RND_TECH_DISK
+	else
+		slot_type = RND_DESIGN_DISK
 
 	if(!user.transferItemToLoc(tool, src))
 		to_chat(user, span_warning("[tool] is stuck to your hand!"))
 		return ITEM_INTERACT_BLOCKING
 
-	d_disk = tool
+	if(slot_type == RND_TECH_DISK)
+		if(t_disk)
+			// Shouldn't happen due to checks above, but be safe.
+			to_chat(user, span_warning("A disk is already loaded in the technology bay!"))
+			tool.forceMove(get_turf(src))
+			return ITEM_INTERACT_BLOCKING
+		t_disk = tool
+	else
+		if(d_disk)
+			to_chat(user, span_warning("A disk is already loaded in the design bay!"))
+			tool.forceMove(get_turf(src))
+			return ITEM_INTERACT_BLOCKING
+		d_disk = tool
+
 	to_chat(user, span_notice("You insert [tool] into \the [src]!"))
+	if(!(is_tech_disk || is_design_disk))
+		to_chat(user, span_warning("The console cannot read this disk's format."))
 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/computer/rdconsole/multitool_act(mob/living/user, obj/item/multitool/tool)
@@ -216,13 +228,27 @@ Nothing else in the console has ID requirements.
 	)
 
 	if (t_disk)
-		data["t_disk"] = list (
-			"stored_research" = t_disk.stored_research.researched_nodes,
-		)
+		var/datum/disk_payload/research_techweb/tech_payload = t_disk.get_payload(/datum/disk_payload/research_techweb)
+		if(tech_payload?.stored_research)
+			data["t_disk"] = list(
+				"stored_research" = tech_payload.stored_research.researched_nodes,
+			)
+		else
+			data["t_disk"] = list(
+				"unreadable" = TRUE,
+				"stored_research" = list(),
+			)
 	if (d_disk)
-		data["d_disk"] = list("blueprints" = list())
-		for (var/datum/design/D in d_disk.blueprints)
-			data["d_disk"]["blueprints"] += D.id
+		var/datum/disk_payload/research_designs/design_payload = d_disk.get_payload(/datum/disk_payload/research_designs)
+		if(LAZYLEN(design_payload?.blueprints))
+			data["d_disk"] = list("blueprints" = list())
+			for (var/datum/design/D in design_payload.blueprints)
+				data["d_disk"]["blueprints"] += D.id
+		else
+			data["d_disk"] = list(
+				"unreadable" = TRUE,
+				"blueprints" = list(),
+			)
 
 
 	// Serialize all nodes to display
@@ -376,11 +402,15 @@ Nothing else in the console has ID requirements.
 				if(QDELETED(d_disk))
 					say("No design disk inserted!")
 					return TRUE
-				for(var/D in d_disk.blueprints)
+				var/datum/disk_payload/research_designs/design_payload = d_disk.get_payload(/datum/disk_payload/research_designs)
+				if(!LAZYLEN(design_payload?.blueprints))
+					say("Inserted disk is not readable as a design disk!")
+					return TRUE
+				for(var/D in design_payload.blueprints)
 					if(D)
 						stored_research.add_design(D, TRUE)
 				say("Uploading blueprints from disk.")
-				d_disk.on_upload(stored_research, src)
+				design_payload.on_upload(stored_research, src)
 				return TRUE
 			if (params["type"] == RND_TECH_DISK)
 				if(!COOLDOWN_FINISHED(src, cooldowncopy)) // prevents MC hang
@@ -389,9 +419,13 @@ Nothing else in the console has ID requirements.
 				if (QDELETED(t_disk))
 					say("No tech disk inserted!")
 					return TRUE
+				var/datum/disk_payload/research_techweb/tech_payload = t_disk.get_payload(/datum/disk_payload/research_techweb)
+				if(!tech_payload?.stored_research)
+					say("Inserted disk is not readable as a technology disk!")
+					return TRUE
 				COOLDOWN_START(src, cooldowncopy, 5 SECONDS)
 				say("Uploading technology disk.")
-				t_disk.stored_research.copy_research_to(stored_research)
+				tech_payload.stored_research.copy_research_to(stored_research)
 			return TRUE
 
 		//Tech disk-only action.
@@ -402,9 +436,13 @@ Nothing else in the console has ID requirements.
 			if(QDELETED(t_disk))
 				say("No tech disk inserted!")
 				return
+			var/datum/disk_payload/research_techweb/tech_payload = t_disk.get_payload(/datum/disk_payload/research_techweb)
+			if(!tech_payload?.stored_research)
+				say("Inserted disk is not readable as a technology disk!")
+				return TRUE
 			COOLDOWN_START(src, cooldowncopy, 5 SECONDS)
 			say("Downloading to technology disk.")
-			stored_research.copy_research_to(t_disk.stored_research)
+			stored_research.copy_research_to(tech_payload.stored_research)
 			return TRUE
 
 /obj/machinery/computer/rdconsole/proc/eject_disk(type)

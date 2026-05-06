@@ -112,10 +112,10 @@
 	if(!target_machine.panel_open && !istype(target, /obj/machinery/computer))
 		return ..()
 
-	if(!istype(inserted_disk, /obj/item/disk/computer/virus/clown))
+	var/datum/disk_payload/virus/clown/virus_payload = inserted_disk?.get_payload(/datum/disk_payload/virus/clown)
+	if(!virus_payload)
 		return ..()
-	var/obj/item/disk/computer/virus/clown/installed_cartridge = inserted_disk
-	if(!installed_cartridge.charges)
+	if(!virus_payload.charges)
 		to_chat(user, span_notice("Out of virus charges."))
 		return ..()
 
@@ -124,7 +124,7 @@
 	if(istype(target,/obj/machinery/door/airlock))
 		sig_list = list(COMSIG_AIRLOCK_OPEN, COMSIG_AIRLOCK_CLOSE)
 
-	installed_cartridge.charges--
+	virus_payload.charges--
 	target.AddComponent(
 		/datum/component/sound_player, \
 		uses = rand(15,20), \
@@ -225,7 +225,7 @@
 
 	if(current_turf)
 		current_turf.hotspot_expose(700,125)
-		if(istype(inserted_disk, /obj/item/disk/computer/virus/detomatix))
+		if(inserted_disk?.get_payload(/datum/disk_payload/virus/detomatix))
 			explosion(src, devastation_range = -1, heavy_impact_range = 1, light_impact_range = 3, flash_range = 4)
 		else
 			explosion(src, devastation_range = -1, heavy_impact_range = -1, light_impact_range = 2, flash_range = 3)

@@ -276,8 +276,10 @@
 				return FALSE
 
 			if(sending_virus)
-				var/obj/item/disk/computer/virus/disk = computer.inserted_disk
-				if(!istype(disk))
+				if(!computer.inserted_disk)
+					return FALSE
+				var/datum/disk_payload/virus/virus_payload = computer.inserted_disk.get_payload(/datum/disk_payload/virus)
+				if(!virus_payload)
 					return FALSE
 
 				var/datum/computer_file/program/messenger/target_messenger = null
@@ -291,7 +293,7 @@
 				else if(istype(target, /datum/computer_file/program/messenger))
 					target_messenger = target
 
-				return disk.send_virus(computer, target_messenger.computer, usr, params["message"])
+				return virus_payload.send_virus(computer, target_messenger.computer, usr, params["message"])
 
 			return send_message(usr, params["message"], list(target))
 
@@ -376,10 +378,11 @@
 	data["selected_photo_path"] = !isnull(selected_image) ? SSassets.transport.get_asset_url(selected_image) : null
 	data["on_spam_cooldown"] = !can_send_everyone_message()
 
-	var/obj/item/disk/computer/virus/disk = computer.inserted_disk
-	if(istype(disk))
-		data["virus_attach"] = TRUE
-		data["sending_virus"] = sending_virus
+	if(computer.inserted_disk)
+		var/datum/disk_payload/virus/virus_payload = computer.inserted_disk.get_payload(/datum/disk_payload/virus)
+		if(virus_payload)
+			data["virus_attach"] = TRUE
+			data["sending_virus"] = sending_virus
 	return data
 
 /datum/computer_file/program/messenger/ui_assets(mob/user)

@@ -110,10 +110,15 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 		if("PRG_usbdeletefile")
 			if(!computer.inserted_disk)
 				return
+			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+			if(!fs)
+				return
 			var/datum/computer_file/file = computer.find_file_by_name(params["name"], computer.inserted_disk)
 			if(!file || file.undeletable)
 				return
-			computer.inserted_disk.remove_file(file)
+			fs.stored_files.Remove(file)
+			fs.used_capacity -= file.size
+			qdel(file)
 			return TRUE
 		if("PRG_renamefile")
 			var/datum/computer_file/file = computer.find_file_by_name(params["name"])
@@ -140,13 +145,20 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 		if("PRG_copytousb")
 			if(!computer.inserted_disk)
 				return
+			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+			if(!fs)
+				return
 			var/datum/computer_file/F = computer.find_file_by_name(params["name"])
 			if(!F)
 				return
 			if(computer.find_file_by_name(params["name"], computer.inserted_disk))
 				return
 			var/datum/computer_file/C = F.clone(FALSE)
-			computer.inserted_disk.add_file(C)
+			if((C.size + fs.used_capacity) > fs.max_capacity)
+				return
+			fs.stored_files.Add(C)
+			C.disk_host = computer.inserted_disk
+			fs.used_capacity += C.size
 			return TRUE
 		if("PRG_copyfromusb")
 			if(!computer.inserted_disk)
@@ -253,28 +265,37 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 		data["files"] = files
 		if(computer.inserted_disk)
 			data["usbconnected"] = TRUE
-			var/list/usbfiles = list()
-			for(var/datum/computer_file/F as anything in computer.inserted_disk.stored_files)
-				var/printable = FALSE
-				var/image_width = 0
-				var/image_height = 0
-				var/image_ref
-				var/datum/computer_file/image/picture_file = F
-				if(istype(picture_file))
-					printable = TRUE
-					image_width = picture_file.stored_icon.Width()
-					image_height = picture_file.stored_icon.Height()
-					image_ref = picture_file.get_image_ref()
-				usbfiles += list(list(
-					"name" = F.filename,
-					"type" = F.filetype,
-					"size" = F.size,
-					"undeletable" = F.undeletable,
-					"printable" = printable,
-					"image_ref" = image_ref,
-					"image_width" = image_width,
-					"image_height" = image_height,
-				))
-			data["usbfiles"] = usbfiles
+			var/datum/disk_payload/ntos_filesystem/fs = computer.inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+			if(!fs)
+				var/datum/disk_payload/data_blob/blob = computer.inserted_disk.get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE)
+				if(blob)
+					data["usberror"] = "Unreadable data present"
+				else
+					data["usberror"] = "Unsupported media"
+				data["usbfiles"] = list()
+			else
+				var/list/usbfiles = list()
+				for(var/datum/computer_file/F as anything in fs.stored_files)
+					var/printable = FALSE
+					var/image_width = 0
+					var/image_height = 0
+					var/image_ref
+					var/datum/computer_file/image/picture_file = F
+					if(istype(picture_file))
+						printable = TRUE
+						image_width = picture_file.stored_icon.Width()
+						image_height = picture_file.stored_icon.Height()
+						image_ref = picture_file.get_image_ref()
+					usbfiles += list(list(
+						"name" = F.filename,
+						"type" = F.filetype,
+						"size" = F.size,
+						"undeletable" = F.undeletable,
+						"printable" = printable,
+						"image_ref" = image_ref,
+						"image_width" = image_width,
+						"image_height" = image_height,
+					))
+				data["usbfiles"] = usbfiles
 
 	return data

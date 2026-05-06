@@ -2,14 +2,15 @@
  * Virus disk
  * Can't hold apps, instead does unique actions.
  */
-/obj/item/disk/computer/virus
-	name = "\improper generic virus disk"
-	icon_state = "virusdisk"
-	max_capacity = 0
+
+/datum/disk_payload/virus
 	///How many charges the virus has left
 	var/charges = 5
 
-/obj/item/disk/computer/virus/proc/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
+/datum/disk_payload/virus/is_hidden(obj/item/disk/disk)
+	return !!disk.read_only
+
+/datum/disk_payload/virus/proc/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
 	if(charges <= 0)
 		to_chat(user, span_notice("ERROR: Out of charges."))
 		return FALSE
@@ -18,15 +19,9 @@
 		return FALSE
 	return TRUE
 
-/**
- * Clown virus
- * Makes people's PDA honk
- * Can also be used on open panel airlocks to make them honk on opening.
- */
-/obj/item/disk/computer/virus/clown
-	name = "\improper H.O.N.K. disk"
+/datum/disk_payload/virus/clown
 
-/obj/item/disk/computer/virus/clown/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
+/datum/disk_payload/virus/clown/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
 	. = ..()
 	if(!.)
 		return FALSE
@@ -36,14 +31,9 @@
 	target.honkvirus_amount = rand(15, 25)
 	return TRUE
 
-/**
- * Mime virus
- * Makes PDA's silent, removing their ringtone.
- */
-/obj/item/disk/computer/virus/mime
-	name = "\improper sound of silence disk"
+/datum/disk_payload/virus/mime
 
-/obj/item/disk/computer/virus/mime/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
+/datum/disk_payload/virus/mime/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
 	. = ..()
 	if(!.)
 		return FALSE
@@ -56,15 +46,10 @@
 	app.alert_silenced = TRUE
 	app.ringtone = ""
 
-/**
- * Detomatix virus
- * Sends a false message, and blows the PDA up if the target responds to it (or opens their messenger before a timer)
- */
-/obj/item/disk/computer/virus/detomatix
-	name = "\improper D.E.T.O.M.A.T.I.X. disk"
+/datum/disk_payload/virus/detomatix
 	charges = 6
 
-/obj/item/disk/computer/virus/detomatix/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
+/datum/disk_payload/virus/detomatix/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
 	. = ..()
 	if(!.)
 		return FALSE
@@ -96,33 +81,13 @@
 	addtimer(TRAIT_CALLBACK_REMOVE(target, TRAIT_PDA_CAN_EXPLODE, reference), 1 MINUTES)
 	return TRUE
 
-/**
- * Frame cartridge
- * Creates and opens a false uplink on someone's PDA
- * Can be loaded with TC to show up on the false uplink.
- */
-/obj/item/disk/computer/virus/frame
-	name = "\improper F.R.A.M.E. disk"
-
+/datum/disk_payload/virus/frame
 	///How many telecrystals the uplink should have
 	var/telecrystals = 0
 	///How much progression should be shown in the uplink, set on purchase of the item.
 	var/current_progression = 0
 
-/obj/item/disk/computer/virus/frame/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
-	. = ..()
-	if(!istype(attacking_item, /obj/item/stack/telecrystal))
-		return
-	if(!charges)
-		to_chat(user, span_notice("[src] is out of charges, it's refusing to accept [attacking_item]."))
-		return
-	var/obj/item/stack/telecrystal/telecrystal_stack = attacking_item
-	telecrystals += telecrystal_stack.amount
-	to_chat(user, span_notice("You slot [telecrystal_stack] into [src]. The next time it's used, it will also give telecrystals."))
-	telecrystal_stack.use(telecrystal_stack.amount)
-
-
-/obj/item/disk/computer/virus/frame/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
+/datum/disk_payload/virus/frame/send_virus(obj/item/modular_computer/pda/source, obj/item/modular_computer/pda/target, mob/living/user, message)
 	. = ..()
 	if(!.)
 		return FALSE
@@ -155,3 +120,126 @@
 	telecrystals = 0
 	hidden_uplink.locked = FALSE
 	hidden_uplink.active = TRUE
+
+/obj/item/disk/computer/virus
+	name = "\improper generic virus disk"
+	max_capacity = 0
+	read_only = TRUE
+
+/obj/item/disk/computer/virus/proc/ensure_virus_payload(typepath)
+	var/datum/disk_payload/virus/existing = get_payload(/datum/disk_payload/virus, include_hidden = TRUE)
+	if(existing)
+		payloads -= existing
+		qdel(existing)
+	var/datum/disk_payload/virus/new_payload = new typepath
+	add_payload(new_payload)
+	return new_payload
+
+/obj/item/disk/computer/virus/proc/ensure_filesystem_payload()
+	var/datum/disk_payload/ntos_filesystem/fs = get_payload(/datum/disk_payload/ntos_filesystem, include_hidden = TRUE)
+	if(fs)
+		return fs
+	fs = new
+	fs.max_capacity = 16
+	add_payload(fs)
+	return fs
+
+/obj/item/disk/computer/virus/proc/add_junk_files(datum/disk_payload/ntos_filesystem/fs)
+	if(!fs)
+		return
+	var/list/names = list("dna_backup", "bio_scan", "holopad_cache", "crew_notes", "readme")
+	var/list/texts = list(
+		"NT-Genetics export incomplete.\nChecksum mismatch.",
+		"Hologram preset index rebuilt.\nStatus: OK.",
+		"Do not remove.\nProperty of Nanotrasen.",
+		"[pick("A", "B", "C")][rand(100,999)]-[pick("X", "Y", "Z")]: archived.",
+		"Nothing to see here."
+	)
+	var/attempts = rand(2, 4)
+	for(var/i in 1 to attempts)
+		var/datum/computer_file/data/text/T = new
+		T.filename = pick(names)
+		T.stored_text = pick(texts)
+		T.calculate_size()
+		if((T.size + fs.used_capacity) > fs.max_capacity)
+			qdel(T)
+			break
+		fs.stored_files.Add(T)
+		T.disk_host = src
+		fs.used_capacity += T.size
+
+/obj/item/disk/computer/virus/proc/ensure_blob_payload()
+	if(get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE))
+		return
+	var/datum/disk_payload/data_blob/blob = new("[rand(1000,9999)]-[pick("NT", "BIO", "HLO", "SYS")]", rand(1,5))
+	add_payload(blob)
+
+/obj/item/disk/computer/virus/Initialize(mapload)
+	. = ..()
+	ensure_virus_payload(/datum/disk_payload/virus)
+
+	// disguise as a normal data disk
+	icon_state = "datadisk[rand(0, 7)]"
+	// randomize disk color/reskin
+	if(prob(75))
+		var/list/color_states = list("datadisk0", "datadisk1", "datadisk2", "datadisk3", "datadisk4", "datadisk5", "datadisk6", "datadisk7")
+		icon_state = pick(color_states)
+
+	if(sticker_icon_state == STARTING_STICKER)
+		// exclude DNA/holo/medical stickers, and number/letter stickers that look too specific
+		var/list/excluded = list("o_dna1", "o_dna2", "o_medical", "o_holo", "o_one", "o_two", "o_three", "o_four", "o_five", "o_six", "o_seven", "o_eight", "o_nine", "o_zero", "o_A", "o_B", "o_C", "o_D", "o_E", "o_F")
+		var/list/allowed = list()
+		for(var/variant_name in sticker_variants)
+			var/icon_state_name = sticker_variants[variant_name]
+			if(!(icon_state_name in excluded))
+				allowed += icon_state_name
+		if(!LAZYLEN(allowed))
+			allowed = list("o_text1", "o_text2", "o_text3", "o_code")
+		set_sticker_icon_state(pick(allowed))
+
+	var/datum/disk_payload/ntos_filesystem/fs = ensure_filesystem_payload()
+	add_junk_files(fs)
+	ensure_blob_payload()
+
+/obj/item/disk/computer/virus/clown
+	name = "\improper H.O.N.K. disk"
+
+/obj/item/disk/computer/virus/clown/Initialize(mapload)
+	. = ..()
+	ensure_virus_payload(/datum/disk_payload/virus/clown)
+
+/obj/item/disk/computer/virus/mime
+	name = "\improper sound of silence disk"
+
+/obj/item/disk/computer/virus/mime/Initialize(mapload)
+	. = ..()
+	ensure_virus_payload(/datum/disk_payload/virus/mime)
+
+/obj/item/disk/computer/virus/detomatix
+	name = "\improper D.E.T.O.M.A.T.I.X. disk"
+
+/obj/item/disk/computer/virus/detomatix/Initialize(mapload)
+	. = ..()
+	ensure_virus_payload(/datum/disk_payload/virus/detomatix)
+
+/obj/item/disk/computer/virus/frame
+	name = "\improper F.R.A.M.E. disk"
+
+/obj/item/disk/computer/virus/frame/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	. = ..()
+	if(!istype(attacking_item, /obj/item/stack/telecrystal))
+		return
+	var/datum/disk_payload/virus/frame/payload = get_payload(/datum/disk_payload/virus/frame, include_hidden = TRUE)
+	if(!payload)
+		return
+	if(!payload.charges)
+		to_chat(user, span_notice("[src] is out of charges, it's refusing to accept [attacking_item]."))
+		return
+	var/obj/item/stack/telecrystal/telecrystal_stack = attacking_item
+	payload.telecrystals += telecrystal_stack.amount
+	to_chat(user, span_notice("You slot [telecrystal_stack] into [src]. The next time it's used, it will also give telecrystals."))
+	telecrystal_stack.use(telecrystal_stack.amount)
+
+/obj/item/disk/computer/virus/frame/Initialize(mapload)
+	. = ..()
+	ensure_virus_payload(/datum/disk_payload/virus/frame)

@@ -75,7 +75,7 @@
  * the same filename (disregarding extension), will return it.
  * If a computer disk is passed instead, it will check the disk over the computer.
  */
-/obj/item/modular_computer/proc/find_file_by_name(filename, obj/item/disk/computer/target_disk)
+/obj/item/modular_computer/proc/find_file_by_name(filename, obj/item/disk/target_disk)
 	if(!istext(filename))
 		return null
 	if(isnull(target_disk))
@@ -83,7 +83,10 @@
 			if(file.filename == filename)
 				return file
 	else
-		for(var/datum/computer_file/file as anything in target_disk.stored_files)
+		var/datum/disk_payload/ntos_filesystem/fs = target_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+		if(!fs)
+			return null
+		for(var/datum/computer_file/file as anything in fs.stored_files)
 			if(file.filename == filename)
 				return file
 	return null
@@ -95,7 +98,7 @@
  * the same filename AND extension, will return it.
  * If a computer disk is passed instead, it will check the disk over the computer.
  */
-/obj/item/modular_computer/proc/find_file_by_full_name(full_path, obj/item/disk/computer/target_disk)
+/obj/item/modular_computer/proc/find_file_by_full_name(full_path, obj/item/disk/target_disk)
 	if(!istext(full_path))
 		return null
 	if(isnull(target_disk))
@@ -103,7 +106,10 @@
 			if("[file.filename].[file.filetype]" == full_path)
 				return file
 	else
-		for(var/datum/computer_file/file as anything in target_disk.stored_files)
+		var/datum/disk_payload/ntos_filesystem/fs = target_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+		if(!fs)
+			return null
+		for(var/datum/computer_file/file as anything in fs.stored_files)
 			if("[file.filename].[file.filetype]" == full_path)
 				return file
 	return null
@@ -115,7 +121,7 @@
  * A file's uid is always unique to them, so this proc is sometimes preferable over find_file_by_name.
  * If a computer disk is passed instead, it will check the disk over the computer.
  */
-/obj/item/modular_computer/proc/find_file_by_uid(uid, obj/item/disk/computer/target_disk)
+/obj/item/modular_computer/proc/find_file_by_uid(uid, obj/item/disk/target_disk)
 	if(!isnum(uid))
 		return null
 	if(isnull(target_disk))
@@ -123,7 +129,10 @@
 			if(file.uid == uid)
 				return file
 	else
-		for(var/datum/computer_file/file as anything in target_disk.stored_files)
+		var/datum/disk_payload/ntos_filesystem/fs = target_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+		if(!fs)
+			return null
+		for(var/datum/computer_file/file as anything in fs.stored_files)
 			if(file.uid == uid)
 				return file
 	return null

@@ -281,7 +281,7 @@ GLOBAL_LIST_INIT(nanopaint_supported_filetypes, zebra_typecacheof(list(\
 				message_admins("[ADMIN_LOOKUP(user)] has saved a custom image to [computer] as [file.filename].[file.filetype].")
 				log_player_image_creation("[key_name(user)] has saved a custom image to [computer] as [file.filename].[file.filetype]", user, image_file.stored_icon)
 
-/datum/computer_file/program/nanopaint/proc/save_file(mob/user, name, file_type, obj/item/disk/computer/target_disk)
+/datum/computer_file/program/nanopaint/proc/save_file(mob/user, name, file_type, obj/item/disk/target_disk)
 	var/datum/computer_file/file = new file_type()
 	file.filename = reject_bad_name(name, allow_numbers = TRUE, cap_after_symbols = FALSE, cap_at_start = FALSE)
 	var/file_stored

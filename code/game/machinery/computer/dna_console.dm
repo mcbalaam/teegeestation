@@ -110,7 +110,7 @@
 	var/scramble_ready = 0
 
 	/// Currently stored genetic data diskette
-	var/obj/item/disk/data/diskette = null
+	var/obj/item/disk/diskette = null
 
 	/// Current delayed action, used for delayed enzyme transfer on scanner door close
 	var/list/delayed_action = null
@@ -191,7 +191,7 @@
 
 	// Insert data disk if console disk slot is empty
 	// Swap data disk if there is one already a disk in the console
-	if (istype(item, /obj/item/disk/data)) //INSERT SOME DISKETTES
+	if (istype(item, /obj/item/disk)) //INSERT SOME DISKETTES
 		// Insert disk into DNA Console
 		if (!user.transferItemToLoc(item,src))
 			return
@@ -201,6 +201,8 @@
 		// Set the new diskette.
 		diskette = item
 		to_chat(user, span_notice("You insert [item]."))
+		if(!diskette.get_payload(/datum/disk_payload/genetics))
+			to_chat(user, span_warning("The console cannot read this disk's format."))
 		return
 
 	// Recycle non-activator used injectors
@@ -380,12 +382,16 @@
 
 	if(diskette != null)
 		data["hasDisk"] = TRUE
-		data["diskCapacity"] = diskette.max_mutations - LAZYLEN(diskette.mutations)
-		data["diskReadOnly"] = diskette.read_only
-		//data["diskMutations"] = tgui_diskette_mutations
-		data["storage"]["disk"] = tgui_diskette_mutations
-		data["diskHasMakeup"] = (LAZYLEN(diskette.genetic_makeup_buffer) > 0)
-		data["diskMakeupBuffer"] = diskette.genetic_makeup_buffer.Copy()
+		var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+		if(disk_payload)
+			data["diskCapacity"] = disk_payload.max_mutations - LAZYLEN(disk_payload.mutations)
+			data["diskReadOnly"] = diskette.read_only
+			//data["diskMutations"] = tgui_diskette_mutations
+			data["storage"]["disk"] = tgui_diskette_mutations
+			data["diskHasMakeup"] = (LAZYLEN(disk_payload.genetic_makeup_buffer) > 0)
+			data["diskMakeupBuffer"] = disk_payload.genetic_makeup_buffer.Copy()
+		else
+			data["diskUnreadable"] = TRUE
 	else
 		data["hasDisk"] = FALSE
 		data["diskCapacity"] = 0
@@ -924,8 +930,11 @@
 			if(!diskette)
 				return
 
+			var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+			if(!disk_payload)
+				return
 			// GUARD CHECK - Make sure the disk is not full
-			if(LAZYLEN(diskette.mutations) >= diskette.max_mutations)
+			if(LAZYLEN(disk_payload.mutations) >= disk_payload.max_mutations)
 				to_chat(usr,span_warning("Disk storage is full."))
 				return
 
@@ -955,7 +964,7 @@
 			if(!original)
 				return
 
-			diskette.mutations += original.make_copy()
+			disk_payload.mutations += original.make_copy()
 			to_chat(usr,span_notice("Mutation successfully stored to disk."))
 			return
 
@@ -1020,8 +1029,11 @@
 			var/bref = params["mutref"]
 			var/datum/mutation/HM = get_mut_by_ref(bref, SEARCH_DISKETTE)
 
+			var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+			if(!disk_payload)
+				return
 			if(HM)
-				diskette.mutations.Remove(HM)
+				disk_payload.mutations.Remove(HM)
 				qdel(HM)
 
 			return
@@ -1102,8 +1114,11 @@
 			if(!diskette)
 				return
 
+			var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+			if(!disk_payload)
+				return
 			// GUARD CHECK - Make sure the disk is not full.
-			if(LAZYLEN(diskette.mutations) >= diskette.max_mutations)
+			if(LAZYLEN(disk_payload.mutations) >= disk_payload.max_mutations)
 				to_chat(usr,span_warning("Disk storage is full."))
 				return
 
@@ -1139,7 +1154,7 @@
 				return
 
 			// If we got a new type, add it to our storage
-			diskette.mutations += new result_path()
+			disk_payload.mutations += new result_path()
 			to_chat(usr, span_boldnotice("Success! New mutation has been added to the disk."))
 
 			// If it's already discovered, end here. Otherwise, add it to the list of
@@ -1185,6 +1200,10 @@
 			if(!diskette)
 				return
 
+			var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+			if(!disk_payload)
+				return
+
 			// GUARD CHECK - Make sure the disk isn't set to read only, as we're
 			//  attempting to write to it
 			if(diskette.read_only)
@@ -1202,7 +1221,7 @@
 			if(!istype(buffer_slot))
 				return
 
-			diskette.genetic_makeup_buffer = buffer_slot.Copy()
+			disk_payload.genetic_makeup_buffer = buffer_slot.Copy()
 			return
 
 		// Loads Genetic Makeup from disk to a console buffer
@@ -1215,16 +1234,20 @@
 			if(!diskette)
 				return
 
+			var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+			if(!disk_payload)
+				return
+
 			// GUARD CHECK - This should not be possible to activate on a diskette
 			//  that doesn't have any genetic data. Unexpected result
-			if(LAZYLEN(diskette.genetic_makeup_buffer) == 0)
+			if(LAZYLEN(disk_payload.genetic_makeup_buffer) == 0)
 				return
 
 			// Convert the index to a number and clamp within the array range, then
 			//  copy the data from the disk to that buffer
 			var/buffer_index = text2num(params["index"])
 			buffer_index = clamp(buffer_index, 1, NUMBER_OF_BUFFERS)
-			genetic_makeup_buffer[buffer_index] = diskette.genetic_makeup_buffer.Copy()
+			genetic_makeup_buffer[buffer_index] = disk_payload.genetic_makeup_buffer.Copy()
 			return
 
 		// Deletes genetic makeup buffer from the inserted diskette
@@ -1234,13 +1257,17 @@
 			if(!diskette)
 				return
 
+			var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+			if(!disk_payload)
+				return
+
 			// GUARD CHECK - Make sure the disk isn't set to read only, as we're
 			//  attempting to write (via deletion) to it
 			if(diskette.read_only)
 				to_chat(usr,span_warning("Disk is set to read only mode."))
 				return
 
-			diskette.genetic_makeup_buffer.Cut()
+			disk_payload.genetic_makeup_buffer.Cut()
 			return
 
 		// Saves the scanner occupant's genetic makeup to a given console buffer
@@ -2071,7 +2098,10 @@
 	// ------------------------------------------------------------------------ //
 	// Build the list of mutations stored on any inserted diskettes
 	if(diskette)
-		for(var/datum/mutation/HM in diskette.mutations)
+		var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+		if(!disk_payload)
+			return
+		for(var/datum/mutation/HM in disk_payload.mutations)
 			var/list/mutation_data = list()
 
 			var/datum/mutation/A = GET_INITIALIZED_MUTATION(HM.type)
@@ -2215,7 +2245,10 @@
 			return mutation
 
 	if(diskette && (target_flags & SEARCH_DISKETTE))
-		mutation = (locate(ref) in diskette.mutations)
+		var/datum/disk_payload/genetics/disk_payload = diskette.get_payload(/datum/disk_payload/genetics)
+		if(!disk_payload)
+			return null
+		mutation = (locate(ref) in disk_payload.mutations)
 		if(mutation)
 			return mutation
 

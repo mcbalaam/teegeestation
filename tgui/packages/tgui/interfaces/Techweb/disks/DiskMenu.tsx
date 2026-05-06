@@ -36,12 +36,20 @@ export function TechwebDiskMenu(props: Props) {
           </Flex.Item>
           <Flex.Item align="center">
             {diskType === 'tech' && (
-              <Button icon="save" onClick={() => act('loadTech')}>
+              <Button
+                icon="save"
+                disabled={!!t_disk?.unreadable}
+                onClick={() => act('loadTech')}
+              >
                 Web &rarr; Disk
               </Button>
             )}
             <Button
               icon="upload"
+              disabled={
+                (diskType === 'tech' && !!t_disk?.unreadable) ||
+                (diskType === 'design' && !!d_disk?.unreadable)
+              }
               onClick={() => act('uploadDisk', { type: diskType })}
             >
               Disk &rarr; Web

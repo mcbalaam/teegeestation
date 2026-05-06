@@ -10,6 +10,8 @@ The currently supporting non-reagent materials. All material amounts are set as 
 
 Don't add new keyword/IDs if they are made from an existing one (such as rods which are made from iron). Only add raw materials.
 
+The currently supporting non-reagent materials. All material amounts are set as the define SHEET_MATERIAL_AMOUNT, which defaults to 100
+
 Design Guidelines
 - When adding new designs, check rdreadme.dm to see what kind of things have already been made and where new stuff is needed.
 - A single sheet of anything is 100 units of material. Materials besides iron/glass require help from other jobs (mining for
@@ -107,7 +109,14 @@ other types of metals and chemistry for reagents).
 //Disks for transporting design datums//
 ////////////////////////////////////////
 
-/obj/item/disk/design_disk
+/datum/disk_payload/research_designs
+	/// List of all `/datum/design` stored on the disk.
+	var/list/blueprints = list()
+
+/datum/disk_payload/research_designs/proc/on_upload(datum/techweb/stored_research, atom/research_source)
+	return
+
+/obj/item/disk/data/design_disk
 	name = "Component Design Disk"
 	desc = "A disk for storing device design data for construction in lathes."
 	icon_state = "datadisk1"
@@ -116,8 +125,16 @@ other types of metals and chemistry for reagents).
 	///List of all `/datum/design` stored on the disk.
 	var/list/blueprints = list()
 
-/obj/item/disk/design_disk/Initialize(mapload)
+/obj/item/disk/data/design_disk/Initialize(mapload)
 	. = ..()
+	var/datum/disk_payload/research_designs/payload = get_payload(/datum/disk_payload/research_designs)
+	if(!payload)
+		payload = new
+		add_payload(payload)
+	if(!LAZYLEN(payload.blueprints) && LAZYLEN(blueprints))
+		payload.blueprints = blueprints
+	blueprints = payload.blueprints
+
 	if(mapload)
 		pixel_x = base_pixel_x + rand(-5, 5)
 		pixel_y = base_pixel_y + rand(-5, 5)
@@ -127,10 +144,12 @@ other types of metals and chemistry for reagents).
  * Args:
  * - stored_research - The techweb that's storing us.
  */
-/obj/item/disk/design_disk/proc/on_upload(datum/techweb/stored_research, atom/research_source)
+/obj/item/disk/data/design_disk/proc/on_upload(datum/techweb/stored_research, atom/research_source)
+	var/datum/disk_payload/research_designs/payload = get_payload(/datum/disk_payload/research_designs)
+	payload?.on_upload(stored_research, research_source)
 	return
 
-/obj/item/disk/design_disk/bepis
+/obj/item/disk/data/design_disk/bepis
 	name = "Old experimental technology disk"
 	desc = "A disk containing some long-forgotten technology from a past age. You hope it still works after all these years. Upload the disk to an R&D Console to redeem the tech."
 	icon_state = "rndmajordisk"
@@ -138,7 +157,7 @@ other types of metals and chemistry for reagents).
 	///The bepis node we have the design id's of
 	var/datum/techweb_node/bepis_node
 
-/obj/item/disk/design_disk/bepis/Initialize(mapload)
+/obj/item/disk/data/design_disk/bepis/Initialize(mapload)
 	. = ..()
 	var/bepis_id = pick(SSresearch.techweb_nodes_experimental)
 	bepis_node = (SSresearch.techweb_node_by_id(bepis_id))
@@ -148,20 +167,24 @@ other types of metals and chemistry for reagents).
 		blueprints += new_entry
 
 ///Unhide and research our node so we show up in the R&D console.
-/obj/item/disk/design_disk/bepis/on_upload(datum/techweb/stored_research, atom/research_source)
+/obj/item/disk/data/design_disk/bepis/on_upload(datum/techweb/stored_research, atom/research_source)
 	stored_research.hidden_nodes -= bepis_node.id
 	stored_research.research_node(bepis_node, force = TRUE, auto_adjust_cost = FALSE, research_source = research_source)
+	return ..()
 
 /**
  * Subtype of Bepis tech disk
  * Removes the tech disk that's held on it from the experimental node list, making them not show up in future disks.
  */
-/obj/item/disk/design_disk/bepis/remove_tech
+/obj/item/disk/data/design_disk/bepis/remove_tech
 	name = "Reformatted technology disk"
 	desc = "A disk containing a new, completed tech from the B.E.P.I.S. Upload the disk to an R&D Console to redeem the tech."
 
-/obj/item/disk/design_disk/bepis/remove_tech/Initialize(mapload)
+/obj/item/disk/data/design_disk/bepis/remove_tech/Initialize(mapload)
 	. = ..()
 	SSresearch.techweb_nodes_experimental -= bepis_node.id
 	log_research("[bepis_node.display_name] has been removed from experimental nodes through the BEPIS techweb's \"remove tech\" feature.")
 
+// Legacy path for maps/refs.
+/obj/item/disk/design_disk
+	parent_type = /obj/item/disk/data/design_disk

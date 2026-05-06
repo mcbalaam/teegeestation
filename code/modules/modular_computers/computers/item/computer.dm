@@ -19,7 +19,7 @@
 	///The alt slot, only used by certain UIs like the access app.
 	var/obj/item/card/id/alt_stored_id
 	///The disk in this PDA. If set, this will be inserted on Initialize.
-	var/obj/item/disk/computer/inserted_disk
+	var/obj/item/disk/inserted_disk
 	///The power cell the computer uses to run on.
 	var/obj/item/stock_parts/power_store/internal_cell = /obj/item/stock_parts/power_store/cell
 	///A pAI currently loaded into the modular computer.
@@ -930,7 +930,7 @@
 	if(istype(tool, /obj/item/paper_bin))
 		return paper_bin_act(user, tool)
 
-	if(istype(tool, /obj/item/disk/computer))
+	if(istype(tool, /obj/item/disk))
 		return computer_disk_act(user, tool)
 
 	return NONE
@@ -1004,7 +1004,7 @@
 	bin.update_appearance()
 	return ITEM_INTERACT_SUCCESS
 
-/obj/item/modular_computer/proc/computer_disk_act(mob/user, obj/item/disk/computer/disk)
+/obj/item/modular_computer/proc/computer_disk_act(mob/user, obj/item/disk/disk)
 	if(!user.transferItemToLoc(disk, src))
 		return ITEM_INTERACT_BLOCKING
 	if(inserted_disk)
@@ -1068,7 +1068,10 @@
 /obj/item/modular_computer/proc/get_files(include_disk_files = FALSE)
 	if(!include_disk_files || !inserted_disk)
 		return stored_files
-	return stored_files + inserted_disk.stored_files
+	var/datum/disk_payload/ntos_filesystem/fs = inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+	if(!fs)
+		return stored_files
+	return stored_files + fs.stored_files
 
 /// Returns how relevant the current security level is:
 #define ALERT_RELEVANCY_SAFE 0 /// * 0: User is not in immediate danger and not needed for some station-critical task.

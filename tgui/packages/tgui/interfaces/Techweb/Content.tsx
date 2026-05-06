@@ -62,11 +62,12 @@ export function TechwebContent(props) {
               <Flex.Item>
                 <Button
                   fluid
+                  color={d_disk.unreadable ? 'bad' : undefined}
                   onClick={() =>
                     setTechwebRoute({ route: 'disk', diskType: 'design' })
                   }
                 >
-                  Design Disk Inserted
+                  Design Disk Inserted{d_disk.unreadable ? ' (Unreadable)' : ''}
                 </Button>
               </Flex.Item>
             )}
@@ -74,11 +75,12 @@ export function TechwebContent(props) {
               <Flex.Item>
                 <Button
                   fluid
+                  color={t_disk.unreadable ? 'bad' : undefined}
                   onClick={() =>
                     setTechwebRoute({ route: 'disk', diskType: 'tech' })
                   }
                 >
-                  Tech Disk Inserted
+                  Tech Disk Inserted{t_disk.unreadable ? ' (Unreadable)' : ''}
                 </Button>
               </Flex.Item>
             )}

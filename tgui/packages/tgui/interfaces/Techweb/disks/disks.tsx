@@ -9,7 +9,11 @@ export function TechwebDesignDisk(props) {
   const { design_cache, d_disk } = data;
   if (!d_disk) return;
 
-  const { blueprints } = d_disk;
+  const { blueprints, unreadable } = d_disk;
+
+  if (unreadable) {
+    return <Section title="Disk Error">Unreadable design disk.</Section>;
+  }
 
   return (
     <>
@@ -34,7 +38,11 @@ export function TechwebTechDisk(props) {
   const { t_disk } = data;
   if (!t_disk) return;
 
-  const { stored_research } = t_disk;
+  const { stored_research, unreadable } = t_disk;
+
+  if (unreadable) {
+    return <Section title="Disk Error">Unreadable technology disk.</Section>;
+  }
 
   return (
     <Section scrollable fill>

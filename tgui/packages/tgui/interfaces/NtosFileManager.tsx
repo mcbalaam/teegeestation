@@ -37,6 +37,7 @@ type PrintType = {
 
 type NtosFileManagerData = {
   usbconnected: BooleanLike;
+  usberror?: string;
   files: FileEntry[];
   usbfiles: FileEntry[];
   printTypes: PrintType[];
@@ -210,7 +211,7 @@ const PrintDialog = (props: PrintDialogProps) => {
 
 export const NtosFileManager = (props) => {
   const { act, data } = useBackend<NtosFileManagerData>();
-  const { usbconnected, files = [], usbfiles = [], printTypes } = data;
+  const { usbconnected, usberror, files = [], usbfiles = [], printTypes } = data;
   const [toPrint, setToPrint] = useState<FileEntry>();
   const [printingFromUsb, setPrintingFromUsb] = useState(false);
   return (
@@ -258,6 +259,7 @@ export const NtosFileManager = (props) => {
         </Section>
         {usbconnected && (
           <Section title="Data Disk">
+            {!!usberror && <Box color="average">{usberror}</Box>}
             <FileTable
               usbmode
               files={usbfiles}

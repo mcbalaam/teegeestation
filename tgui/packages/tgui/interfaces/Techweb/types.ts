@@ -4,10 +4,12 @@ import type { ExperimentData } from '../ExperimentConfigure';
 type StoredDesigns = Record<string, 1>;
 
 type DesignDisk = {
+  unreadable?: BooleanLike;
   blueprints: string[];
 };
 
 type TechDisk = {
+  unreadable?: BooleanLike;
   stored_research: StoredDesigns;
 };
 
