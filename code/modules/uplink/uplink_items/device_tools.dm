@@ -147,7 +147,9 @@
 	var/obj/item/disk/computer/virus/frame/target = .
 	if(!target)
 		return
-	target.current_progression = uplink_handler.progression_points
+	var/datum/disk_payload/virus/frame/payload = target.get_payload(/datum/disk_payload/virus/frame, include_hidden = TRUE)
+	if(payload)
+		payload.current_progression = uplink_handler.progression_points
 
 /datum/uplink_item/device_tools/failsafe
 	name = "Failsafe Uplink Code"

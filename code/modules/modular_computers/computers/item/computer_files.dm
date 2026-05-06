@@ -86,9 +86,7 @@
 		var/datum/disk_payload/ntos_filesystem/fs = target_disk.get_payload(/datum/disk_payload/ntos_filesystem)
 		if(!fs)
 			return null
-		for(var/datum/computer_file/file as anything in fs.stored_files)
-			if(file.filename == filename)
-				return file
+		return fs.find_file_by_name(filename)
 	return null
 
 /**
@@ -109,9 +107,7 @@
 		var/datum/disk_payload/ntos_filesystem/fs = target_disk.get_payload(/datum/disk_payload/ntos_filesystem)
 		if(!fs)
 			return null
-		for(var/datum/computer_file/file as anything in fs.stored_files)
-			if("[file.filename].[file.filetype]" == full_path)
-				return file
+		return fs.find_file_by_full_name(full_path)
 	return null
 
 /**
@@ -132,7 +128,5 @@
 		var/datum/disk_payload/ntos_filesystem/fs = target_disk.get_payload(/datum/disk_payload/ntos_filesystem)
 		if(!fs)
 			return null
-		for(var/datum/computer_file/file as anything in fs.stored_files)
-			if(file.uid == uid)
-				return file
+		return fs.find_file_by_uid(uid)
 	return null

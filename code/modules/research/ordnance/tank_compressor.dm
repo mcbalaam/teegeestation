@@ -18,8 +18,8 @@
 	var/last_recorded_pressure = 0
 	var/record_number = 1
 	var/obj/item/tank/inserted_tank
-	/// Reference to a disk we are going to print to.
-	var/obj/item/disk/computer/inserted_disk
+	/// Disk inserted for printing, may be unreadable.
+	var/obj/item/disk/inserted_disk
 
 	pipe_flags = PIPING_ONE_PER_TURF | PIPING_DEFAULT_LAYER_ONLY
 
@@ -46,7 +46,7 @@
 	if (user.combat_mode || panel_open)
 		return NONE
 
-	if(istype(tool, /obj/item/disk/computer))
+	if(istype(tool, /obj/item/disk))
 		eject_disk(user)
 		if(!user.transferItemToLoc(tool, src))
 			balloon_alert(user, "it's stuck to your hand!")
@@ -197,7 +197,12 @@
 	record_data.gas_record = record
 	record_data.possible_experiments = apply_experiments(record)
 
-	if(inserted_disk.add_file(record_data))
+	var/datum/disk_payload/ntos_filesystem/fs = inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+	if(!fs)
+		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 25)
+		return
+
+	if(fs.add_file(record_data, inserted_disk))
 		playsound(src, 'sound/machines/ping.ogg', 25)
 	else
 		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 25)
@@ -321,7 +326,8 @@
 	data["lastPressure"] = last_recorded_pressure
 
 	data["disk"] = inserted_disk?.name
-	data["storage"] = "[inserted_disk?.used_capacity] / [inserted_disk?.max_capacity] GQ"
+	var/datum/disk_payload/ntos_filesystem/fs = inserted_disk?.get_payload(/datum/disk_payload/ntos_filesystem)
+	data["storage"] = fs ? "[fs.used_capacity] / [fs.max_capacity] GQ" : null
 	data["records"] = list()
 	for (var/datum/data/compressor_record/record in compressor_record)
 		var/list/single_record_data = list(

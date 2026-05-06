@@ -116,10 +116,7 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 			var/datum/computer_file/file = computer.find_file_by_name(params["name"], computer.inserted_disk)
 			if(!file || file.undeletable)
 				return
-			fs.stored_files.Remove(file)
-			fs.used_capacity -= file.size
-			qdel(file)
-			return TRUE
+			return fs.remove_file(file)
 		if("PRG_renamefile")
 			var/datum/computer_file/file = computer.find_file_by_name(params["name"])
 			if(!file)
@@ -154,11 +151,9 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 			if(computer.find_file_by_name(params["name"], computer.inserted_disk))
 				return
 			var/datum/computer_file/C = F.clone(FALSE)
-			if((C.size + fs.used_capacity) > fs.max_capacity)
+			if(!fs.add_file(C, computer.inserted_disk))
+				qdel(C)
 				return
-			fs.stored_files.Add(C)
-			C.disk_host = computer.inserted_disk
-			fs.used_capacity += C.size
 			return TRUE
 		if("PRG_copyfromusb")
 			if(!computer.inserted_disk)
@@ -270,6 +265,7 @@ GLOBAL_LIST_INIT(print_types, init_print_types())
 				var/datum/disk_payload/data_blob/blob = computer.inserted_disk.get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE)
 				if(blob)
 					data["usberror"] = "Unreadable data present"
+					data["unreadable_data_present"] = TRUE
 				else
 					data["usberror"] = "Unsupported media"
 				data["usbfiles"] = list()

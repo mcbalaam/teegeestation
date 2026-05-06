@@ -392,8 +392,10 @@
 			data["diskMakeupBuffer"] = disk_payload.genetic_makeup_buffer.Copy()
 		else
 			data["diskUnreadable"] = TRUE
+			data["unreadable_data_present"] = !!diskette.get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE)
 	else
 		data["hasDisk"] = FALSE
+		data["unreadable_data_present"] = FALSE
 		data["diskCapacity"] = 0
 		data["diskReadOnly"] = TRUE
 		//data["diskMutations"] = null

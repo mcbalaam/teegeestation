@@ -32,3 +32,6 @@
 // Legacy path for maps/refs.
 /obj/item/disk/tech_disk
 	parent_type = /obj/item/disk/data/tech_disk
+
+/obj/item/disk/tech_disk/debug
+	parent_type = /obj/item/disk/data/tech_disk/debug

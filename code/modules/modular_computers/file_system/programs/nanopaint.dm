@@ -286,7 +286,8 @@ GLOBAL_LIST_INIT(nanopaint_supported_filetypes, zebra_typecacheof(list(\
 	file.filename = reject_bad_name(name, allow_numbers = TRUE, cap_after_symbols = FALSE, cap_at_start = FALSE)
 	var/file_stored
 	if(target_disk)
-		file_stored = target_disk.add_file(file)
+		var/datum/disk_payload/ntos_filesystem/fs = target_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+		file_stored = fs?.add_file(file, target_disk)
 	else
 		file_stored = computer.store_file(file)
 	if(file_stored)

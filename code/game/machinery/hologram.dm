@@ -65,7 +65,7 @@ Possible to do for anyone motivated enough:
 	/// creating a new holocall from us to another holopad sets this var to that holocall datum
 	var/datum/holocall/outgoing_call
 	/// Record disk
-	var/obj/item/disk/holodisk/disk
+	var/obj/item/disk/disk
 	/// Currently replaying a recording
 	var/replay_mode = FALSE
 	/// Currently looping a recording
@@ -136,7 +136,7 @@ Possible to do for anyone motivated enough:
 	if(proximity_range)
 		proximity_monitor = new(src, proximity_range)
 	if(mapload)
-		var/obj/item/disk/holodisk/new_disk = locate(/obj/item/disk/holodisk) in src.loc
+		var/obj/item/disk/new_disk = locate(/obj/item/disk) in src.loc
 		if(new_disk && !disk)
 			new_disk.forceMove(src)
 			disk = new_disk
@@ -170,14 +170,18 @@ Possible to do for anyone motivated enough:
 		return
 	if(replay_mode)
 		replay_stop()
-	else if(disk?.record)
-		replay_start()
+	else
+		var/datum/disk_payload/holorecord/payload = disk?.get_payload(/datum/disk_payload/holorecord)
+		if(payload?.record)
+			replay_start()
 
 /obj/machinery/holopad/tutorial/HasProximity(atom/movable/AM)
 	if (!isliving(AM))
 		return
-	if(!replay_mode && (disk?.record))
-		replay_start()
+	if(!replay_mode)
+		var/datum/disk_payload/holorecord/payload = disk?.get_payload(/datum/disk_payload/holorecord)
+		if(payload?.record)
+			replay_start()
 
 /obj/machinery/holopad/Destroy()
 	if(outgoing_call)
@@ -266,7 +270,7 @@ Possible to do for anyone motivated enough:
 	return default_pry_open(user, tool, close_after_pry = TRUE, closed_density = FALSE, deconstruct_on_fail = TRUE)
 
 /obj/machinery/holopad/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(istype(tool, /obj/item/disk/holodisk))
+	if(istype(tool, /obj/item/disk))
 		if(disk)
 			to_chat(user,span_warning("There's already a disk inside [src]!"))
 			return
@@ -302,7 +306,8 @@ Possible to do for anyone motivated enough:
 	data["on_cooldown"] = last_request + 200 < world.time ? FALSE : TRUE
 	data["allowed"] = allowed(user)
 	data["disk"] = disk ? TRUE : FALSE
-	data["disk_record"] = disk?.record ? TRUE : FALSE
+	var/datum/disk_payload/holorecord/payload = disk?.get_payload(/datum/disk_payload/holorecord)
+	data["disk_record"] = payload?.record ? TRUE : FALSE
 	data["replay_mode"] = replay_mode
 	data["loop_mode"] = loop_mode
 	data["record_mode"] = record_mode
@@ -415,7 +420,9 @@ Possible to do for anyone motivated enough:
 				new_turf = get_turf(src)
 			else
 				new_turf = get_step(src, GLOB.cardinals[offset])
-			move_hologram(disk.record, new_turf)
+			var/datum/disk_payload/holorecord/payload = disk?.get_payload(/datum/disk_payload/holorecord)
+			if(payload?.record)
+				move_hologram(payload.record, new_turf)
 			return TRUE
 		if("hang_up")
 			if(outgoing_call)
@@ -765,49 +772,69 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 		say("Please insert the disc to play the recording.")
 		return
 
-	if(!disk.record)
+	var/datum/disk_payload/holorecord/payload = disk.get_payload(/datum/disk_payload/holorecord)
+	if(!payload)
+		say("Unsupported media.")
+		return
+
+	if(!payload.record)
 		say("There is no record on the disc. Please check the disk.")
 		return
 
 	if(!replay_mode)
 		replay_mode = TRUE
-		replay_holo = setup_replay_holo(disk.record)
+		replay_holo = setup_replay_holo(payload.record)
 		SetLightsAndPower()
 		replay_entry(1)
 
 /obj/machinery/holopad/proc/replay_stop()
-	if(!disk || !disk.record)
+	var/datum/disk_payload/holorecord/payload = disk?.get_payload(/datum/disk_payload/holorecord)
+	if(!disk || !payload?.record)
 		return FALSE
 	if(replay_mode)
 		replay_mode = FALSE
 		offset = FALSE
-		clear_holo(disk.record)
+		clear_holo(payload.record)
 		QDEL_NULL(replay_holo)
 		SetLightsAndPower()
 
 /obj/machinery/holopad/proc/record_start(mob/living/user)
-	if(!user || !disk || disk.record)
+	if(!user || !disk)
 		return
-	disk.record = new
+
+	var/datum/disk_payload/holorecord/payload = disk.get_payload(/datum/disk_payload/holorecord, TRUE)
+	if(!payload)
+		payload = new
+		disk.add_payload(payload)
+
+	if(payload.record)
+		return
+
+	payload.record = new
 	record_mode = TRUE
 	set_can_hear_flags(CAN_HEAR_RECORD_MODE)
 	record_start = world.time
 	record_user = user
-	disk.record.set_caller_image(user)
+	payload.record.set_caller_image(user)
 
 /obj/machinery/holopad/proc/record_message(mob/living/speaker,message,language)
 	if(!record_mode)
 		return
+
+	var/datum/disk_payload/holorecord/payload = disk?.get_payload(/datum/disk_payload/holorecord)
+	if(!payload?.record)
+		return
+
 	//make this command so you can have multiple languages in single record
-	if((!disk.record.caller_name || disk.record.caller_name == "Unknown") && istype(speaker))
-		disk.record.caller_name = speaker.name
-	if(!disk.record.language)
-		disk.record.language = language
-	else if(language != disk.record.language)
-		disk.record.entries += list(list(HOLORECORD_LANGUAGE,language))
+	if((!payload.record.caller_name || payload.record.caller_name == "Unknown") && istype(speaker))
+		payload.record.caller_name = speaker.name
+	if(!payload.record.language)
+		payload.record.language = language
+	else if(language != payload.record.language)
+		payload.record.entries += list(list(HOLORECORD_LANGUAGE,language))
 
 	var/current_delay = 0
-	for(var/E in disk.record.entries)
+	for(var/E in payload.record.entries)
 		var/list/entry = E
 		if(entry[1] != HOLORECORD_DELAY)
 			continue
@@ -816,23 +843,26 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 	var/time_delta = world.time - record_start - current_delay
 
 	if(time_delta >= 1)
-		disk.record.entries += list(list(HOLORECORD_DELAY,time_delta))
-	disk.record.entries += list(list(HOLORECORD_SAY,message))
-	if(length(disk.record.entries) >= HOLORECORD_MAX_LENGTH)
+		payload.record.entries += list(list(HOLORECORD_DELAY,time_delta))
+	payload.record.entries += list(list(HOLORECORD_SAY,message))
+	if(length(payload.record.entries) >= HOLORECORD_MAX_LENGTH)
 		record_stop()
 
 /obj/machinery/holopad/proc/replay_entry(entry_number)
 	if(!replay_mode)
 		return
-	if (!length(disk.record.entries)) // check for zero entries such as photographs and no text recordings
+	var/datum/disk_payload/holorecord/payload = disk?.get_payload(/datum/disk_payload/holorecord)
+	if(!payload?.record)
+		return
+	if (!length(payload.record.entries)) // check for zero entries such as photographs and no text recordings
 		return // and pretty much just display them statically untill manually stopped
-	if(length(disk.record.entries) < entry_number)
+	if(length(payload.record.entries) < entry_number)
 		if(loop_mode)
 			entry_number = 1
 		else
 			replay_stop()
 			return
-	var/list/entry = disk.record.entries[entry_number]
+	var/list/entry = payload.record.entries[entry_number]
 	var/command = entry[1]
 	switch(command)
 		if(HOLORECORD_SAY)
@@ -865,8 +895,9 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 		set_can_hear_flags(CAN_HEAR_RECORD_MODE, FALSE)
 
 /obj/machinery/holopad/proc/record_clear()
-	if(disk?.record)
-		QDEL_NULL(disk.record)
+	var/datum/disk_payload/holorecord/payload = disk?.get_payload(/datum/disk_payload/holorecord)
+	if(payload?.record)
+		QDEL_NULL(payload.record)
 
 /obj/effect/overlay/holo_pad_hologram
 	// Adds KEEP_TOGETHER to ensure we render overlays right

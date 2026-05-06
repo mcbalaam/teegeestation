@@ -30,7 +30,7 @@
 	/// The amount of pictures we can still take before needing new film.
 	var/pictures_left = 10
 	/// Currently inserted holorecord disk.
-	var/obj/item/disk/holodisk/disk
+	var/obj/item/disk/disk
 	///Boolean on whether or not the camera will print in monochrome.
 	var/print_monochrome = FALSE
 	/// Whether we flash upon taking a picture.
@@ -85,7 +85,7 @@
 		context[SCREENTIP_CONTEXT_LMB] = "Insert Film"
 		return CONTEXTUAL_SCREENTIP_SET
 
-	if(istype(held_item, /obj/item/disk/holodisk))
+	if(istype(held_item, /obj/item/disk))
 		context[SCREENTIP_CONTEXT_LMB] = disk ? "Swap Disks" : "Insert Disk"
 		return CONTEXTUAL_SCREENTIP_SET
 
@@ -405,7 +405,7 @@
 		pictures_left = pictures_max
 		return ITEM_INTERACT_SUCCESS
 
-	if(istype(tool, /obj/item/disk/holodisk))
+	if(istype(tool, /obj/item/disk))
 		if(!user.transferItemToLoc(tool, src))
 			balloon_alert(user, "stuck in hand!")
 			return TRUE
@@ -428,13 +428,19 @@
 		if(!ismob(interacting_with))
 			to_chat(user, span_warning("Invalid holodisk target."))
 			return ITEM_INTERACT_BLOCKING
-		if(disk.record)
-			QDEL_NULL(disk.record)
 
-		disk.record = new
+		var/datum/disk_payload/holorecord/payload = disk.get_payload(/datum/disk_payload/holorecord, TRUE)
+		if(!payload)
+			payload = new
+			disk.add_payload(payload)
+
+		if(payload.record)
+			QDEL_NULL(payload.record)
+
+		payload.record = new
 		var/mob/recorded_mob = interacting_with
-		disk.record.caller_name = recorded_mob.name
-		disk.record.set_caller_image(recorded_mob)
+		payload.record.caller_name = recorded_mob.name
+		payload.record.set_caller_image(recorded_mob)
 
 	attempt_picture(interacting_with, user)
 	return ITEM_INTERACT_SUCCESS

@@ -34,11 +34,8 @@
 	var/datum/disk_payload/ntos_filesystem/fs = get_payload(/datum/disk_payload/ntos_filesystem)
 	if(!fs)
 		return FALSE
-	if((file.size + fs.used_capacity) > fs.max_capacity)
+	if(!fs.add_file(file, src))
 		return FALSE
-	fs.stored_files.Add(file)
-	file.disk_host = src
-	fs.used_capacity += file.size
 	used_capacity = fs.used_capacity
 	return TRUE
 
@@ -46,12 +43,9 @@
 	var/datum/disk_payload/ntos_filesystem/fs = get_payload(/datum/disk_payload/ntos_filesystem)
 	if(!fs)
 		return FALSE
-	if(!(file in fs.stored_files))
+	if(!fs.remove_file(file))
 		return FALSE
-	fs.stored_files.Remove(file)
-	fs.used_capacity -= file.size
 	used_capacity = fs.used_capacity
-	qdel(file)
 	return TRUE
 
 /obj/item/disk/computer/advanced

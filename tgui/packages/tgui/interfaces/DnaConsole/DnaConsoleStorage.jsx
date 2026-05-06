@@ -25,11 +25,20 @@ import { MutationInfo } from './MutationInfo';
 export const DnaConsoleStorage = (props) => {
   const { data, act } = useBackend();
   const { storageMode, storageConsSubMode, storageDiskSubMode } = data.view;
-  const { diskMakeupBuffer, diskHasMakeup } = data;
+  const { diskMakeupBuffer, diskHasMakeup, unreadable_data_present } = data;
   const mutations = data.storage[storageMode];
 
   return (
-    <Section fill title="Storage" buttons={<StorageButtons />}>
+    <Section
+      fill
+      title="Storage"
+      buttons={<StorageButtons />}
+    >
+      {!!unreadable_data_present && (
+        <Box color="average" mb={1}>
+          Unreadable data present on inserted disk.
+        </Box>
+      )}
       {storageMode === STORAGE_MODE_CONSOLE &&
         storageConsSubMode === STORAGE_CONS_SUBMODE_MUTATIONS && (
           <StorageMutations mutations={mutations} />

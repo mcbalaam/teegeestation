@@ -14,8 +14,8 @@
 	var/record_number = 1
 	/// List of all explosion records in the form of /datum/data/tachyon_record
 	var/list/records = list()
-	/// Reference to a disk we are going to print to.
-	var/obj/item/disk/computer/inserted_disk
+	/// Disk inserted for printing, may be unreadable.
+	var/obj/item/disk/inserted_disk
 
 	// Lighting system to better communicate the directions.
 	light_system = OVERLAY_LIGHT_DIRECTIONAL
@@ -49,7 +49,7 @@
 	. += span_notice("It is currently facing [dir2text(dir)]")
 
 /obj/machinery/doppler_array/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(!istype(tool, /obj/item/disk/computer))
+	if(!istype(tool, /obj/item/disk))
 		return NONE
 	eject_disk(user)
 	if(!user.transferItemToLoc(tool, src))
@@ -80,7 +80,12 @@
 	record_data.explosion_record = record
 	record_data.possible_experiments = apply_experiments(record)
 
-	if(inserted_disk.add_file(record_data))
+	var/datum/disk_payload/ntos_filesystem/fs = inserted_disk.get_payload(/datum/disk_payload/ntos_filesystem)
+	if(!fs)
+		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 25)
+		return
+
+	if(fs.add_file(record_data, inserted_disk))
 		playsound(src, 'sound/machines/ping.ogg', 25)
 	else
 		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 25)
@@ -255,7 +260,8 @@
 	var/list/data = list()
 	data["records"] = list()
 	data["disk"] = inserted_disk?.name
-	data["storage"] = "[inserted_disk?.used_capacity] / [inserted_disk?.max_capacity] GQ"
+	var/datum/disk_payload/ntos_filesystem/fs = inserted_disk?.get_payload(/datum/disk_payload/ntos_filesystem)
+	data["storage"] = fs ? "[fs.used_capacity] / [fs.max_capacity] GQ" : null
 	for(var/datum/data/tachyon_record/singular_record in records)
 		var/list/record_data = list(
 			"name" = singular_record.name,

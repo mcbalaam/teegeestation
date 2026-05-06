@@ -78,8 +78,9 @@ Nothing else in the console has ID requirements.
 		to_chat(user, span_warning("All disk bays are occupied!"))
 		return ITEM_INTERACT_BLOCKING
 
-	var/is_tech_disk = !!tool.get_payload(/datum/disk_payload/research_techweb)
-	var/is_design_disk = !!tool.get_payload(/datum/disk_payload/research_designs)
+	var/obj/item/disk/disk = tool
+	var/is_tech_disk = !!disk.get_payload(/datum/disk_payload/research_techweb)
+	var/is_design_disk = !!disk.get_payload(/datum/disk_payload/research_designs)
 
 	// Prefer the slot that matches the disk's format; otherwise, insert into the first free bay.
 	var/slot_type
@@ -237,6 +238,7 @@ Nothing else in the console has ID requirements.
 			data["t_disk"] = list(
 				"unreadable" = TRUE,
 				"stored_research" = list(),
+				"unreadable_data_present" = !!t_disk.get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE),
 			)
 	if (d_disk)
 		var/datum/disk_payload/research_designs/design_payload = d_disk.get_payload(/datum/disk_payload/research_designs)
@@ -248,6 +250,7 @@ Nothing else in the console has ID requirements.
 			data["d_disk"] = list(
 				"unreadable" = TRUE,
 				"blueprints" = list(),
+				"unreadable_data_present" = !!d_disk.get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE),
 			)
 
 

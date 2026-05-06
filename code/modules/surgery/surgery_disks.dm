@@ -1,9 +1,13 @@
+/datum/disk_payload/surgery_procedures
+	/// List of surgical operation typepaths contained in this payload.
+	var/list/surgeries = list()
+
 /obj/item/disk/surgery
 	name = "surgery procedure disk"
 	desc = "A disk that contains advanced surgery procedures, must be loaded into an Operating Console."
 	icon_state = "datadisk1"
 	custom_materials = list(/datum/material/iron=SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass=SMALL_MATERIAL_AMOUNT)
-	/// List of surgical operations contained on this disk
+	/// Legacy list of surgical operations contained on this disk.
 	var/list/surgeries
 
 /obj/item/disk/surgery/debug
@@ -12,11 +16,24 @@
 	icon_state = "datadisk1"
 	custom_materials = list(/datum/material/iron=SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass=SMALL_MATERIAL_AMOUNT)
 
+/obj/item/disk/surgery/Initialize(mapload)
+	. = ..()
+	var/datum/disk_payload/surgery_procedures/payload = get_payload(/datum/disk_payload/surgery_procedures, include_hidden = TRUE)
+	if(!payload)
+		payload = new
+		add_payload(payload)
+	if(!LAZYLEN(payload.surgeries) && LAZYLEN(surgeries))
+		payload.surgeries = surgeries
+	surgeries = payload.surgeries
+
 /obj/item/disk/surgery/debug/Initialize(mapload)
 	. = ..()
 	surgeries = list()
 	for(var/datum/surgery_operation/operation as anything in GLOB.operations.get_instances_from(subtypesof(/datum/surgery_operation)))
 		surgeries += operation.type
+	var/datum/disk_payload/surgery_procedures/payload = get_payload(/datum/disk_payload/surgery_procedures, include_hidden = TRUE)
+	if(payload)
+		payload.surgeries = surgeries
 
 /obj/item/disk/surgery/advanced_plastic_surgery
 	name = "advanced plastic surgery disk"

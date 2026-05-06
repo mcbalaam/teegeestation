@@ -67,7 +67,7 @@ export function TechwebContent(props) {
                     setTechwebRoute({ route: 'disk', diskType: 'design' })
                   }
                 >
-                  Design Disk Inserted{d_disk.unreadable ? ' (Unreadable)' : ''}
+                  Design Disk Inserted{d_disk.unreadable ? ' (Unreadable)' : ''}{d_disk.unreadable_data_present ? ' (Has data)' : ''}
                 </Button>
               </Flex.Item>
             )}
@@ -80,7 +80,7 @@ export function TechwebContent(props) {
                     setTechwebRoute({ route: 'disk', diskType: 'tech' })
                   }
                 >
-                  Tech Disk Inserted{t_disk.unreadable ? ' (Unreadable)' : ''}
+                  Tech Disk Inserted{t_disk.unreadable ? ' (Unreadable)' : ''}{t_disk.unreadable_data_present ? ' (Has data)' : ''}
                 </Button>
               </Flex.Item>
             )}

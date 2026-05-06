@@ -188,3 +188,9 @@ other types of metals and chemistry for reagents).
 // Legacy path for maps/refs.
 /obj/item/disk/design_disk
 	parent_type = /obj/item/disk/data/design_disk
+
+/obj/item/disk/design_disk/bepis
+	parent_type = /obj/item/disk/data/design_disk/bepis
+
+/obj/item/disk/design_disk/bepis/remove_tech
+	parent_type = /obj/item/disk/data/design_disk/bepis/remove_tech

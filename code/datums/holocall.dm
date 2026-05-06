@@ -218,6 +218,7 @@
 	sticker_icon_state = "o_holo"
 	obj_flags = UNIQUE_RENAME
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT, /datum/material/glass = SMALL_MATERIAL_AMOUNT)
+	/// Legacy reference to the holorecord payload. Prefer `get_payload(/datum/disk_payload/holorecord)`.
 	var/datum/holorecord/record
 	//Preset variables
 	var/preset_image_type
@@ -225,37 +226,60 @@
 
 /obj/item/disk/holodisk/Initialize(mapload)
 	. = ..()
+
+	var/datum/disk_payload/holorecord/payload = get_payload(/datum/disk_payload/holorecord, TRUE)
+	if(!payload)
+		payload = new
+		add_payload(payload)
+
+	// Legacy -> payload migration: if something initialized `record` directly, preserve it.
+	if(record && payload.record != record)
+		payload.record = record
+
+	record = payload.record
+
 	if(preset_record_text)
 		INVOKE_ASYNC(src, PROC_REF(build_record))
 
 /obj/item/disk/holodisk/Destroy()
-	QDEL_NULL(record)
+	record = null
 	return ..()
 
 /obj/item/disk/holodisk/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(!istype(tool, /obj/item/disk/holodisk))
+	if(!istype(tool, /obj/item/disk))
 		return NONE
 
-	var/obj/item/disk/holodisk/holodisk_original = tool
-
-	if (!holodisk_original.record)
-		to_chat(user, span_warning("[holodisk_original] has no record on it!"))
+	var/obj/item/disk/source_disk = tool
+	var/datum/disk_payload/holorecord/source_payload = source_disk.get_payload(/datum/disk_payload/holorecord)
+	if (!source_payload?.record)
+		to_chat(user, span_warning("[source_disk] has no record on it!"))
 		return ITEM_INTERACT_BLOCKING
 
-	if (!record)
-		record = new
+	var/datum/disk_payload/holorecord/payload = get_payload(/datum/disk_payload/holorecord, TRUE)
+	if(!payload)
+		payload = new
+		add_payload(payload)
 
-	record.caller_name = holodisk_original.record.caller_name
-	record.caller_image = holodisk_original.record.caller_image
-	record.entries = holodisk_original.record.entries.Copy()
-	record.language = holodisk_original.record.language
-	to_chat(user, span_notice("You copy the record from [holodisk_original] to [src] by connecting the ports!"))
-	name = holodisk_original.name
+	if (!payload.record)
+		payload.record = new
+
+	payload.record.caller_name = source_payload.record.caller_name
+	payload.record.caller_image = source_payload.record.caller_image
+	payload.record.entries = source_payload.record.entries.Copy()
+	payload.record.language = source_payload.record.language
+	to_chat(user, span_notice("You copy the record from [source_disk] to [src] by connecting the ports!"))
+	name = source_disk.name
+	record = payload.record
 
 	return ITEM_INTERACT_SUCCESS
 
 /obj/item/disk/holodisk/proc/build_record()
-	record = new
+	var/datum/disk_payload/holorecord/payload = get_payload(/datum/disk_payload/holorecord, TRUE)
+	if(!payload)
+		payload = new
+		add_payload(payload)
+	payload.record = new
+	record = payload.record
 	var/list/lines = splittext(preset_record_text,"\n")
 	for(var/line in lines)
 		var/prepared_line = trim(line)

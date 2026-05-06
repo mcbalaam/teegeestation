@@ -68,16 +68,19 @@
 	return TRUE
 
 /obj/machinery/computer/operating/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(istype(tool, /obj/item/disk/surgery))
+	if(istype(tool, /obj/item/disk))
+		var/obj/item/disk/disk = tool
+		var/datum/disk_payload/surgery_procedures/payload = disk.get_payload(/datum/disk_payload/surgery_procedures)
+		if(!payload)
+			return NONE
 		user.visible_message(
 			span_notice("[user] begins to load [tool] in [src]..."),
 			span_notice("You begin to load a surgery protocol from [tool]..."),
 			span_hear("You hear the chatter of a floppy drive."),
 		)
-		var/obj/item/disk/surgery/disky = tool
 		if(!do_after(user, 1 SECONDS, src))
 			return ITEM_INTERACT_BLOCKING
-		advanced_surgeries |= disky.surgeries
+		advanced_surgeries |= payload.surgeries
 		update_static_data_for_all_viewers()
 		playsound(src, 'sound/machines/compiler/compiler-stage2.ogg', 50, FALSE, SILENCED_SOUND_EXTRARANGE)
 		balloon_alert(user, "surgeries loaded")

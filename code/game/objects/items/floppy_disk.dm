@@ -405,6 +405,55 @@
 	/// List of stored files on this drive.
 	var/list/datum/computer_file/stored_files = list()
 
+/datum/disk_payload/ntos_filesystem/proc/can_add_file(datum/computer_file/file)
+	if(!file || !istype(file))
+		return FALSE
+	if((file.size + used_capacity) > max_capacity)
+		return FALSE
+	return TRUE
+
+/datum/disk_payload/ntos_filesystem/proc/add_file(datum/computer_file/file, obj/item/disk/disk_host)
+	if(!can_add_file(file))
+		return FALSE
+	stored_files.Add(file)
+	file.disk_host = disk_host
+	used_capacity += file.size
+	return TRUE
+
+/datum/disk_payload/ntos_filesystem/proc/remove_file(datum/computer_file/file)
+	if(!file || !istype(file))
+		return FALSE
+	if(!(file in stored_files))
+		return FALSE
+	stored_files.Remove(file)
+	used_capacity -= file.size
+	qdel(file)
+	return TRUE
+
+/datum/disk_payload/ntos_filesystem/proc/find_file_by_name(filename)
+	if(!istext(filename))
+		return null
+	for(var/datum/computer_file/file as anything in stored_files)
+		if(file.filename == filename)
+			return file
+	return null
+
+/datum/disk_payload/ntos_filesystem/proc/find_file_by_full_name(full_path)
+	if(!istext(full_path))
+		return null
+	for(var/datum/computer_file/file as anything in stored_files)
+		if("[file.filename].[file.filetype]" == full_path)
+			return file
+	return null
+
+/datum/disk_payload/ntos_filesystem/proc/find_file_by_uid(uid)
+	if(!isnum(uid))
+		return null
+	for(var/datum/computer_file/file as anything in stored_files)
+		if(file.uid == uid)
+			return file
+	return null
+
 /datum/disk_payload/ntos_filesystem/Destroy(force)
 	QDEL_LIST(stored_files)
 	return ..()
@@ -420,6 +469,13 @@
 	src.blob_id = blob_id
 	if(isnum(blob_size))
 		src.blob_size = max(1, blob_size)
+
+/datum/disk_payload/holorecord
+	var/datum/holorecord/record
+
+/datum/disk_payload/holorecord/Destroy(force)
+	QDEL_NULL(record)
+	return ..()
 
 /obj/item/disk_stack/can_be_package_wrapped()
 	return FALSE

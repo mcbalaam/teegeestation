@@ -96,7 +96,8 @@
 		if(computer)
 			computer.remove_file(src)
 		if(disk_host)
-			disk_host.remove_file(src)
+			var/datum/disk_payload/ntos_filesystem/fs = disk_host.get_payload(/datum/disk_payload/ntos_filesystem, include_hidden = TRUE)
+			fs?.remove_file(src)
 	return temp
 
 /**

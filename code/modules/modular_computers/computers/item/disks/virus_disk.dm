@@ -161,12 +161,9 @@
 		T.filename = pick(names)
 		T.stored_text = pick(texts)
 		T.calculate_size()
-		if((T.size + fs.used_capacity) > fs.max_capacity)
+		if(!fs.add_file(T, src))
 			qdel(T)
 			break
-		fs.stored_files.Add(T)
-		T.disk_host = src
-		fs.used_capacity += T.size
 
 /obj/item/disk/computer/virus/proc/ensure_blob_payload()
 	if(get_payload(/datum/disk_payload/data_blob, include_hidden = TRUE))
@@ -185,7 +182,7 @@
 		var/list/color_states = list("datadisk0", "datadisk1", "datadisk2", "datadisk3", "datadisk4", "datadisk5", "datadisk6", "datadisk7")
 		icon_state = pick(color_states)
 
-	if(sticker_icon_state == STARTING_STICKER)
+	if(sticker_icon_state == initial(sticker_icon_state))
 		// exclude DNA/holo/medical stickers, and number/letter stickers that look too specific
 		var/list/excluded = list("o_dna1", "o_dna2", "o_medical", "o_holo", "o_one", "o_two", "o_three", "o_four", "o_five", "o_six", "o_seven", "o_eight", "o_nine", "o_zero", "o_A", "o_B", "o_C", "o_D", "o_E", "o_F")
 		var/list/allowed = list()

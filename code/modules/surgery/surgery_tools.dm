@@ -379,14 +379,19 @@
 	UnregisterSignal(user, COMSIG_LIVING_OPERATING_ON)
 
 /obj/item/surgical_processor/interact_with_atom(atom/design_holder, mob/living/user, list/modifiers)
-	if(!istype(design_holder, /obj/item/disk/surgery) && !istype(design_holder, /obj/machinery/computer/operating))
-		return NONE
+	if(!istype(design_holder, /obj/machinery/computer/operating))
+		var/obj/item/disk/disk = design_holder
+		if(!disk || !disk.get_payload(/datum/disk_payload/surgery_procedures))
+			return NONE
 	balloon_alert(user, "copying designs...")
 	playsound(src, 'sound/machines/terminal/terminal_processing.ogg', 25, TRUE)
 	if(do_after(user, 1 SECONDS, target = design_holder))
-		if(istype(design_holder, /obj/item/disk/surgery))
-			var/obj/item/disk/surgery/surgery_disk = design_holder
-			loaded_surgeries |= surgery_disk.surgeries
+		if(istype(design_holder, /obj/item/disk))
+			var/obj/item/disk/disk = design_holder
+			var/datum/disk_payload/surgery_procedures/payload = disk.get_payload(/datum/disk_payload/surgery_procedures)
+			if(!payload)
+				return ITEM_INTERACT_BLOCKING
+			loaded_surgeries |= payload.surgeries
 		else
 			var/obj/machinery/computer/operating/surgery_computer = design_holder
 			loaded_surgeries |= surgery_computer.advanced_surgeries

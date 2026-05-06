@@ -5,11 +5,13 @@ type StoredDesigns = Record<string, 1>;
 
 type DesignDisk = {
   unreadable?: BooleanLike;
+  unreadable_data_present?: BooleanLike;
   blueprints: string[];
 };
 
 type TechDisk = {
   unreadable?: BooleanLike;
+  unreadable_data_present?: BooleanLike;
   stored_research: StoredDesigns;
 };
 

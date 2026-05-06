@@ -376,9 +376,11 @@
 	balloon_alert(user, "copying designs...")
 	playsound(src, 'sound/machines/terminal/terminal_processing.ogg', 25, TRUE)
 	if(do_after(user, 1 SECONDS, target = design_holder))
-		if(istype(design_holder, /obj/item/disk/surgery))
-			var/obj/item/disk/surgery/surgery_disk = design_holder
-			LAZYOR(loaded_surgeries, surgery_disk.surgeries)
+		if(istype(design_holder, /obj/item/disk))
+			var/obj/item/disk/disk = design_holder
+			var/datum/disk_payload/surgery_procedures/payload = disk.get_payload(/datum/disk_payload/surgery_procedures)
+			if(payload)
+				LAZYOR(loaded_surgeries, payload.surgeries)
 		else
 			var/obj/machinery/computer/operating/surgery_computer = design_holder
 			LAZYOR(loaded_surgeries, surgery_computer.advanced_surgeries)
@@ -387,13 +389,20 @@
 	return ITEM_INTERACT_BLOCKING
 
 /obj/item/organ/cyberimp/brain/surgical_processor/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(istype(interacting_with, /obj/item/disk/surgery) || istype(interacting_with, /obj/machinery/computer/operating))
+	if(istype(interacting_with, /obj/machinery/computer/operating))
 		return load_surgeries(user, interacting_with)
+
+	var/obj/item/disk/disk = interacting_with
+	if(disk?.get_payload(/datum/disk_payload/surgery_procedures))
+		return load_surgeries(user, disk)
+
 	return NONE
 
 /obj/item/organ/cyberimp/brain/surgical_processor/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(istype(tool, /obj/item/disk/surgery))
-		return load_surgeries(user, tool)
+	if(istype(tool, /obj/item/disk))
+		var/obj/item/disk/disk = tool
+		if(disk.get_payload(/datum/disk_payload/surgery_procedures))
+			return load_surgeries(user, disk)
 	return NONE
 
 /obj/item/organ/cyberimp/brain/surgical_processor/on_mob_insert(mob/living/carbon/organ_owner, special, movement_flags)
