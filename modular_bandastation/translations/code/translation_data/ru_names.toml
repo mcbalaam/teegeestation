@@ -293,12 +293,13 @@ nominative = "витрина дла напитков"
 prepositional = "витрине дла напитков"
 
 ["engineering crate"]
-accusative = "инженерный ящик"
-dative = "инженерному ящику"
-genitive = "инженерного ящика"
-instrumental = "инженерным ящиком"
 nominative = "инженерный ящик"
-prepositional = "инженерном ящиком"
+genitive = "инженерного ящика"
+dative = "инженерному ящику"
+accusative = "инженерный ящик"
+instrumental = "инженерным ящиком"
+prepositional = "инженерном ящике"
+gender = "male"
 
 ["fishing rod"]
 accusative = "удочку"
@@ -12748,6 +12749,285 @@ dative = "ящику"
 accusative = "ящик"
 instrumental = "ящиком"
 prepositional = "ящике"
+gender = "male"
+
+["coffin"]
+nominative = "гроб"
+genitive = "гроба"
+dative = "гробу"
+accusative = "гроб"
+instrumental = "гробом"
+prepositional = "гробе"
+gender = "male"
+
+["trash cart"]
+nominative = "мусорная тележка"
+genitive = "мусорной тележки"
+dative = "мусорной тележке"
+accusative = "мусорную тележку"
+instrumental = "мусорной тележкой"
+prepositional = "мусорной тележке"
+gender = "female"
+
+["laundry cart"]
+nominative = "тележка для белья"
+genitive = "тележки для белья"
+dative = "тележке для белья"
+accusative = "тележку для белья"
+instrumental = "тележкой для белья"
+prepositional = "тележке для белья"
+gender = "female"
+
+["internals crate"]
+nominative = "ящик с аварийной экипировкой для дыхания"
+genitive = "ящика с аварийной экипировкой для дыхания"
+dative = "ящику с аварийной экипировкой для дыхания"
+accusative = "ящик с аварийной экипировкой для дыхания"
+instrumental = "ящиком с аварийной экипировкой для дыхания"
+prepositional = "ящике с аварийной экипировкой для дыхания"
+gender = "male"
+
+["medical crate"]
+nominative = "медицинский ящик"
+genitive = "медицинского ящика"
+dative = "медицинскому ящику"
+accusative = "медицинский ящик"
+instrumental = "медицинским ящиком"
+prepositional = "медицинском ящике"
+gender = "male"
+
+["deforest medical crate"]
+nominative = "фирменный медицинский ящик DeForest"
+genitive = "фирменного медицинского ящика DeForest"
+dative = "фирменному медицинскому ящику DeForest"
+accusative = "фирменный медицинский ящик DeForest"
+instrumental = "фирменным медицинским ящиком DeForest"
+prepositional = "фирменном медицинском ящике DeForest"
+gender = "male"
+
+["freezer"]
+nominative = "холодильный ящик"
+genitive = "холодильного ящика"
+dative = "холодильному ящику"
+accusative = "холодильный ящик"
+instrumental = "холодильным ящиком"
+prepositional = "холодильном ящике"
+gender = "male"
+
+["blood freezer"]
+nominative = "холодильный ящик для крови"
+genitive = "холодильного ящика для крови"
+dative = "холодильному ящику для крови"
+accusative = "холодильный ящик для крови"
+instrumental = "холодильным ящиком для крови"
+prepositional = "холодильном ящике для крови"
+gender = "male"
+
+["surplus prosthetic limbs"]
+nominative = "ящик с излишками протезов"
+genitive = "ящика с излишками протезов"
+dative = "ящику с излишками протезов"
+accusative = "ящик с излишками протезов"
+instrumental = "ящиком с излишками протезов"
+prepositional = "ящике с излишками протезов"
+gender = "male"
+
+["organ freezer"]
+nominative = "холодильный ящик для органов"
+genitive = "холодильного ящика для органов"
+dative = "холодильному ящику для органов"
+accusative = "холодильный ящик для органов"
+instrumental = "холодильным ящиком для органов"
+prepositional = "холодильном ящике для органов"
+gender = "male"
+
+["food icebox"]
+nominative = "продуктовый ледник"
+genitive = "продуктового ледника"
+dative = "продуктовому леднику"
+accusative = "продуктовый ледник"
+instrumental = "продуктовым ледником"
+prepositional = "продуктовом леднике"
+gender = "male"
+
+["Donk Co. fridge"]
+nominative = "холодильник Donk Co."
+genitive = "холодильника Donk Co."
+dative = "холодильнику Donk Co."
+accusative = "холодильник Donk Co."
+instrumental = "холодильником Donk Co."
+prepositional = "холодильнике Donk Co."
+gender = "male"
+
+["S.E.L.F. crate"]
+nominative = "ящик S.E.L.F."
+genitive = "ящика S.E.L.F."
+dative = "ящику S.E.L.F."
+accusative = "ящик S.E.L.F."
+instrumental = "ящиком S.E.L.F."
+prepositional = "ящике S.E.L.F."
+gender = "male"
+
+["radiation crate"]
+nominative = "радиационный ящик"
+genitive = "радиационного ящика"
+dative = "радиационному ящику"
+accusative = "радиационный ящик"
+instrumental = "радиационным ящиком"
+prepositional = "радиационном ящике"
+gender = "male"
+
+["hydroponics crate"]
+nominative = "гидропонный ящик"
+genitive = "гидропонного ящика"
+dative = "гидропонному ящику"
+accusative = "гидропонный ящик"
+instrumental = "гидропонным ящиком"
+prepositional = "гидропонном ящике"
+gender = "male"
+
+["centcom crate"]
+nominative = "ящик ЦентКома"
+genitive = "ящика ЦентКома"
+dative = "ящику ЦентКома"
+accusative = "ящик ЦентКома"
+instrumental = "ящиком ЦентКома"
+prepositional = "ящике ЦентКома"
+gender = "male"
+
+["cargo crate"]
+nominative = "грузовой ящик"
+genitive = "грузового ящика"
+dative = "грузовому ящику"
+accusative = "грузовой ящик"
+instrumental = "грузовым ящиком"
+prepositional = "грузовом ящике"
+gender = "male"
+
+["robust industries crate"]
+nominative = "ящик Robust Industries"
+genitive = "ящика Robust Industries"
+dative = "ящику Robust Industries"
+accusative = "ящик Robust Industries"
+instrumental = "ящиком Robust Industries"
+prepositional = "ящике Robust Industries"
+gender = "male"
+
+["mining crate"]
+nominative = "шахтёрский ящик"
+genitive = "шахтёрского ящика"
+dative = "шахтёрскому ящику"
+accusative = "шахтёрский ящик"
+instrumental = "шахтёрским ящиком"
+prepositional = "шахтёрском ящике"
+gender = "male"
+
+["nakamura engineering crate"]
+nominative = "инженерный ящик Nakamura"
+genitive = "инженерного ящика Nakamura"
+dative = "инженерному ящику Nakamura"
+accusative = "инженерный ящик Nakamura"
+instrumental = "инженерным ящиком Nakamura"
+prepositional = "инженерном ящике Nakamura"
+gender = "male"
+
+["atmospherics crate"]
+nominative = "атмосферный ящик"
+genitive = "атмосферного ящика"
+dative = "атмосферному ящику"
+accusative = "атмосферный ящик"
+instrumental = "атмосферным ящиком"
+prepositional = "атмосферном ящике"
+gender = "male"
+
+["RCD crate"]
+nominative = "ящик РСУ"
+genitive = "ящика РСУ"
+dative = "ящику РСУ"
+accusative = "ящик РСУ"
+instrumental = "ящиком РСУ"
+prepositional = "ящике РСУ"
+gender = "male"
+
+["science crate"]
+nominative = "научный ящик"
+genitive = "научного ящика"
+dative = "научному ящику"
+accusative = "научный ящик"
+instrumental = "научным ящиком"
+prepositional = "научном ящике"
+gender = "male"
+
+["robotics crate"]
+nominative = "робототехнический ящик"
+genitive = "робототехнического ящика"
+dative = "робототехническому ящику"
+accusative = "робототехнический ящик"
+instrumental = "робототехническим ящиком"
+prepositional = "робототехническом ящике"
+gender = "male"
+
+["MOD crate"]
+nominative = "ящик МОД"
+genitive = "ящика МОД"
+dative = "ящику МОД"
+accusative = "ящик МОД"
+instrumental = "ящиком МОД"
+prepositional = "ящике МОД"
+gender = "male"
+
+["budget solar panel crate"]
+nominative = "бюджетный ящик с солнечными панелями"
+genitive = "бюджетного ящика с солнечными панелями"
+dative = "бюджетному ящику с солнечными панелями"
+accusative = "бюджетный ящик с солнечными панелями"
+instrumental = "бюджетным ящиком с солнечными панелями"
+prepositional = "бюджетном ящике с солнечными панелями"
+gender = "male"
+
+["gold crate"]
+nominative = "золотой ящик"
+genitive = "золотого ящика"
+dative = "золотому ящику"
+accusative = "золотой ящик"
+instrumental = "золотым ящиком"
+prepositional = "золотом ящике"
+gender = "male"
+
+["silver crate"]
+nominative = "серебряный ящик"
+genitive = "серебряного ящика"
+dative = "серебряному ящику"
+accusative = "серебряный ящик"
+instrumental = "серебряным ящиком"
+prepositional = "серебряном ящике"
+gender = "male"
+
+["pink crate"]
+nominative = "розовый ящик"
+genitive = "розового ящика"
+dative = "розовому ящику"
+accusative = "розовый ящик"
+instrumental = "розовым ящиком"
+prepositional = "розовом ящике"
+gender = "male"
+
+["lavender crate"]
+nominative = "лавандовый ящик"
+genitive = "лавандового ящика"
+dative = "лавандовому ящику"
+accusative = "лавандовый ящик"
+instrumental = "лавандовым ящиком"
+prepositional = "лавандовом ящике"
+gender = "male"
+
+["shield bubble"]
+nominative = "защитный пузырь"
+genitive = "защитного пузыря"
+dative = "защитному пузырю"
+accusative = "защитный пузырь"
+instrumental = "защитным пузырём"
+prepositional = "защитном пузыре"
 gender = "male"
 
 ["ore redemption machine"]

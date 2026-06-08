@@ -35,7 +35,7 @@
  */
 /obj/machinery/vending
 	name = "\improper Vendomat"
-	desc = "A generic vending machine."
+	desc = "Обычный торговый автомат."
 	icon = 'icons/obj/machines/vending.dmi'
 	icon_state = "generic"
 	abstract_type = /obj/machinery/vending
@@ -233,7 +233,7 @@
 					all_products_free = TRUE
 			if(circuit)
 				circuit.all_products_free = all_products_free //sync up the circuit so the pricing schema is carried over if it's reconstructed.
-				circuit.desc = "This board's card reader component has been cut out, along with its brand selection dial."
+				circuit.desc = "На этой плате не хватает считывателя и колёсика выбора бренда."
 
 	else if(circuit)
 		all_products_free = circuit.all_products_free //if it was constructed outside mapload, sync the vendor up with the circuit's var so you can't bypass price requirements by moving / reconstructing it off station.
@@ -312,27 +312,27 @@
 /obj/machinery/vending/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = NONE
 	if(tilted && !held_item)
-		context[SCREENTIP_CONTEXT_LMB] = "Right machine"
+		context[SCREENTIP_CONTEXT_LMB] = "Поднять автомат"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(held_item?.tool_behaviour == TOOL_SCREWDRIVER)
-		context[SCREENTIP_CONTEXT_LMB] = "[panel_open ? "Close" : "Open"] Panel"
+		context[SCREENTIP_CONTEXT_LMB] = "[panel_open ? "Закрыть" : "Открыть"] панель"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(panel_open && held_item?.tool_behaviour == TOOL_WRENCH)
-		context[SCREENTIP_CONTEXT_LMB] = anchored ? "Unsecure" : "Secure"
+		context[SCREENTIP_CONTEXT_LMB] = anchored ? "Открепить" : "Закрепить"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(panel_open && held_item?.tool_behaviour == TOOL_CROWBAR)
-		context[SCREENTIP_CONTEXT_LMB] = "Deconstruct"
+		context[SCREENTIP_CONTEXT_LMB] = "Разобрать"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(!isnull(held_item) && canLoadItem(held_item, user, send_message = FALSE))
-		context[SCREENTIP_CONTEXT_LMB] = "Load item"
+		context[SCREENTIP_CONTEXT_LMB] = "Загрузить предмет"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(panel_open && istype(held_item, refill_canister))
-		context[SCREENTIP_CONTEXT_LMB] = "Restock vending machine[credits_contained ? " and collect credits" : null]"
+		context[SCREENTIP_CONTEXT_LMB] = "Пополнить автомат[credits_contained ? " и собрать кредиты" : null]"
 		return CONTEXTUAL_SCREENTIP_SET
 
 /**
@@ -361,20 +361,20 @@
 	if(isnull(refill_canister))
 		return // you can add the comment here instead
 
-	. += span_notice("Its maintenance panel can be [EXAMINE_HINT("screwed")] [panel_open ? "closed" : "open"].")
+	. += span_notice("Панель обслуживания [panel_open ? "закручена" : "откручена"] [EXAMINE_HINT("отвёрткой")].")
 	if(panel_open)
-		. += span_notice("The machine may be [EXAMINE_HINT("pried")] apart.")
+		. += span_notice("Машину можно разобрать используя [EXAMINE_HINT("лом")].")
 
 	var/list/total_stock = total_stock()
 	if(total_stock[2])
 		if(total_stock[1] < total_stock[2])
-			. += span_notice("\The [src] can be restocked with [span_boldnotice("\a [initial(refill_canister.machine_name)] [initial(refill_canister.name)]")] with the panel open.")
+			. += span_notice("[src] можно пополнить [span_boldnotice("\a [initial(refill_canister.machine_name)] [initial(refill_canister.name)]")], если панель обслуживания открыта.")
 		else
-			. += span_notice("\The [src] is fully stocked.")
+			. += span_notice("[src] полностью заполнен.")
 	if(credits_contained < CREDITS_DUMP_THRESHOLD && credits_contained > 0)
-		. += span_notice("It should have a handfull of credits stored based on the missing items.")
+		. += span_notice("Судя по пустующим ячейкам, в нём полно кредитов.")
 	else if (credits_contained > PAYCHECK_CREW)
-		. += span_notice("It should have at least a full paycheck worth of credits inside!")
+		. += span_notice("В нём явно немало кредитов!")
 
 /obj/machinery/vending/update_appearance(updates = ALL)
 	. = ..()
@@ -422,7 +422,7 @@
 	if(obj_flags & EMAGGED)
 		return FALSE
 	obj_flags |= EMAGGED
-	balloon_alert(user, "product lock disabled")
+	balloon_alert(user, "блокировка отключена")
 	return TRUE
 
 
@@ -470,7 +470,7 @@
 /datum/aas_config_entry/vendomat_age_control
 	name = "Security Alert: Underaged Substance Abuse"
 	announcement_lines_map = list(
-		"Message" = "SECURITY ALERT: Underaged crewmember %PERSON recorded attempting to purchase %PRODUCT in %LOCATION by %VENDOR. Please watch for substance abuse."
+		"Message" = "ВНИМАНИЕ: несовершеннолетний член экипажа в лице %PERSON предпринял попытку покупки следующего: %PRODUCT, в локации: %LOCATION, источник: %VENDOR. Чрезмерное употребление табачных изделий и напитков с высоким содержанием алкоголя вредно для здоровья."
 	)
 	vars_and_tooltips_map = list(
 		"PERSON" = "will be replaced with the name of the crewmember",
