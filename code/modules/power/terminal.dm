@@ -7,7 +7,7 @@
 	name = "terminal"
 	icon = 'icons/obj/pipes_n_cables/structures.dmi'
 	icon_state = "term"
-	desc = "Это клемма для проводки под полом, используемая для получения электроэнергии из сети."
+	desc = "Электрическая клемма, используемая для получения электроэнергии из сети."
 	layer = WIRE_TERMINAL_LAYER //a bit above wires
 	var/obj/machinery/power/master = null
 

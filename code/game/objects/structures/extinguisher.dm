@@ -1,5 +1,5 @@
 /obj/structure/extinguisher_cabinet
-	name = "extinguisher cabinet"
+	name = "шкафчик для огнетушителя"
 	desc = "A small wall mounted cabinet designed to hold a fire extinguisher."
 	icon = 'icons/obj/wallmounts.dmi'
 	icon_state = "extinguisher"
@@ -26,19 +26,19 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/extinguisher_cabinet, 29)
 	. = ..()
 
 	if(isnull(held_item))
-		context[SCREENTIP_CONTEXT_RMB] = opened ? "Close" : "Open"
+		context[SCREENTIP_CONTEXT_RMB] = opened ? "Закрыть" : "Открыть"
 		if(stored_extinguisher)
-			context[SCREENTIP_CONTEXT_LMB] = "Take extinguisher" //Yes, this shows whether or not it's open! Extinguishers are taken immediately on LMB click when closed
+			context[SCREENTIP_CONTEXT_LMB] = "Взять огнетушитель" //Yes, this shows whether or not it's open! Extinguishers are taken immediately on LMB click when closed
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(stored_extinguisher)
 		return NONE
 
 	if(held_item.tool_behaviour == TOOL_WRENCH)
-		context[SCREENTIP_CONTEXT_LMB] = "Disassemble cabinet"
+		context[SCREENTIP_CONTEXT_LMB] = "Разобрать"
 		return CONTEXTUAL_SCREENTIP_SET
 	if(istype(held_item, /obj/item/extinguisher) && opened)
-		context[SCREENTIP_CONTEXT_LMB] = "Insert extinguisher"
+		context[SCREENTIP_CONTEXT_LMB] = "Установить огнетушитель"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	return .
@@ -67,11 +67,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/extinguisher_cabinet, 29)
 
 /obj/structure/extinguisher_cabinet/attackby(obj/item/used_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(used_item.tool_behaviour == TOOL_WRENCH && !stored_extinguisher)
-		user.balloon_alert(user, "deconstructing cabinet...")
+		user.balloon_alert(user, "разбираем...")
 		used_item.play_tool_sound(src)
 		if(used_item.use_tool(src, user, 60))
 			playsound(loc, 'sound/items/deconstruct.ogg', 50, TRUE)
-			user.balloon_alert(user, "cabinet deconstructed")
+			user.balloon_alert(user, "шкафчик разобран")
 			deconstruct(TRUE)
 		return
 
@@ -82,7 +82,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/extinguisher_cabinet, 29)
 			if(!user.transferItemToLoc(used_item, src))
 				return
 			stored_extinguisher = used_item
-			user.balloon_alert(user, "extinguisher stored")
+			user.balloon_alert(user, "огнетушитель установлен")
 			update_appearance(UPDATE_ICON)
 			return TRUE
 		else
@@ -101,7 +101,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/extinguisher_cabinet, 29)
 		return
 	if(stored_extinguisher)
 		user.put_in_hands(stored_extinguisher)
-		user.balloon_alert(user, "extinguisher removed")
+		user.balloon_alert(user, "огнетушитель извлечён")
 		if(!opened)
 			opened = 1
 			playsound(loc, 'sound/machines/click.ogg', 15, TRUE, -3)
@@ -119,7 +119,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/extinguisher_cabinet, 29)
 	. = COMPONENT_CANCEL_ATTACK_CHAIN
 	if(stored_extinguisher)
 		stored_extinguisher.forceMove(loc)
-		to_chat(user, span_notice("You telekinetically remove [stored_extinguisher] from [src]."))
+		to_chat(user, span_notice("Силой телекинеза, вы извлекаете [stored_extinguisher.declent_ru(NOMINATIVE)] из [declent_ru(GENITIVE)]."))
 		stored_extinguisher = null
 		opened = TRUE
 		playsound(loc, 'sound/machines/click.ogg', 15, TRUE, -3)
@@ -133,7 +133,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/extinguisher_cabinet, 29)
 
 /obj/structure/extinguisher_cabinet/proc/toggle_cabinet(mob/user)
 	if(opened && broken)
-		user.balloon_alert(user, "it's broken!")
+		user.balloon_alert(user, "он сломан!")
 	else
 		playsound(loc, 'sound/machines/click.ogg', 15, TRUE, -3)
 		opened = !opened
@@ -181,7 +181,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/extinguisher_cabinet, 29)
 
 /obj/item/wallframe/extinguisher_cabinet
 	name = "extinguisher cabinet frame"
-	desc = "Used for building wall-mounted extinguisher cabinets."
+	desc = "Используется для сборки шкафчиков для огнетушителя."
 	icon = 'icons/obj/wallmounts.dmi'
 	icon_state = "extinguisher" //Reuses wallmount icon, but no door overlay
 	result_path = /obj/structure/extinguisher_cabinet

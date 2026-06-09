@@ -2,7 +2,7 @@
 
 /obj/machinery/newscaster
 	name = "newscaster"
-	desc = "A standard Nanotrasen-licensed newsfeed handler for use in commercial space stations. All the news you absolutely have no use for, in one place!"
+	desc = "Стандартный агрегатор новостной ленты, лицензированный Нанотрейзен для коммерческих космических станций. Все самые бесполезные новости в одном месте!"
 	icon = 'icons/obj/machines/wallmounts.dmi'
 	icon_state = "newscaster_off"
 	base_icon_state = "newscaster"
@@ -304,7 +304,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 
 		if("createStory")
 			if(!current_channel)
-				balloon_alert(user, "select a channel first!")
+				balloon_alert(user, "сначала выберите канал!")
 				return TRUE
 			var/current_channel_id = params["current"]
 			create_story(user, channel_id = current_channel_id)
@@ -349,12 +349,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 			if(isliving(user))
 				var/mob/living/living_user = user
 				id_card = living_user.get_idcard(hand_first = TRUE)
-			if(!(admin_access in id_card?.GetAccess()))
-				say("Clearance not found.")
+		if(!(admin_access in id_card?.GetAccess()))
+				say("Доступ запрещён.")
 				return TRUE
-			var/questionable_message = params["messageID"]
-			for(var/datum/feed_message/iterated_feed_message as anything in current_channel.messages)
-				if(iterated_feed_message.message_id == questionable_message)
+		var/questionable_message = params["messageID"]
+		for(var/datum/feed_message/iterated_feed_message as anything in current_channel.messages)
+			if(iterated_feed_message.message_id == questionable_message)
 					iterated_feed_message.toggle_censor_body()
 					break
 
@@ -364,11 +364,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 				var/mob/living/living_user = user
 				id_card = living_user.get_idcard(hand_first = TRUE)
 			if(!(admin_access in id_card?.GetAccess()))
-				say("Clearance not found.")
+				say("Доступ запрещён.")
 				return TRUE
-			var/questionable_message = params["messageID"]
-			for(var/datum/feed_message/iterated_feed_message in current_channel.messages)
-				if(iterated_feed_message.message_id == questionable_message)
+		var/questionable_message = params["messageID"]
+		for(var/datum/feed_message/iterated_feed_message in current_channel.messages)
+			if(iterated_feed_message.message_id == questionable_message)
 					iterated_feed_message.toggle_censor_author()
 					break
 
@@ -378,7 +378,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 				var/mob/living/living_user = user
 				id_card = living_user.get_idcard(hand_first = TRUE)
 			if(!(admin_access in id_card?.GetAccess()))
-				say("Clearance not found.")
+				say("Доступ запрещён.")
 				return TRUE
 			var/selected_channel_id = (params["channel"])
 			if(isnull(selected_channel_id))
@@ -466,7 +466,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 			if(current_user || newscaster_username)
 				current_user = null
 				newscaster_username = null
-				say("Account Reset.")
+				say("Аккаунт сброшен.")
 				return TRUE
 
 		if("deleteRequest")
@@ -495,7 +495,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 		if(!user.temporarilyRemoveItemFromInventory(attacking_item))
 			return
 		paper_remaining++
-		to_chat(user, span_notice("You insert [attacking_item] into [src]! It now holds [paper_remaining] sheet\s of paper."))
+		to_chat(user, span_notice("Вы вставляете [attacking_item.declent_ru(ACCUSATIVE)] в [declent_ru(ACCUSATIVE)]! Теперь внутри [paper_remaining] лист\ов бумаги."))
 		qdel(attacking_item)
 		return
 	return ..()
@@ -509,31 +509,31 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 		return
 	. = ITEM_INTERACT_SUCCESS
 	if(!(machine_stat & BROKEN))
-		to_chat(user, span_notice("[src] does not need repairs."))
+		to_chat(user, span_notice("[src] не требует ремонта."))
 		return
 	if(!tool.tool_start_check(user, amount=1))
 		return
-	user.balloon_alert_to_viewers("started welding...", "started repairing...")
-	audible_message(span_hear("You hear welding."))
+	user.balloon_alert_to_viewers("начинает варить...", "начинает чинить...")
+	audible_message(span_hear("Вы слышите сварку."))
 	if(!tool.use_tool(src, user, 40, volume=50, extra_checks = CALLBACK(src, PROC_REF(needs_repair))))
-		user.balloon_alert_to_viewers("stopped welding!", "interrupted the repair!")
+		user.balloon_alert_to_viewers("прекратил варить!", "ремонт прерван!")
 		return
-	user.balloon_alert_to_viewers("repaired [src]")
+	user.balloon_alert_to_viewers("починил [declent_ru(ACCUSATIVE)]")
 	atom_integrity = max_integrity
 	set_machine_stat(machine_stat & ~BROKEN)
 
 /obj/machinery/newscaster/wrench_act(mob/living/user, obj/item/tool)
-	to_chat(user, span_notice("You start [anchored ? "un" : ""]securing [src]..."))
+	to_chat(user, span_notice("Вы начинаете [anchored ? "от" : "за"]креплять [declent_ru(ACCUSATIVE)]..."))
 	if(!tool.use_tool(src, user, 60, volume=50))
 		return
 	playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
 	if((machine_stat & BROKEN))
-		to_chat(user, span_warning("The broken remains of [src] fall on the ground."))
+		to_chat(user, span_warning("Сломанные остатки [declent_ru(GENITIVE)] падают на пол."))
 		new /obj/item/stack/sheet/iron(loc, 5)
 		new /obj/item/shard(loc)
 		new /obj/item/shard(loc)
 	else
-		to_chat(user, span_notice("You [anchored ? "un" : ""]secure [src]."))
+		to_chat(user, span_notice("Вы [anchored ? "от" : "за"]крепляете [declent_ru(ACCUSATIVE)]."))
 		new /obj/item/wallframe/newscaster(loc)
 	qdel(src)
 	return ITEM_INTERACT_SUCCESS
@@ -562,7 +562,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 
 /obj/machinery/newscaster/attack_paw(mob/living/user, list/modifiers)
 	if(!user.combat_mode)
-		to_chat(user, span_warning("The newscaster controls are far too complicated for your tiny brain!"))
+		to_chat(user, span_warning("Управление новостником слишком сложное для вашего крошечного мозга!"))
 	else
 		take_damage(5, BRUTE, MELEE)
 
@@ -616,7 +616,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
  */
 /obj/machinery/newscaster/proc/print_paper(mob/user)
 	if(paper_remaining <= 0)
-		balloon_alert_to_viewers("out of paper!")
+		balloon_alert_to_viewers("бумага закончилась!")
 		return TRUE
 	SSblackbox.record_feedback("amount", "newspapers_printed", 1)
 	var/obj/item/newspaper/new_newspaper = new(loc)
@@ -666,15 +666,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 
 	var/datum/feed_channel/potential_channel = GLOB.news_network.network_channels_by_name[channel_name]
 	if(potential_channel)
-		tgui_alert(user, "ERROR: Feed channel with that name already exists on the Network.", list("Okay"))
+		tgui_alert(user, "ОШИБКА: Канал с таким именем уже существует в сети.", list("Ок"))
 		return TRUE
 
 	var/list/hard_filter_result = is_ic_filtered(channel_name)
 	if(hard_filter_result)
-		tgui_alert(user, "Your channel name contains: (\"[hard_filter_result[CHAT_FILTER_INDEX_WORD]]\"), which is not allowed on this server.")
+		tgui_alert(user, "Ваше имя канала содержит: (\"[hard_filter_result[CHAT_FILTER_INDEX_WORD]]\"), что запрещено на этом сервере.")
 		return TRUE
 
-	var/choice = tgui_alert(user, "Please confirm feed channel creation","Network Channel Handler", list("Confirm", "Cancel"))
+	var/choice = tgui_alert(user, "Подтвердите создание канала","Управление каналами сети", list("Подтвердить", "Отмена"))
 	creating_channel = FALSE
 	if(choice != "Confirm")
 		update_static_data(user)
@@ -763,7 +763,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 			existing_authors += iterated_feed_channel.author
 	if(!newscaster_username || (newscaster_username in existing_authors))
 		creating_channel = FALSE
-		tgui_alert(user, "ERROR: User cannot be found or already has an owned feed channel.", list("Okay"))
+		tgui_alert(user, "ОШИБКА: Пользователь не найден или уже владеет каналом.", list("Ок"))
 		return TRUE
 	creating_channel = TRUE
 	return TRUE
@@ -800,15 +800,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
  */
 /obj/machinery/newscaster/proc/toggle_photo(mob/user)
 	if(current_image)
-		balloon_alert(user, "current photo cleared.")
+		balloon_alert(user, "текущее фото убрано")
 		current_image = null
 		return TRUE
 
 	attach_photo(user)
 	if(current_image)
-		balloon_alert(user, "photo selected.")
+		balloon_alert(user, "фото выбрано")
 	else
-		balloon_alert(user, "no photo identified.")
+		balloon_alert(user, "фото не найдено")
 
 /obj/machinery/newscaster/proc/clear_wanted_issue(mob/user)
 	var/obj/item/card/id/id_card
@@ -816,7 +816,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 		var/mob/living/living_user = user
 		id_card = living_user.get_idcard(hand_first = TRUE)
 	if(!(security_access in id_card?.GetAccess()))
-		say("Clearance not found.")
+		say("Доступ запрещён.")
 		return TRUE
 	GLOB.news_network.wanted_issue.active = FALSE
 	return TRUE
@@ -831,7 +831,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 	if(active_request?.owner != current_user.account_holder)
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 20, TRUE)
 		return TRUE
-	say("Deleted current request.")
+	say("Текущий запрос удалён.")
 	GLOB.request_list.Remove(active_request)
 
 /**
@@ -844,12 +844,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 		return TRUE
 	for(var/datum/station_request/iterated_station_request as anything in GLOB.request_list)
 		if(iterated_station_request.req_number == current_user.account_id)
-			say("Account already has active bounty.")
+			say("У аккаунта уже есть активное вознаграждение.")
 			return TRUE
 	var/datum/station_request/curr_request = new /datum/station_request(current_user.account_holder, bounty_value,bounty_text,current_user.account_id, current_user)
 	GLOB.request_list += list(curr_request)
 	for(var/obj/iterated_bounty_board as anything in GLOB.allbountyboards)
-		iterated_bounty_board.say("New bounty added!")
+		iterated_bounty_board.say("Добавлено новое вознаграждение!")
 		playsound(iterated_bounty_board.loc, 'sound/effects/cashregister.ogg', 30, TRUE)
 /**
  * This sorts through the current list of bounties, and confirms that the intended request found is correct.
@@ -857,7 +857,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
  */
 /obj/machinery/newscaster/proc/apply_to_bounty()
 	if(!current_user)
-		say("No ID detected.")
+		say("ID не обнаружен.")
 		return TRUE
 	if(current_user.account_holder == active_request.owner)
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 20, TRUE)
@@ -878,13 +878,13 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
 		return TRUE
 	payment_target.transfer_money(current_user, active_request.value, "Bounty Request")
-	say("Paid out [active_request.value][MONEY_NAME].")
+	say("Выплачено [active_request.value][MONEY_NAME].")
 	GLOB.request_list.Remove(active_request)
 	qdel(active_request)
 
 /obj/item/wallframe/newscaster
 	name = "newscaster frame"
-	desc = "Used to build newscasters, just secure to the wall."
+	desc = "Используется для сборки новостников. Просто закрепите на стене."
 	icon_state = "newscaster_assembly"
 	custom_materials = list(/datum/material/iron= SHEET_MATERIAL_AMOUNT * 7)
 	result_path = /obj/machinery/newscaster

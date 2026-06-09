@@ -2,7 +2,7 @@
 
 /obj/machinery/airalarm
 	name = "air alarm"
-	desc = "A machine that monitors atmosphere levels. Goes off if the area is dangerous."
+	desc = "Устройство, управляющее системой циркуляции воздуха."
 	icon = 'icons/obj/machines/wallmounts.dmi'
 	icon_state = "alarmp"
 	idle_power_usage = BASE_MACHINE_IDLE_CONSUMPTION * 0.05
@@ -201,15 +201,15 @@ GLOBAL_LIST_EMPTY_TYPED(air_alarms, /obj/machinery/airalarm)
 	. = ..()
 	switch(buildstage)
 		if(AIR_ALARM_BUILD_NO_CIRCUIT)
-			. += span_notice("It is missing air alarm electronics.")
+			. += span_notice("В корпусе отсутствует плата контроллера.")
 		if(AIR_ALARM_BUILD_NO_WIRES)
-			. += span_notice("It is missing wiring.")
+			. += span_notice("В корпусе отсутствует провода.")
 		if(AIR_ALARM_BUILD_COMPLETE)
-			. += span_notice("Right-click to [locked ? "unlock" : "lock"] the interface.")
+			. += span_notice("[span_bold("ПКМ")] чтобы [locked ? "разблокировать" : "заблокировать"] интерфейс.")
 
 /obj/machinery/airalarm/ui_status(mob/user, datum/ui_state/state)
 	if(HAS_SILICON_ACCESS(user) && aidisabled)
-		to_chat(user, "AI control has been disabled.")
+		to_chat(user, "Доступ ИИ отозван.")
 	else if(!shorted)
 		return ..()
 	return UI_CLOSE
@@ -224,14 +224,14 @@ GLOBAL_LIST_EMPTY_TYPED(air_alarms, /obj/machinery/airalarm)
 		var/obj/machinery/air_sensor/sensor = multi_tool.buffer
 
 		if(!allow_link_change)
-			balloon_alert(user, "linking disabled")
+			balloon_alert(user, "связывание отключено")
 			return ITEM_INTERACT_BLOCKING
 		if(connected_sensor || sensor.connected_airalarm)
-			balloon_alert(user, "sensor already connected!")
+			balloon_alert(user, "сенсор уже связан!")
 			return ITEM_INTERACT_BLOCKING
 
 		connect_sensor(sensor)
-		balloon_alert(user, "connected sensor")
+		balloon_alert(user, "сенсор связан")
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/airalarm/ui_interact(mob/user, datum/tgui/ui)
@@ -277,13 +277,13 @@ GLOBAL_LIST_EMPTY_TYPED(air_alarms, /obj/machinery/airalarm)
 			"value" = my_area.name
 		))
 	data["envData"] += list(list(
-		"name" = "Pressure",
-		"value" = "[round(pressure, 0.01)] kPa",
+		"name" = "Давление",
+		"value" = "[round(pressure, 0.01)] кПа",
 		"danger" = tlv_collection["pressure"].check_value(pressure)
 	))
 	data["envData"] += list(list(
 		"name" = "Temperature",
-		"value" = "[round(temp, 0.01)] Kelvin / [round(temp, 0.01) - T0C] Celcius",
+		"value" = "[round(temp, 0.01)] по Кельвину / [round(temp, 0.01) - T0C] по Цельсию",
 		"danger" = tlv_collection["temperature"].check_value(temp),
 	))
 	if(total_moles)
@@ -292,7 +292,7 @@ GLOBAL_LIST_EMPTY_TYPED(air_alarms, /obj/machinery/airalarm)
 			var/portion = moles / total_moles
 			data["envData"] += list(list(
 				"name" = GLOB.meta_gas_info[gas_path][META_GAS_NAME],
-				"value" = "[round(moles, 0.01)] moles / [round(100 * portion, 0.01)] % / [round(portion * pressure, 0.01)] kPa",
+				"value" = "[round(moles, 0.01)] моль / [round(100 * portion, 0.01)] % / [round(portion * pressure, 0.01)] кПа",
 				"danger" = tlv_collection[gas_path].check_value(portion * pressure),
 			))
 
@@ -301,14 +301,14 @@ GLOBAL_LIST_EMPTY_TYPED(air_alarms, /obj/machinery/airalarm)
 		var/datum/tlv/tlv = tlv_collection[threshold]
 		var/list/singular_tlv = list()
 		if(threshold == "pressure")
-			singular_tlv["name"] = "Pressure"
-			singular_tlv["unit"] = "kPa"
+			singular_tlv["name"] = "Давление"
+			singular_tlv["unit"] = "кПа"
 		else if (threshold == "temperature")
-			singular_tlv["name"] = "Temperature"
-			singular_tlv["unit"] = "K"
+			singular_tlv["name"] = "Температура"
+			singular_tlv["unit"] = "по Кельвину"
 		else
 			singular_tlv["name"] = GLOB.meta_gas_info[threshold][META_GAS_NAME]
-			singular_tlv["unit"] = "kPa"
+			singular_tlv["unit"] = "кПа"
 		singular_tlv["id"] = threshold
 		singular_tlv["warning_min"] = tlv.warning_min
 		singular_tlv["hazard_min"] = tlv.hazard_min
@@ -696,7 +696,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/airalarm, 27)
 ///Used for all_access air alarm helper, which set air alarm's required access to null.
 /obj/machinery/airalarm/proc/give_all_access()
 	name = "all-access air alarm"
-	desc = "This particular atmos control unit appears to have no access restrictions."
+	desc = "Устройство, управляющее системой циркуляции воздуха. Кажется, у этого доступ не ограничен."
 	locked = FALSE
 	req_access = null
 	req_one_access = null
@@ -770,7 +770,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/airalarm, 27)
 
 // BANDASTATION ADDITION: Airalarm duplicating name fix
 /obj/machinery/airalarm/proc/update_zone_name()
-	var/base_name = initial(name) // air alarm
+	var/base_name = declent_ru(NOMINATIVE)
 	var/area/current_area = get_area(src)
 	if(!current_area)
 		name = base_name

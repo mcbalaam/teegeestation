@@ -729,7 +729,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/evac, 32)
 /// Pictograph display which the AI can use to emote.
 /obj/machinery/status_display/ai
 	name = "\improper AI display"
-	desc = "A small screen which the AI can use to present itself."
+	desc = "Небольшой настенный монитор для самовыражения станционного ИИ. Робот создаст шедевр искусства?"
 	current_mode = SD_PICTURE
 	var/emotion = AI_DISPLAY_DONT_GLOW
 	var/frequency = FREQ_STATUS_DISPLAYS

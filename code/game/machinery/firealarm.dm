@@ -19,7 +19,7 @@
 
 /obj/machinery/firealarm
 	name = "fire alarm"
-	desc = "Pull this in case of emergency. Thus, keep pulling it forever."
+	desc = "«ПРИ ПОЖАРЕ ОТКРОЙ КРЫШКУ НАЖМИ КНОПКУ»... чёрт, так руки и тянутся."
 	icon = 'icons/obj/machines/wallmounts.dmi'
 	icon_state = "fire0"
 	max_integrity = 250
@@ -77,8 +77,8 @@
 	AddComponent( \
 		/datum/component/redirect_attack_hand_from_turf, \
 		screentip_texts = list( \
-			lmb_text = "Turn on alarm", \
-			rmb_text = "Turn off alarm", \
+			lmb_text = "Включить сигнализацию", \
+			rmb_text = "Выключить сигнализацию", \
 		), \
 	)
 
@@ -560,17 +560,17 @@
 /obj/machinery/firealarm/examine(mob/user)
 	. = ..()
 	if((my_area?.fire || LAZYLEN(my_area?.active_firelocks)))
-		. += "The local area hazard light is flashing."
-		. += "The fault location display is [my_area.fault_location] ([my_area.fault_status == AREA_FAULT_AUTOMATIC ? "Automatic Detection" : "Manual Trigger"])."
+		. += "Маленькая мигалка зажжена."
+		. += "Надпись на дисплее: «Активировано в [my_area.fault_location] ([my_area.fault_status == AREA_FAULT_AUTOMATIC ? "автоматика" : "ручной режим"])»."
 		if(is_station_level(z))
-			. += "The station security alert level is [SSsecurity_level.get_current_level_as_text()]."
-		. += "<b>Left-Click</b> to activate all firelocks in this area."
-		. += "<b>Right-Click</b> to reset firelocks in this area."
+			. += "Текущий уровень угрозы: [SSsecurity_level.get_current_level_as_text()]."
+		. += "<b>ЛКМ</b> чтобы закрыть все пожарные шлюзы в этой области."
+		. += "<b>ПКМ</b> чтобы сбросить все пожарные шлюзы в этой области."
 	else
 		if(is_station_level(z))
-			. += "The station security alert level is [SSsecurity_level.get_current_level_as_text()]."
-		. += "The local area thermal detection light is [my_area.fire_detect ? "lit" : "unlit"]."
-		. += "<b>Left-Click</b> to activate all firelocks in this area."
+			. += "Текущий уровень угрозы: [SSsecurity_level.get_current_level_as_text()]."
+		. += "Индикатор температурного датчика [my_area.fire_detect ? "горит" : "не горит"]."
+		. += "<b>ЛКМ</b> чтобы закрыть все пожарные шлюзы в этой области."
 
 // Allows Silicons to disable thermal sensor
 /obj/machinery/firealarm/BorgCtrlClick(mob/living/silicon/robot/user)
@@ -581,7 +581,7 @@
 
 /obj/machinery/firealarm/AICtrlClick(mob/living/silicon/robot/user)
 	if(obj_flags & EMAGGED)
-		balloon_alert(user, "control circuitry malfunctioning!")
+		balloon_alert(user, "не реаширует!")
 		return
 	toggle_fire_detect(user)
 
@@ -589,14 +589,14 @@
 /obj/machinery/firealarm/proc/toggle_fire_detect(mob/user, silent = FALSE)
 	if(!can_toggle_detection)
 		if(user && !silent)
-			balloon_alert(user, "thermal sensors unresponsive!")
+			balloon_alert(user, "температурный датчик не отвечает!")
 		return
 	if(my_area.fire_detect)
 		disable_fire_detect(user)
 	else
 		enable_fire_detect(user)
 	if (user && !silent)
-		balloon_alert(user, "thermal sensors [my_area.fire_detect ? "enabled" : "disabled"]")
+		balloon_alert(user, "температурный датчик [my_area.fire_detect ? "включён" : "выключен"]")
 
 /// Stops the area from automatically activating firelocks
 /obj/machinery/firealarm/proc/disable_fire_detect(mob/user)
@@ -633,7 +633,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/firealarm, 24) // BANDASTATION EDIT -
 
 /obj/machinery/firealarm/partyalarm
 	name = "\improper PARTY BUTTON"
-	desc = "Cuban Pete is in the house!"
+	desc = "Зажжём!"
 	var/static/party_overlay
 
 /obj/machinery/firealarm/partyalarm/reset(mob/user, silent = FALSE)

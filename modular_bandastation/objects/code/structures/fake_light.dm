@@ -4,7 +4,7 @@
 // MARK: Base
 /obj/structure/light_fake
 	name = "light fixture"
-	desc = "A lighting fixture."
+	desc = "Обычная лампочка."
 	icon = 'modular_bandastation/objects/icons/obj/structures/light.dmi'
 	icon_state = "tube"
 	anchored = TRUE

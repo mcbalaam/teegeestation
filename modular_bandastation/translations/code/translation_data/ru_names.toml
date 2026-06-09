@@ -6737,12 +6737,12 @@ prepositional = "мухобойке"
 gender = "female"
 
 ["wet floor sign"]
-nominative = "знак скользкого пола"
-genitive = "знака скользкого пола"
-dative = "знаку скользкого пола"
-accusative = "знак скользкого пола"
-instrumental = "знаком скользкого пола"
-prepositional = "знаке скользкого пола"
+nominative = "голознак «мокрый пол»"
+genitive = "голознака «мокрый пол»"
+dative = "голознаку «мокрый пол»"
+accusative = "голознак «мокрый пол»"
+instrumental = "голознаком «мокрый пол»"
+prepositional = "голознаке «мокрый пол»"
 gender = "male"
 
 ["soap"]
@@ -20376,12 +20376,12 @@ prepositional = "пожарной сигнализации"
 gender = "female"
 
 ["light switch"]
-nominative = "переключатель света"
-genitive = "переключателя света"
-dative = "переключателю света"
-accusative = "переключатель света"
-instrumental = "переключателем света"
-prepositional = "переключателе света"
+nominative = "выключатель"
+genitive = "выключателя"
+dative = "выключателю"
+accusative = "выключатель"
+instrumental = "выключателем"
+prepositional = "выключателе"
 gender = "male"
 
 ["suit storage unit"]
@@ -21924,6 +21924,24 @@ dative = "продвинутому огнетушителю"
 accusative = "продвинутый огнетушитель"
 instrumental = "продвинутым огнетушителем"
 prepositional = "продвинутом огнетушителе"
+gender = "male"
+
+["extinguisher cabinet"]
+nominative = "шкафчик для огнетушителя"
+genitive = "шкафчика для огнетушителя"
+dative = "шкафчику для огнетушителя"
+accusative = "шкафчик для огнетушителя"
+instrumental = "шкафчиком для огнетушителя"
+prepositional = "шкафчике для огнетушителя"
+gender = "male"
+
+["extinguisher cabinet frame"]
+nominative = "каркас шкафчика для огнетушителя"
+genitive = "каркаса шкафчика для огнетушителя"
+dative = "каркасу шкафчика для огнетушителя"
+accusative = "каркас шкафчика для огнетушителя"
+instrumental = "каркасом шкафчика для огнетушителя"
+prepositional = "каркасе шкафчика для огнетушителя"
 gender = "male"
 
 # Wrench
@@ -37382,3 +37400,30 @@ accusative = "блюспейс разлом"
 instrumental = "блюспейс разломом"
 prepositional = "блюспейс разломе"
 gender = "male"
+
+["newscaster"]
+nominative = "новостник"
+genitive = "новостника"
+dative = "новостнику"
+accusative = "новостник"
+instrumental = "новостником"
+prepositional = "новостнике"
+gender = "male"
+
+["newscaster frame"]
+nominative = "каркас новостника"
+genitive = "каркаса новостника"
+dative = "каркасу новостника"
+accusative = "каркас новостника"
+instrumental = "каркасом новостника"
+prepositional = "каркасе новостника"
+gender = "male"
+
+["newspaper"]
+nominative = "газета"
+genitive = "газеты"
+dative = "газете"
+accusative = "газету"
+instrumental = "газетой"
+prepositional = "газете"
+gender = "female"
