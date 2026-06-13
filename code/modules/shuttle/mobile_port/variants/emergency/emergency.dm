@@ -48,10 +48,10 @@
 	else
 		SSshuttle.emergency_last_call_loc = null
 	priority_announce(
-		text = "Эвакуационный шаттл вызван. [red_alert ? "Красный уровень угрозы подтверждён: Отправлен приоритетный шаттл. " : "" ]Ожидаемое время прибытия: [timeLeft(60 SECONDS)] [declension_ru(timeLeft(60 SECONDS), "минуты", "минут", "минут")].[reason][SSshuttle.emergency_last_call_loc ? "\n\nСигнал вызова отслежен. Результаты можно просмотреть на любой консоли коммуникаций." : "" ][SSshuttle.admin_emergency_no_recall ? "\n\nПредупреждение: Подсистемы отзыва шаттла отключены; Отзыв невозможен." : ""]",
+		text = "Эвакуационный шаттл вызван. [red_alert ? "Красный уровень угрозы подтверждён: отправлен приоритетный шаттл. " : "" ]Расчётное время до прибытия на [GLOB.station_name]: [timeLeft(60 SECONDS)] [declension_ru(timeLeft(60 SECONDS), "минуты", "минут", "минут")].[reason][SSshuttle.emergency_last_call_loc ? "\n\nСигнал вызова отслежен. Результаты можно просмотреть на любой консоли коммуникаций." : "" ][SSshuttle.admin_emergency_no_recall ? "\n\nПредупреждение: подсистемы отзыва шаттла отключены; отзыв невозможен." : ""]",
 		title = "Вызван эвакуационный шаттл",
 		sound = ANNOUNCER_SHUTTLECALLED,
-		sender_override = "Аварийное оповещение эвакуационного шаттла",
+		sender_override = "Система оповещения эвакуационного шаттла",
 		color_override = "orange",
 		)
 
@@ -73,7 +73,7 @@
 		text = "Эвакуационный шаттл был отозван.[SSshuttle.emergency_last_call_loc ? " Сигнал отзыва шаттла отслежен. Результаты можно просмотреть на любой консоли коммуникаций." : "" ]",
 		title = "Эвакуационный шаттл отозван",
 		sound = ANNOUNCER_SHUTTLERECALLED,
-		sender_override = "Аварийное оповещение эвакуационного шаттла",
+		sender_override = "Система оповещения эвакуационного шаттла",
 		color_override = "orange",
 		)
 
@@ -168,7 +168,7 @@
 					text = "[SSshuttle.emergency] состыковался со станцией. У вас есть [DisplayTimeText(SSshuttle.emergency_dock_time)], чтобы прибыть на борт шаттла.",
 					title = "Эвакуационный шаттл прибыл",
 					sound = ANNOUNCER_SHUTTLEDOCK,
-					sender_override = "Аварийное оповещение эвакуационного шаттла",
+					sender_override = "Система оповещения эвакуационного шаттла",
 					color_override = "orange",
 				)
 				ShuttleDBStuff()
@@ -228,9 +228,9 @@
 				launch_status = ENDGAME_LAUNCHED
 				setTimer(SSshuttle.emergency_escape_time * engine_coeff)
 				priority_announce(
-					text = "Эвакуационный шаттл покинул станцию. Приблизительное время ожидания: [timeLeft(60 SECONDS)] [declension_ru(timeLeft(60 SECONDS), "минуты", "минут", "минут")], прежде чем шаттл прибудет на [command_name()].",
-					title = "Произведена отстыковка эвакуационного шаттла",
-					sender_override = "Аварийное оповещение эвакуационного шаттла",
+					text = "Эвакуационный шаттл покинул станцию. Расчётное время в пути до прибытия на [command_name()]: [timeLeft(60 SECONDS)] [declension_ru(timeLeft(60 SECONDS), "минуты", "минут", "минут")].",
+					title = "Произведена отстыковка",
+					sender_override = "Система оповещения эвакуационного шаттла",
 					color_override = "orange",
 				)
 				INVOKE_ASYNC(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, poll_hearts))
@@ -294,9 +294,9 @@
 	launch_status = ENDGAME_LAUNCHED
 	setTimer(SSshuttle.emergency_escape_time)
 	priority_announce(
-		text = "Эвакуационный шаттл готовится к Блюспейс прыжку. Приблизительное время ожидания: [timeLeft(60 SECONDS)] [declension_ru(timeLeft(60 SECONDS), "минуты", "минут", "минут")], прежде чем шаттл прибудет на [command_name()].",
+		text = "Эвакуационный шаттл готовится к блюспейс прыжку. Расчётное время в пути до прибытия на [command_name()]: [timeLeft(60 SECONDS)] [declension_ru(timeLeft(60 SECONDS), "минуты", "минут", "минут")].",
 		title = "Экстренный транзит шаттла",
-		sender_override = "Аварийное оповещение эвакуационного шаттла",
+		sender_override = "Система оповещения эвакуационного шаттла",
 		color_override = "orange",
 	)
 

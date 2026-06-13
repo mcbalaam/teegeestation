@@ -173,7 +173,7 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 					airlock.emergency = TRUE
 					airlock.update_icon(ALL, 0)
 
-	minor_announce("Ограничения на доступ к техническим и внешним шлюзам были сняты.", "Внимание! На станции объявлена чрезвычайная ситуация!",1)
+	minor_announce("Внимание: на станции объявлено положение чрезвычайной ситуации. Ограничения на доступ к техническим и внешним шлюзам были сняты.", "Чрезвычайная ситуация", 1)
 	GLOB.emergency_access = TRUE
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("emergency maintenance access", "enabled"))
 
@@ -185,13 +185,13 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 					airlock.emergency = FALSE
 					airlock.update_icon(ALL, 0)
 
-	minor_announce("Ограничения на доступ в зоны технического обслуживания были восстановлены.", "Внимание! Общестанционная чрезвычайная ситуация отменена")
+	minor_announce("Положение чрезвычайной ситуации снято. Ограничения на доступ в зоны технического обслуживания были восстановлены.", "Чрезвычайная ситуация отменена")
 	GLOB.emergency_access = FALSE
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("emergency maintenance access", "disabled"))
 
 /proc/toggle_bluespace_artillery()
 	GLOB.bsa_unlock = !GLOB.bsa_unlock
-	minor_announce("Оружейные протоколы блюспейс артиллерии были [GLOB.bsa_unlock? "разблокированы" : "заблокированы"]", "Обновление оружейных систем")
+	minor_announce("Внимание: оружейные протоколы блюспейс артиллерии были [GLOB.bsa_unlock? "разблокированы" : "заблокированы"]", "Оружейные системы [GLOB.station_name]")
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("bluespace artillery", GLOB.bsa_unlock? "unlocked" : "locked"))
 
 #undef ACCESS_GRANTING_COOLDOWN
