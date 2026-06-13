@@ -137,7 +137,6 @@
 			priority_announce(
 				"[capitalize(auth_num_ru(remaining))] [declension_ru(remaining, "авторизация", "авторизации", "авторизаций")] [declension_ru(remaining, "необходима", "необходимы", "необходимо")] для раннего запуска шаттла.",
 				title = "Ранний запуск авторизован",
-				sender_override = "Система оповещения эвакуационного шаттла",
 				sound = 'sound/announcer/notice/notice1.ogg',
 				type = ANNOUNCEMENT_TYPE_PRIORITY,
 				has_important_message = TRUE,
@@ -147,7 +146,6 @@
 			priority_announce(
 				"Авторизация на ранний запуск отозвана: [auth_num_ru(remaining)] [declension_ru(remaining, "авторизация", "авторизации", "авторизаций")] [declension_ru(remaining, "необходима", "необходимы", "необходимо")].",
 				title = "Авторизация отозвана",
-				sender_override = "Система оповещения эвакуационного шаттла",
 				sound = 'sound/announcer/notice/notice2.ogg',
 				type = ANNOUNCEMENT_TYPE_PRIORITY,
 				color_override = "blue",
