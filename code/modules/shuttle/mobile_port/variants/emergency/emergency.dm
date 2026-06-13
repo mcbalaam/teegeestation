@@ -165,7 +165,7 @@
 				setTimer(SSshuttle.emergency_dock_time)
 				send2adminchat("Server", "The Emergency Shuttle has docked with the station.")
 				priority_announce(
-					text = "[SSshuttle.emergency.source_template ? SSshuttle.emergency.source_template.declent_ru(ACCUSATIVE) : SSshuttle.emergency.declent_ru(ACCUSATIVE)] [genderize_ru((SSshuttle.emergency.source_template && length(SSshuttle.emergency.source_template.ru_names)) ? SSshuttle.emergency.source_template.declent_ru("gender") : MALE, "состыковался", "состыковалась", "состыковалось", "состыковались")] со станцией. У вас есть [DisplayTimeText(SSshuttle.emergency_dock_time)], чтобы прибыть на борт шаттла.",
+					text = "[capitalize(SSshuttle.emergency.source_template ? SSshuttle.emergency.source_template.declent_ru(ACCUSATIVE) : SSshuttle.emergency.declent_ru(ACCUSATIVE))] [genderize_ru((SSshuttle.emergency.source_template && length(SSshuttle.emergency.source_template.ru_names)) ? SSshuttle.emergency.source_template.declent_ru("gender") : MALE, "состыковался", "состыковалась", "состыковалось", "состыковались")] со станцией. У вас есть [DisplayTimeText(SSshuttle.emergency_dock_time)], чтобы прибыть на борт шаттла.",
 					title = "Эвакуационный шаттл прибыл",
 					sound = ANNOUNCER_SHUTTLEDOCK,
 					sender_override = "Система оповещения эвакуационного шаттла",

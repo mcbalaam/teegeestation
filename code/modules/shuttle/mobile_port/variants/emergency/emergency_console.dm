@@ -135,7 +135,7 @@
 		var/remaining = max(0, auth_need - new_len)
 		if(new_len && remaining)
 			priority_announce(
-				"[auth_num_ru(remaining)] [declension_ru(remaining, "авторизация", "авторизации", "авторизаций")] [declension_ru(remaining, "необходима", "необходимы", "необходимо")] для раннего запуска шаттла.",
+				"[capitalize(auth_num_ru(remaining))] [declension_ru(remaining, "авторизация", "авторизации", "авторизаций")] [declension_ru(remaining, "необходима", "необходимы", "необходимо")] для раннего запуска шаттла.",
 				"Система оповещения эвакуационного шаттла",
 				sound = 'sound/announcer/notice/notice1.ogg',
 				type = ANNOUNCEMENT_TYPE_PRIORITY,
