@@ -323,20 +323,11 @@
 	process(SSMACHINES_DT)
 	return TRUE
 
-/// Возвращает число в виде словосочетания с женским родом (одна, две),
-/// либо цифрами, если род не важен.
+/// BANDASTATION EDIT START: shuttles
 /proc/auth_num_ru(count)
-	var/last_digit = count % 10
-	var/last_two = count % 100
-	if(last_digit == 1 && last_two != 11)
-		if(count == 1)
-			return "одна"
-		return "[trim(num_in_words(count - 1))] одна"
-	if(last_digit == 2 && last_two != 12)
-		if(count == 2)
-			return "две"
-		return "[trim(num_in_words(count - 2))] две"
-	return "[count]"
+	var/static/list/variants = list("одна", "две", "три")
+	return variants[count]
+/// BANDASTATION EDIT END
 
 #undef TIME_LEFT
 #undef ENGINES_STARTED
