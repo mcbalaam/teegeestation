@@ -41,6 +41,7 @@ dative = "камере наблюдения"
 accusative = "камеру наблюдения"
 instrumental = "камерой наблюдения"
 prepositional = "камере наблюдения"
+gender = "female"
 
 ["motion-sensitive security camera"]
 nominative = "камера наблюдения с датчиком движения"
@@ -49,7 +50,7 @@ dative = "камере наблюдения с датчиком движения
 accusative = "камеру наблюдения с датчиком движения"
 instrumental = "камерой наблюдения с датчиком движения"
 prepositional = "камере наблюдения с датчиком движения"
-
+gender = "female"
 ["Confessional intercom"]
 accusative = "интерком исповедания"
 dative = "интеркому исповедания"
@@ -37427,3 +37428,397 @@ accusative = "газету"
 instrumental = "газетой"
 prepositional = "газете"
 gender = "female"
+
+["disposal unit"]
+nominative = "утилизационный блок"
+genitive = "утилизационного блока"
+dative = "утилизационному блоку"
+accusative = "утилизационный блок"
+instrumental = "утилизационным блоком"
+prepositional = "утилизационном блоке"
+gender = "male"
+
+["disposal pipe segment"]
+nominative = "сегмент утилизационной трубы"
+genitive = "сегмента утилизационной трубы"
+dative = "сегменту утилизационной трубы"
+accusative = "сегмент утилизационной трубы"
+instrumental = "сегментом утилизационной трубы"
+prepositional = "сегменте утилизационной трубы"
+gender = "male"
+
+["disposal pipe"]
+nominative = "утилизационная труба"
+genitive = "утилизационной трубы"
+dative = "утилизационной трубе"
+accusative = "утилизационную трубу"
+instrumental = "утилизационной трубой"
+prepositional = "утилизационной трубе"
+gender = "female"
+
+["sorting disposal pipe"]
+nominative = "сортировочная утилизационная труба"
+genitive = "сортировочной утилизационной трубы"
+dative = "сортировочной утилизационной трубе"
+accusative = "сортировочную утилизационную трубу"
+instrumental = "сортировочной утилизационной трубой"
+prepositional = "сортировочной утилизационной трубе"
+gender = "female"
+
+["disposal outlet"]
+nominative = "выходной жёлоб"
+genitive = "выходного жёлоба"
+dative = "выходному жёлобу"
+accusative = "выходной жёлоб"
+instrumental = "выходным жёлобом"
+prepositional = "выходном жёлобе"
+gender = "male"
+
+["Disposal trunk that goes up"]
+nominative = "утилизационный стояк (вверх)"
+genitive = "утилизационного стояка (вверх)"
+dative = "утилизационному стояку (вверх)"
+accusative = "утилизационный стояк (вверх)"
+instrumental = "утилизационным стояком (вверх)"
+prepositional = "утилизационном стояке (вверх)"
+gender = "male"
+
+["Disposal trunk that goes down"]
+nominative = "утилизационный стояк (вниз)"
+genitive = "утилизационного стояка (вниз)"
+dative = "утилизационному стояку (вниз)"
+accusative = "утилизационный стояк (вниз)"
+instrumental = "утилизационным стояком (вниз)"
+prepositional = "утилизационном стояке (вниз)"
+gender = "male"
+
+["delivery chute"]
+nominative = "приёмный жёлоб"
+genitive = "приёмного жёлоба"
+dative = "приёмному жёлобу"
+accusative = "приёмный жёлоб"
+instrumental = "приёмным жёлобом"
+prepositional = "приёмном жёлобе"
+gender = "male"
+
+["keycard authentication device"]
+nominative = "считыватель ключ-карт"
+genitive = "считывателя ключ-карт"
+dative = "считывателю ключ-карт"
+accusative = "считыватель ключ-карт"
+instrumental = "считывателем ключ-карт"
+prepositional = "считывателе ключ-карт"
+gender = "male"
+
+["Airlock"]
+nominative = "шлюз"
+genitive = "шлюза"
+dative = "шлюзу"
+accusative = "шлюз"
+instrumental = "шлюзом"
+prepositional = "шлюзе"
+gender = "male"
+
+["command airlock"]
+nominative = "командный шлюз"
+genitive = "командного шлюза"
+dative = "командному шлюзу"
+accusative = "командный шлюз"
+instrumental = "командным шлюзом"
+prepositional = "командном шлюзе"
+gender = "male"
+
+["security airlock"]
+nominative = "шлюз охраны"
+genitive = "шлюза охраны"
+dative = "шлюзу охраны"
+accusative = "шлюз охраны"
+instrumental = "шлюзом охраны"
+prepositional = "шлюзе охраны"
+gender = "male"
+
+["engineering airlock"]
+nominative = "инженерный шлюз"
+genitive = "инженерного шлюза"
+dative = "инженерному шлюзу"
+accusative = "инженерный шлюз"
+instrumental = "инженерным шлюзом"
+prepositional = "инженерном шлюзе"
+gender = "male"
+
+["medical airlock"]
+nominative = "медицинский шлюз"
+genitive = "медицинского шлюза"
+dative = "медицинскому шлюзу"
+accusative = "медицинский шлюз"
+instrumental = "медицинским шлюзом"
+prepositional = "медицинском шлюзе"
+gender = "male"
+
+["hydroponics airlock"]
+nominative = "гидропонный шлюз"
+genitive = "гидропонного шлюза"
+dative = "гидропонному шлюзу"
+accusative = "гидропонный шлюз"
+instrumental = "гидропонным шлюзом"
+prepositional = "гидропонном шлюзе"
+gender = "male"
+
+["maintenance access"]
+nominative = "технический вход"
+genitive = "технического входа"
+dative = "техническому входу"
+accusative = "технический вход"
+instrumental = "техническим входом"
+prepositional = "техническом входе"
+gender = "male"
+
+["external airlock access"]
+nominative = "внешний технический вход"
+genitive = "внешнего технического входа"
+dative = "внешнему техническому входу"
+accusative = "внешний технический вход"
+instrumental = "внешним техническим входом"
+prepositional = "внешнем техническом входе"
+gender = "male"
+
+["mining airlock"]
+nominative = "шахтёрский шлюз"
+genitive = "шахтёрского шлюза"
+dative = "шахтёрскому шлюзу"
+accusative = "шахтёрский шлюз"
+instrumental = "шахтёрским шлюзом"
+prepositional = "шахтёрском шлюзе"
+gender = "male"
+
+["atmospherics airlock"]
+nominative = "атмосферный шлюз"
+genitive = "атмосферного шлюза"
+dative = "атмосферному шлюзу"
+accusative = "атмосферный шлюз"
+instrumental = "атмосферным шлюзом"
+prepositional = "атмосферном шлюзе"
+gender = "male"
+
+["research airlock"]
+nominative = "исследовательский шлюз"
+genitive = "исследовательского шлюза"
+dative = "исследовательскому шлюзу"
+accusative = "исследовательский шлюз"
+instrumental = "исследовательским шлюзом"
+prepositional = "исследовательском шлюзе"
+gender = "male"
+
+["freezer airlock"]
+nominative = "морозильный шлюз"
+genitive = "морозильного шлюза"
+dative = "морозильному шлюзу"
+accusative = "морозильный шлюз"
+instrumental = "морозильным шлюзом"
+prepositional = "морозильном шлюзе"
+gender = "male"
+
+["science airlock"]
+nominative = "научный шлюз"
+genitive = "научного шлюза"
+dative = "научному шлюзу"
+accusative = "научный шлюз"
+instrumental = "научным шлюзом"
+prepositional = "научном шлюзе"
+gender = "male"
+
+["virology airlock"]
+nominative = "вирусологический шлюз"
+genitive = "вирусологического шлюза"
+dative = "вирусологическому шлюзу"
+accusative = "вирусологический шлюз"
+instrumental = "вирусологическим шлюзом"
+prepositional = "вирусологическом шлюзе"
+gender = "male"
+
+["glass airlock"]
+nominative = "стеклянный шлюз"
+genitive = "стеклянного шлюза"
+dative = "стеклянному шлюзу"
+accusative = "стеклянный шлюз"
+instrumental = "стеклянным шлюзом"
+prepositional = "стеклянном шлюзе"
+gender = "male"
+
+["public airlock"]
+nominative = "общественный шлюз"
+genitive = "общественного шлюза"
+dative = "общественному шлюзу"
+accusative = "общественный шлюз"
+instrumental = "общественным шлюзом"
+prepositional = "общественном шлюзе"
+gender = "male"
+
+["external airlock"]
+nominative = "внешний шлюз"
+genitive = "внешнего шлюза"
+dative = "внешнему шлюзу"
+accusative = "внешний шлюз"
+instrumental = "внешним шлюзом"
+prepositional = "внешнем шлюзе"
+gender = "male"
+
+["gold airlock"]
+nominative = "золотой шлюз"
+genitive = "золотого шлюза"
+dative = "золотому шлюзу"
+accusative = "золотой шлюз"
+instrumental = "золотым шлюзом"
+prepositional = "золотом шлюзе"
+gender = "male"
+
+["silver airlock"]
+nominative = "серебряный шлюз"
+genitive = "серебряного шлюза"
+dative = "серебряному шлюзу"
+accusative = "серебряный шлюз"
+instrumental = "серебряным шлюзом"
+prepositional = "серебряном шлюзе"
+gender = "male"
+
+["diamond airlock"]
+nominative = "алмазный шлюз"
+genitive = "алмазного шлюза"
+dative = "алмазному шлюзу"
+accusative = "алмазный шлюз"
+instrumental = "алмазным шлюзом"
+prepositional = "алмазном шлюзе"
+gender = "male"
+
+["uranium airlock"]
+nominative = "урановый шлюз"
+genitive = "уранового шлюза"
+dative = "урановому шлюзу"
+accusative = "урановый шлюз"
+instrumental = "урановым шлюзом"
+prepositional = "урановом шлюзе"
+gender = "male"
+
+["plasma airlock"]
+nominative = "плазменный шлюз"
+genitive = "плазменного шлюза"
+dative = "плазменному шлюзу"
+accusative = "плазменный шлюз"
+instrumental = "плазменным шлюзом"
+prepositional = "плазменном шлюзе"
+gender = "male"
+
+["bananium airlock"]
+nominative = "бананиумный шлюз"
+genitive = "бананиумного шлюза"
+dative = "бананиумному шлюзу"
+accusative = "бананиумный шлюз"
+instrumental = "бананиумным шлюзом"
+prepositional = "бананиумном шлюзе"
+gender = "male"
+
+["sandstone airlock"]
+nominative = "песчаниковый шлюз"
+genitive = "песчаникового шлюза"
+dative = "песчаниковому шлюзу"
+accusative = "песчаниковый шлюз"
+instrumental = "песчаниковым шлюзом"
+prepositional = "песчаниковом шлюзе"
+gender = "male"
+
+["wooden airlock"]
+nominative = "деревянный шлюз"
+genitive = "деревянного шлюза"
+dative = "деревянному шлюзу"
+accusative = "деревянный шлюз"
+instrumental = "деревянным шлюзом"
+prepositional = "деревянном шлюзе"
+gender = "male"
+
+["shuttle airlock"]
+nominative = "шаттловый шлюз"
+genitive = "шаттлового шлюза"
+dative = "шаттловому шлюзу"
+accusative = "шаттловый шлюз"
+instrumental = "шаттловым шлюзом"
+prepositional = "шаттловом шлюзе"
+gender = "male"
+
+["bronze airlock"]
+nominative = "бронзовый шлюз"
+genitive = "бронзового шлюза"
+dative = "бронзовому шлюзу"
+accusative = "бронзовый шлюз"
+instrumental = "бронзовым шлюзом"
+prepositional = "бронзовом шлюзе"
+gender = "male"
+
+["vault door"]
+nominative = "дверь хранилища"
+genitive = "двери хранилища"
+dative = "двери хранилища"
+accusative = "дверь хранилища"
+instrumental = "дверью хранилища"
+prepositional = "двери хранилища"
+gender = "female"
+
+["airtight hatch"]
+nominative = "герметичный люк"
+genitive = "герметичного люка"
+dative = "герметичному люку"
+accusative = "герметичный люк"
+instrumental = "герметичным люком"
+prepositional = "герметичном люке"
+gender = "male"
+
+["maintenance hatch"]
+nominative = "технический люк"
+genitive = "технического люка"
+dative = "техническому люку"
+accusative = "технический люк"
+instrumental = "техническим люком"
+prepositional = "техническом люке"
+gender = "male"
+
+["high tech security airlock"]
+nominative = "высокотехнологичный шлюз охраны"
+genitive = "высокотехнологичного шлюза охраны"
+dative = "высокотехнологичному шлюзу охраны"
+accusative = "высокотехнологичный шлюз охраны"
+instrumental = "высокотехнологичным шлюзом охраны"
+prepositional = "высокотехнологичном шлюзе охраны"
+gender = "male"
+
+["alien airlock"]
+nominative = "инопланетный шлюз"
+genitive = "инопланетного шлюза"
+dative = "инопланетному шлюзу"
+accusative = "инопланетный шлюз"
+instrumental = "инопланетным шлюзом"
+prepositional = "инопланетном шлюзе"
+gender = "male"
+
+["cult airlock"]
+nominative = "культовый шлюз"
+genitive = "культового шлюза"
+dative = "культовому шлюзу"
+accusative = "культовый шлюз"
+instrumental = "культовым шлюзом"
+prepositional = "культовом шлюзе"
+gender = "male"
+
+["brittle cult airlock"]
+nominative = "хрупкий культовый шлюз"
+genitive = "хрупкого культового шлюза"
+dative = "хрупкому культовому шлюзу"
+accusative = "хрупкий культовый шлюз"
+instrumental = "хрупким культовым шлюзом"
+prepositional = "хрупком культовом шлюзе"
+gender = "male"
+nominative = "светильник"
+genitive = "светильника"
+dative = "светильнику"
+accusative = "светильник"
+instrumental = "светильником"
+prepositional = "светильнике"
+gender = "male"

@@ -3,7 +3,7 @@
 	name = "light fixture"
 	icon = 'icons/obj/lighting.dmi'
 	icon_state = "tube"
-	desc = "Обычная лампочка."
+	desc = "Ртутная лампа-трубка. Или натриевая. Или неоновая."
 	layer = WALL_OBJ_LAYER
 	max_integrity = 100
 	use_power = ACTIVE_POWER_USE

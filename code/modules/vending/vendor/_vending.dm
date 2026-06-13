@@ -361,7 +361,7 @@
 	if(isnull(refill_canister))
 		return // you can add the comment here instead
 
-	. += span_notice("Панель обслуживания [panel_open ? "закручена" : "откручена"] [EXAMINE_HINT("отвёрткой")].")
+	. += span_notice("Панель обслуживания может быть [panel_open ? "закручена" : "откручена"] [EXAMINE_HINT("отвёрткой")].")
 	if(panel_open)
 		. += span_notice("Машину можно разобрать используя [EXAMINE_HINT("лом")].")
 

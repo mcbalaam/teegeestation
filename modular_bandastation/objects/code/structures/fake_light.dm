@@ -4,7 +4,7 @@
 // MARK: Base
 /obj/structure/light_fake
 	name = "light fixture"
-	desc = "Обычная лампочка."
+	desc = "Ртутная лампа-трубка. Или натриевая. Или неоновая."
 	icon = 'modular_bandastation/objects/icons/obj/structures/light.dmi'
 	icon_state = "tube"
 	anchored = TRUE
@@ -44,7 +44,7 @@
 // MARK: Small
 /obj/structure/light_fake/small
 	name = "light fixture"
-	desc = "A small lighting fixture."
+	desc = "Маленькая лампа накаливания."
 	icon_state = "bulb"
 	base_state = "bulb"
 	light_color = "#FFD6AA"

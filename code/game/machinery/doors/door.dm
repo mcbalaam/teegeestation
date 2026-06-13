@@ -5,7 +5,7 @@
 
 /obj/machinery/door
 	name = "door"
-	desc = "It opens and closes."
+	desc = "Открывается и закрывается."
 	icon = 'icons/obj/doors/doorint.dmi'
 	icon_state = "door_closed"
 	base_icon_state = "door"

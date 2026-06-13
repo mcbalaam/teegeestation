@@ -104,7 +104,7 @@
 	last_pipe = null
 	active = FALSE
 	for(var/mob/living/piperider in contents)
-		to_chat(piperider, span_notice("Your movement has slowed to a stop. If you tried, you could probably <b>struggle</b> free."))
+		to_chat(piperider, span_notice("Ваше движение замедлилось до остановки. Если попытаться, вы, вероятно, сможете <b>выбраться</b>."))
 
 /**
  * Starts the struggle code
@@ -130,11 +130,11 @@
 		return //Somehow we're not in a pipe, shits probably fucked
 	var/obj/structure/disposalpipe/transport_cylinder = loc
 	if(active)
-		to_chat(escapee, span_danger("You slide past [loc] and are unable to keep your grip!"))
+		to_chat(escapee, span_danger("Вы проскальзываете мимо [loc.declent_ru(GENITIVE)] и не можете удержаться!"))
 		return
 	if(src in escapee.do_afters)
-		return //already trying to escape
-	to_chat(escapee, span_warning("You push against the thin pipe walls..."))
+		return
+	to_chat(escapee, span_warning("Вы давите на тонкие стенки трубы..."))
 	playsound(loc, 'sound/machines/airlock/airlock_alien_prying.ogg', vol = 30, vary = FALSE, extrarange = 3) //yeah I know but at least it sounds like metal being bent.
 
 	if(!do_after(escapee, 20 SECONDS, get_turf(loc)))
@@ -198,7 +198,7 @@
 	if(user.incapacitated)
 		return
 	for(var/mob/M in range(5, get_turf(src)))
-		M.show_message("<FONT size=[max(0, 5 - get_dist(src, M))]>CLONG, clong!</FONT>", MSG_AUDIBLE)
+		M.show_message("<FONT size=[max(0, 5 - get_dist(src, M))]>БАМ, бам!</FONT>", MSG_AUDIBLE)
 	playsound(src.loc, 'sound/effects/clang.ogg', 50, FALSE, FALSE)
 
 /// Called to vent all gas in holder to a location

@@ -40,7 +40,14 @@
 	SIGNAL_HANDLER
 
 	if(parent in view(user.client?.view || world.view, user))
-		examine_list += span_notice("\The [hanging_support_atom] is currently supporting [span_bold("\the [parent]")]. Deconstruction or excessive damage would cause it to [span_bold("fall to the ground")].")
+		// BANDASTATION EDIT START
+		var/atom/parent_atom = parent
+		var/parent_name = declent_ru_initial(initial(parent_atom.name), NOMINATIVE, initial(parent_atom.name))
+		var/gender = declent_ru_initial(initial(parent_atom.name), "gender", parent_atom.gender)
+		var/ending = gender == "female" ? "ена" : gender == "neuter" ? "ено" : gender == "plural" ? "ены" : "ён"
+		var/pronoun = gender == "female" ? "она" : gender == "neuter" ? "оно" : gender == "plural" ? "они" : "он"
+		examine_list += span_notice("На [hanging_support_atom.declent_ru(DATIVE)] закрепл[ending] [span_bold("[parent_name]")]. Разрушение или чрезмерные повреждения приведут к тому, что [pronoun] [span_bold("упадёт на пол")].")
+		// BANDASTATION EDIT END
 
 /// When the type of turf changes, if it is changing into a floor we should drop our contents
 /datum/component/atom_mounted/proc/on_turf_changing(turf/source, path, new_baseturfs, flags, post_change_callbacks)

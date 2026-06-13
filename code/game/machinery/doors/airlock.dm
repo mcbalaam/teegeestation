@@ -261,7 +261,7 @@
 		return
 	set_bolt(TRUE)
 	playsound(src,boltDown,30,FALSE,3)
-	audible_message(span_hear("You hear a click from the bottom of the door."), null,  1)
+	audible_message(span_hear("Вы слышите щелчок снизу двери."), null,  1)
 	update_appearance()
 
 /obj/machinery/door/airlock/proc/set_bolt(should_bolt)
@@ -279,7 +279,7 @@
 		return
 	set_bolt(FALSE)
 	playsound(src,boltUp,30,FALSE,3)
-	audible_message(span_hear("You hear a click from the bottom of the door."), null,  1)
+	audible_message(span_hear("Вы слышите щелчок снизу двери."), null,  1)
 	update_appearance()
 
 /obj/machinery/door/airlock/narsie_act()
@@ -700,55 +700,55 @@
 /obj/machinery/door/airlock/examine(mob/user)
 	. = ..()
 	if(closeOtherId)
-		. += span_warning("This airlock cycles on ID: [sanitize(closeOtherId, apply_ic_filter = TRUE)].") // BANDASTATION EDIT - Sanitize emotes
+		. += span_warning("Этот шлюз связан с ID «[sanitize(closeOtherId, apply_ic_filter = TRUE)]».") // BANDASTATION EDIT - Sanitize emotes
 	else if(cyclelinkedairlock)
-		. += span_warning("This airlock cycles with: [cyclelinkedairlock.name].")
+		. += span_warning("Этот шлюз связан с [cyclelinkedairlock.declent_ru(INSTRUMENTAL)].")
 	else
-		. += span_warning("This airlock does not cycle.")
+		. += span_warning("Этот шлюз ни с чем не связан.")
 	if(obj_flags & EMAGGED)
-		. += span_warning("Its access panel is smoking slightly.")
+		. += span_warning("Панель доступа слегка дымится.")
 	if(note)
 		if(!in_range(user, src))
-			. += "There's a [note.name] pinned to the front. You can't read it from here."
+			. += "Спереди приколота [note.name]. Отсюда не прочитать."
 		else
-			. += "There's a [note.name] pinned to the front..."
+			. += "Спереди приколота [note.name]..."
 			. += note.examine(user)
-		. += span_notice("The attached [note.name] can be taken down with some [EXAMINE_HINT("wirecutters")].")
+		. += span_notice("Приколотую [note.name] можно снять [EXAMINE_HINT("кусачками")].")
 	if(seal)
-		. += "It's been braced with \a [seal]."
+		. += "Он укреплён [seal]."
 	if(welded)
-		. += "It's welded shut."
+		. += "Он заварен."
 	if(panel_open)
 		switch(security_level)
 			if(AIRLOCK_SECURITY_NONE)
-				. += "Its wires are exposed!"
+				. += "Провода оголены!"
 			if(AIRLOCK_SECURITY_IRON)
-				. += "Its wires are hidden behind a welded iron cover."
+				. += "Провода скрыты за сваренной железной крышкой."
 			if(AIRLOCK_SECURITY_PLASTEEL_I_S)
-				. += "There is some shredded plasteel inside."
+				. += "Внутри куски измельчённой пластали."
 			if(AIRLOCK_SECURITY_PLASTEEL_I)
-				. += "Its wires are behind an inner layer of plasteel."
+				. += "Провода за внутренним слоем пластали."
 			if(AIRLOCK_SECURITY_PLASTEEL_O_S)
-				. += "There is some shredded plasteel inside."
+				. += "Внутри куски измельчённой пластали."
 			if(AIRLOCK_SECURITY_PLASTEEL_O)
-				. += "There is a welded plasteel cover hiding its wires."
+				. += "Сваренная пласталевая крышка скрывает провода."
 			if(AIRLOCK_SECURITY_PLASTEEL)
-				. += "There is a protective grille over its panel."
+				. += "Защитная решётка перекрывает доступ к панели."
 	else if(security_level)
 		if(security_level == AIRLOCK_SECURITY_IRON)
-			. += "It looks a bit stronger."
+			. += "Выглядит немного прочнее чем обычно."
 		else
-			. += "It looks very robust."
+			. += "Выглядит очень надёжно."
 
 	var/active_reta = has_active_reta_access()
 	if(active_reta)
-		. += span_nicegreen("Emergency Temporary Access is enabled for [EXAMINE_HINT(active_reta)] ID cards.")
+		. += span_nicegreen("Экстренный временный доступ включён для [EXAMINE_HINT(active_reta)] ID-карт.")
 
 	if(issilicon(user) && !(machine_stat & BROKEN))
-		. += span_notice("Shift-click [src] to [ density ? "open" : "close"] it.")
-		. += span_notice("Ctrl-click [src] to [ locked ? "raise" : "drop"] its bolts.")
-		. += span_notice("Alt-click [src] to [ secondsElectrified ? "un-electrify" : "permanently electrify"] it.")
-		. += span_notice("Ctrl-Shift-click [src] to [ emergency ? "disable" : "enable"] emergency access.")
+		. += span_notice("Shift-клик по [src], чтобы [ density ? "открыть" : "закрыть"] его.")
+		. += span_notice("Ctrl-клик по [src], чтобы [ locked ? "поднять" : "опустить"] его болты.")
+		. += span_notice("Alt-клик по [src], чтобы [ secondsElectrified ? "снять электрификацию" : "постоянно электрифицировать"] его.")
+		. += span_notice("Ctrl-Shift-клик по [src], чтобы [ emergency ? "отключить" : "включить"] аварийный доступ.")
 
 /obj/machinery/door/airlock/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = ..()
@@ -757,11 +757,11 @@
 		if(!(machine_stat & BROKEN))
 			var/ui = SStgui.try_update_ui(user, src)
 			if(!ui && !held_item)
-				context[SCREENTIP_CONTEXT_LMB] = "Open UI"
-			context[SCREENTIP_CONTEXT_SHIFT_LMB] = density ? "Open" : "Close"
-			context[SCREENTIP_CONTEXT_CTRL_LMB] = locked ? "Unbolt" : "Bolt"
-			context[SCREENTIP_CONTEXT_ALT_LMB] = isElectrified() ? "Unelectrify" : "Electrify"
-			context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB] = emergency ? "Unset emergency access" : "Set emergency access"
+				context[SCREENTIP_CONTEXT_LMB] = "Открыть интерфейс"
+			context[SCREENTIP_CONTEXT_SHIFT_LMB] = density ? "Открыть" : "Закрыть"
+			context[SCREENTIP_CONTEXT_CTRL_LMB] = locked ? "Отболтить" : "Заболтить"
+			context[SCREENTIP_CONTEXT_ALT_LMB] = isElectrified() ? "Снять электризацию" : "Электризовать"
+			context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB] = emergency ? "Отключить авар. доступ" : "Включить авар. доступ"
 			. = CONTEXTUAL_SCREENTIP_SET
 
 	if(!isliving(user))
@@ -773,36 +773,36 @@
 	switch (held_item?.tool_behaviour)
 		if (TOOL_SCREWDRIVER)
 			if(has_access_panel)
-				context[SCREENTIP_CONTEXT_LMB] = panel_open ? "Close panel" : "Open panel"
+				context[SCREENTIP_CONTEXT_LMB] = panel_open ? "Закрыть панель" : "Открыть панель"
 				return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_CROWBAR)
 			if (panel_open)
 				if (security_level == AIRLOCK_SECURITY_PLASTEEL_O_S || security_level == AIRLOCK_SECURITY_PLASTEEL_I_S)
-					context[SCREENTIP_CONTEXT_LMB] = "Remove shielding"
+					context[SCREENTIP_CONTEXT_LMB] = "Снять бронирование"
 					return CONTEXTUAL_SCREENTIP_SET
 				else if (should_try_removing_electronics())
-					context[SCREENTIP_CONTEXT_LMB] = "Remove electronics"
+					context[SCREENTIP_CONTEXT_LMB] = "Извлечь контроллер"
 					return CONTEXTUAL_SCREENTIP_SET
 
 			// Not always contextually true, but is contextually false in ways that make gameplay interesting.
 			// For example, trying to pry open an airlock, only for the bolts to be down and the lights off.
-			context[SCREENTIP_CONTEXT_LMB] = "Pry open"
+			context[SCREENTIP_CONTEXT_LMB] = "Взломать"
 
 			return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_WELDER)
-			context[SCREENTIP_CONTEXT_RMB] = "Weld shut"
+			context[SCREENTIP_CONTEXT_RMB] = "Заварить"
 
 			if (panel_open)
 				switch (security_level)
 					if (AIRLOCK_SECURITY_IRON, AIRLOCK_SECURITY_PLASTEEL_I, AIRLOCK_SECURITY_PLASTEEL_O)
-						context[SCREENTIP_CONTEXT_LMB] = "Cut shielding"
+						context[SCREENTIP_CONTEXT_LMB] = "Срезать бронирование"
 						return CONTEXTUAL_SCREENTIP_SET
 
-			context[SCREENTIP_CONTEXT_LMB] = "Repair"
+			context[SCREENTIP_CONTEXT_LMB] = "Починить"
 			return CONTEXTUAL_SCREENTIP_SET
 	if(istype(held_item, /obj/item/wrench/bolter))
 		if(locked)
-			context[SCREENTIP_CONTEXT_LMB] = "Raise bolts"
+			context[SCREENTIP_CONTEXT_LMB] = "Поднять болты"
 			return CONTEXTUAL_SCREENTIP_SET
 
 		return CONTEXTUAL_SCREENTIP_SET
@@ -814,9 +814,9 @@
 			hack(user)
 			return
 		else
-			to_chat(user, span_warning("Airlock AI control has been blocked with a firewall. Unable to hack."))
+			to_chat(user, span_warning("AI-управление шлюзом заблокировано брандмауэром. Взлом невозможен."))
 	if(obj_flags & EMAGGED)
-		to_chat(user, span_warning("Unable to interface: Airlock is unresponsive."))
+		to_chat(user, span_warning("Невозможно управлять: система не отвечает."))
 		return
 
 	ui_interact(user)
@@ -824,17 +824,17 @@
 ///Performs basic checks to make sure we are still able to hack an airlock. If control is restored early through outside means, opens the airlock's control interface.
 /obj/machinery/door/airlock/proc/check_hacking(mob/user, success_message)
 	if(QDELETED(src))
-		to_chat(user, span_warning("Connection lost! Unable to locate airlock on network."))
+		to_chat(user, span_warning("Соединение потеряно! Не удаётся найти шлюз в сети."))
 		aiHacking = FALSE
 		return FALSE
 	if(canAIControl(user))
-		to_chat(user, span_notice("Alert cancelled. Airlock control has been restored without our assistance."))
+		to_chat(user, span_notice("Тревога отменена. Управление шлюзом восстановлено без нашего вмешательства."))
 		aiHacking = FALSE
 		if(user)
 			attack_ai(user) //bring up airlock dialog
 		return
 	else if(!canAIHack())
-		to_chat(user, span_warning("Connection lost! Unable to hack airlock."))
+		to_chat(user, span_warning("Соединение потеряно! Не удаётся взломать шлюз."))
 		aiHacking = FALSE
 		return
 	if(success_message)
@@ -846,33 +846,33 @@
 	set waitfor = 0
 	if(!aiHacking)
 		aiHacking = TRUE
-		to_chat(user, span_warning("Airlock AI control has been blocked. Beginning fault-detection."))
+		to_chat(user, span_warning("AI-управление шлюзом заблокировано. Начинаю поиск неисправностей."))
 		sleep(5 SECONDS)
 
-		if(!check_hacking(user, "Fault confirmed: airlock control wire disabled or cut."))
+		if(!check_hacking(user, "Неисправность подтверждена: провод управления шлюзом отключён или перерезан."))
 			return
 		sleep(2 SECONDS)
 
-		if(!check_hacking(user, "Attempting to hack into airlock. This may take some time."))
+		if(!check_hacking(user, "Попытка взлома шлюза. Это может занять некоторое время."))
 			return
 		sleep(20 SECONDS)
 
-		if(!check_hacking(user, "Upload access confirmed. Loading control program into airlock software."))
+		if(!check_hacking(user, "Доступ на загрузку подтверждён. Загружаю управляющую программу в ПО шлюза."))
 			return
 		sleep(17 SECONDS)
 
-		if(!check_hacking(user,"Transfer complete. Forcing airlock to execute program."))
+		if(!check_hacking(user,"Передача завершена. Принуждаю шлюз к выполнению программы."))
 			return
 		sleep(5 SECONDS)
 
-		if(!check_hacking(user, "Receiving control information from airlock."))
+		if(!check_hacking(user, "Получение управляющей информации от шлюза."))
 			return
 		aiControlDisabled = AI_WIRE_HACKED //disable blocked control
 		sleep(1 SECONDS)
 
 		aiHacking = FALSE
 		if(QDELETED(src))
-			to_chat(user, span_warning("Connection lost! Unable to locate airlock on network."))
+			to_chat(user, span_warning("Соединение потеряно! Не удаётся найти шлюз в сети."))
 			return
 		if(user)
 			attack_ai(user) //bring up airlock dialog
@@ -898,16 +898,16 @@
 		if((HAS_TRAIT(H, TRAIT_DUMB)) && Adjacent(user))
 			playsound(src, 'sound/effects/bang.ogg', 25, TRUE)
 			if(!istype(H.head, /obj/item/clothing/head/helmet))
-				H.visible_message(span_danger("[user] headbutts the airlock."), \
-									span_userdanger("You headbutt the airlock!"))
+				H.visible_message(span_danger("[user] ударяется головой о шлюз."), \
+									span_userdanger("Вы ударяетесь головой о шлюз!"))
 				H.Paralyze(100)
 				H.apply_damage(10, BRUTE, BODY_ZONE_HEAD)
 			else
-				visible_message(span_danger("[user] headbutts the airlock. Good thing [user.p_theyre()] wearing a helmet."))
+				visible_message(span_danger("[user] ударяется головой о шлюз. Хорошо, что [user.p_they()] в шлеме."))
 
 /obj/machinery/door/airlock/attempt_wire_interaction(mob/user)
 	if(security_level)
-		to_chat(user, span_warning("Wires are protected!"))
+		to_chat(user, span_warning("провода защищены!"))
 		return WIRE_INTERACTION_FAIL
 	return ..()
 
@@ -928,10 +928,10 @@
 
 /obj/machinery/door/airlock/screwdriver_act(mob/living/user, obj/item/tool)
 	if(!has_access_panel)
-		to_chat(user, span_warning("[src] has no maintenance panel!"))
+		to_chat(user, span_warning("У [src] нет панели обслуживания!"))
 		return ITEM_INTERACT_SUCCESS
 	toggle_panel_open()
-	to_chat(user, span_notice("You [panel_open ? "open":"close"] the maintenance panel of the airlock."))
+	to_chat(user, span_notice("Вы [panel_open ? "открываете":"закрываете"] панель обслуживания шлюза."))
 	tool.play_tool_sound(src)
 	update_appearance()
 	return ITEM_INTERACT_SUCCESS
@@ -944,20 +944,20 @@
 		. = ITEM_INTERACT_SUCCESS  // everything after this shouldn't result in attackby
 		if(hasPower() && shock(user, 60)) // Protective grille of wiring is electrified
 			return .
-		to_chat(user, span_notice("You start cutting through the outer grille."))
+		to_chat(user, span_notice("Вы начинаете перерезать внешнюю решётку."))
 		if(!tool.use_tool(src, user, 10, volume=100))
 			return .
 		if(!panel_open)  // double check it wasn't closed while we were trying to snip
 			return .
-		user.visible_message(span_notice("[user] cut through [src]'s outer grille."),
-							span_notice("You cut through [src]'s outer grille."))
+		user.visible_message(span_notice("[user] перерезал(а) внешнюю решётку [src]."),
+							span_notice("Вы перерезали внешнюю решётку [src]."))
 		security_level = AIRLOCK_SECURITY_PLASTEEL_O
 		return .
 	if(note)
 		if(IsReachableBy(user))
-			user.visible_message(span_notice("[user] cuts down [note] from [src]."), span_notice("You remove [note] from [src]."))
+			user.visible_message(span_notice("[user] срезает [note] с [src]."), span_notice("Вы снимаете [note] с [src]."))
 		else //telekinesis
-			visible_message(span_notice("[tool] cuts down [note] from [src]."))
+			visible_message(span_notice("[tool] срезает [note] с [src]."))
 		tool.play_tool_sound(src)
 		note.forceMove(tool.drop_location())
 		note = null
@@ -975,23 +975,23 @@
 
 	switch(security_level)
 		if(AIRLOCK_SECURITY_PLASTEEL_O_S)
-			layer_flavor = "outer layer of shielding"
+			layer_flavor = "внешний слой брони"
 			next_level = AIRLOCK_SECURITY_PLASTEEL_I
 
 		if(AIRLOCK_SECURITY_PLASTEEL_I_S)
-			layer_flavor = "inner layer of shielding"
+			layer_flavor = "внутренний слой брони"
 			next_level = AIRLOCK_SECURITY_NONE
 		else
 			return ITEM_INTERACT_SUCCESS
 
-	user.visible_message(span_notice("You start prying away [src]'s [layer_flavor]."))
+	user.visible_message(span_notice("Вы начинаете отдирать [layer_flavor] [src]."))
 	if(!tool.use_tool(src, user, 40, volume=100))
 		return ITEM_INTERACT_SUCCESS
 	if(!panel_open || security_level != starting_level)
 		// if the plating's already been broken, don't break it again
 		return ITEM_INTERACT_SUCCESS
-	user.visible_message(span_notice("[user] removes [src]'s shielding."),
-							span_notice("You remove [src]'s [layer_flavor]."))
+	user.visible_message(span_notice("[user] снимает броню с [src]."),
+							span_notice("Вы снимаете [layer_flavor] с [src]."))
 	security_level = next_level
 	spawn_atom_to_turf(/obj/item/stack/sheet/plasteel, user.loc, 1)
 	if(next_level == AIRLOCK_SECURITY_NONE)
@@ -1004,14 +1004,14 @@
 	if(!locked)
 		return
 	if(!panel_open)
-		balloon_alert(user, "panel is closed!")
+		balloon_alert(user, "панель закрыта!")
 		return
 	if(security_level != AIRLOCK_SECURITY_NONE)
-		balloon_alert(user, "airlock is reinforced!")
+		balloon_alert(user, "шлюз укреплён!")
 		return
 
 	if(istype(tool, /obj/item/wrench/bolter))
-		balloon_alert(user, "raising bolts...")
+		balloon_alert(user, "поднимаем болты...")
 		if(!do_after(user, 5 SECONDS, src))
 			return
 		unbolt()
@@ -1032,15 +1032,15 @@
 
 	switch(security_level)
 		if(AIRLOCK_SECURITY_IRON)
-			layer_flavor = "panel's shielding"
+			layer_flavor = "броня панели"
 			next_level = AIRLOCK_SECURITY_NONE
 			material_to_spawn = /obj/item/stack/sheet/iron
 			amount_to_spawn = 2
 		if(AIRLOCK_SECURITY_PLASTEEL_O)
-			layer_flavor = "outer layer of shielding"
+			layer_flavor = "внешний слой брони"
 			next_level = AIRLOCK_SECURITY_PLASTEEL_O_S
 		if(AIRLOCK_SECURITY_PLASTEEL_I)
-			layer_flavor = "inner layer of shielding"
+			layer_flavor = "внутренний слой брони"
 			next_level = AIRLOCK_SECURITY_PLASTEEL_I_S
 		else
 			return ITEM_INTERACT_SUCCESS
@@ -1048,7 +1048,7 @@
 	if(!tool.tool_start_check(user, amount=1))
 		return ITEM_INTERACT_SUCCESS
 
-	to_chat(user, span_notice("You begin cutting the [layer_flavor]..."))
+	to_chat(user, span_notice("Вы начинаете резать [layer_flavor]..."))
 
 	if(!tool.use_tool(src, user, 4 SECONDS, volume=50))
 		return ITEM_INTERACT_SUCCESS
@@ -1058,9 +1058,9 @@
 		return ITEM_INTERACT_SUCCESS
 
 	user.visible_message(
-		span_notice("[user] cuts through [src]'s shielding."),  // passers-by don't get the full picture
-		span_notice("You cut through [src]'s [layer_flavor]."),
-		span_hear("You hear welding.")
+		span_notice("[user] прорезает броню [src]."),  // passers-by don't get the full picture
+		span_notice("Вы прорезаете [layer_flavor] [src]."),
+		span_hear("Вы слышите сварку.")
 	)
 
 	security_level = next_level
@@ -1075,15 +1075,15 @@
 
 /obj/machinery/door/airlock/proc/try_reinforce(mob/user, obj/item/stack/sheet/material, amt_required, new_security_level)
 	if(material.get_amount() < amt_required)
-		to_chat(user, span_warning("You need at least [amt_required] sheets of [material] to reinforce [src]."))
+		to_chat(user, span_warning("Вам нужно как минимум [amt_required] листов [material] для укрепления [src]."))
 		return FALSE
-	to_chat(user, span_notice("You start reinforcing [src]."))
+	to_chat(user, span_notice("Вы начинаете укреплять [src]."))
 	if(!do_after(user, 2 SECONDS, src))
 		return FALSE
 	if(!panel_open || !material.use(amt_required))
 		return FALSE
-	user.visible_message(span_notice("[user] reinforces [src] with [material]."),
-						span_notice("You reinforce [src] with [material]."))
+	user.visible_message(span_notice("[user] укрепляет [src] [material]."),
+						span_notice("Вы укрепляете [src] [material]."))
 	security_level = new_security_level
 	update_appearance()
 	return TRUE
@@ -1117,38 +1117,38 @@
 	else if(istype(C, /obj/item/door_seal)) //adding the seal
 		var/obj/item/door_seal/airlockseal = C
 		if(!density)
-			to_chat(user, span_warning("[src] must be closed before you can seal it!"))
+			to_chat(user, span_warning("[src] должен быть закрыт перед герметизацией!"))
 			return
 		if(seal)
-			to_chat(user, span_warning("[src] has already been sealed!"))
+			to_chat(user, span_warning("[src] уже герметизирован!"))
 			return
-		user.visible_message(span_notice("[user] begins sealing [src]."), span_notice("You begin sealing [src]."))
+		user.visible_message(span_notice("[user] начинает герметизировать [src]."), span_notice("Вы начинаете герметизировать [src]."))
 		playsound(src, 'sound/items/tools/jaws_pry.ogg', 30, TRUE)
 		if(!do_after(user, airlockseal.seal_time, target = src))
 			return
 		if(!density)
-			to_chat(user, span_warning("[src] must be closed before you can seal it!"))
+			to_chat(user, span_warning("[src] должен быть закрыт перед герметизацией!"))
 			return
 		if(seal)
-			to_chat(user, span_warning("[src] has already been sealed!"))
+			to_chat(user, span_warning("[src] уже герметизирован!"))
 			return
 		if(!user.transferItemToLoc(airlockseal, src))
-			to_chat(user, span_warning("For some reason, you can't attach [airlockseal]!"))
+			to_chat(user, span_warning("По какой-то причине вы не можете прикрепить [airlockseal]!"))
 			return
 		playsound(src, 'sound/machines/airlock/airlockforced.ogg', 30, TRUE)
-		user.visible_message(span_notice("[user] finishes sealing [src]."), span_notice("You finish sealing [src]."))
+		user.visible_message(span_notice("[user] заканчивает герметизацию [src]."), span_notice("Вы заканчиваете герметизацию [src]."))
 		seal = airlockseal
 		modify_max_integrity(max_integrity * AIRLOCK_SEAL_MULTIPLIER)
 		update_appearance()
 
 	else if(istype(C, /obj/item/paper) || istype(C, /obj/item/photo))
 		if(note)
-			to_chat(user, span_warning("There's already something pinned to this airlock! Use wirecutters to remove it."))
+			to_chat(user, span_warning("К этому шлюзу уже что-то приколото! Используйте кусачки, чтобы снять."))
 			return
 		if(!user.transferItemToLoc(C, src))
-			to_chat(user, span_warning("For some reason, you can't attach [C]!"))
+			to_chat(user, span_warning("По какой-то причине вы не можете прикрепить [C]!"))
 			return
-		user.visible_message(span_notice("[user] pins [C] to [src]."), span_notice("You pin [C] to [src]."))
+		user.visible_message(span_notice("[user] прикалывает [C] к [src]."), span_notice("Вы прикалываете [C] к [src]."))
 		note = C
 		update_appearance()
 	else
@@ -1158,35 +1158,35 @@
 /obj/machinery/door/airlock/try_to_weld(obj/item/weldingtool/W, mob/living/user)
 	if(!operating && density)
 		if(seal)
-			to_chat(user, span_warning("[src] is blocked by a seal!"))
+			to_chat(user, span_warning("[src] заблокирован герметизатором!"))
 			return
 
 		if(atom_integrity < max_integrity)
 			if(!W.tool_start_check(user, amount=1, heat_required = HIGH_TEMPERATURE_REQUIRED))
 				return
-			user.visible_message(span_notice("[user] begins welding the airlock."), \
-							span_notice("You begin repairing the airlock..."), \
-							span_hear("You hear welding."))
+			user.visible_message(span_notice("[user] начинает сварку шлюза."), \
+							span_notice("Вы начинаете ремонтировать шлюз..."), \
+							span_hear("Вы слышите сварку."))
 			if(W.use_tool(src, user, 40, volume=50, extra_checks = CALLBACK(src, PROC_REF(weld_checks), W, user)))
 				atom_integrity = max_integrity
 				set_machine_stat(machine_stat & ~BROKEN)
-				user.visible_message(span_notice("[user] finishes welding [src]."), \
-									span_notice("You finish repairing the airlock."))
+				user.visible_message(span_notice("[user] заканчивает сварку [src]."), \
+									span_notice("Вы заканчиваете ремонт шлюза."))
 				update_appearance()
 		else
-			to_chat(user, span_notice("The airlock doesn't need repairing."))
+			to_chat(user, span_notice("Шлюз не нуждается в ремонте."))
 
 /obj/machinery/door/airlock/try_to_weld_secondary(obj/item/weldingtool/tool, mob/user)
 	if(!tool.tool_start_check(user, amount=1, heat_required = HIGH_TEMPERATURE_REQUIRED))
 		return
-	user.visible_message(span_notice("[user] begins [welded ? "unwelding":"welding"] the airlock."), \
-		span_notice("You begin [welded ? "unwelding":"welding"] the airlock..."), \
-		span_hear("You hear welding."))
+	user.visible_message(span_notice("[user] начинает [welded ? "разварку":"заварку"] шлюза."), \
+		span_notice("Вы начинаете [welded ? "разваривать":"заваривать"] шлюз..."), \
+		span_hear("Вы слышите сварку."))
 	if(!tool.use_tool(src, user, 40, volume=50, extra_checks = CALLBACK(src, PROC_REF(weld_checks), tool, user)))
 		return
 	welded = !welded
-	user.visible_message(span_notice("[user] [welded? "welds shut":"unwelds"] [src]."), \
-		span_notice("You [welded ? "weld the airlock shut":"unweld the airlock"]."))
+	user.visible_message(span_notice("[user] [welded? "заваривает":"разваривает"] [src]."), \
+		span_notice("Вы [welded ? "завариваете шлюз":"развариваете шлюз"]."))
 	user.log_message("[welded ? "welded":"unwelded"] airlock [src] with [tool].", LOG_GAME)
 	update_appearance()
 
@@ -1206,9 +1206,9 @@
 		return FALSE
 	var/obj/item/door_seal/airlockseal = seal
 	if(!ishuman(user))
-		to_chat(user, span_warning("You don't have the dexterity to remove the seal!"))
+		to_chat(user, span_warning("У вас недостаточно ловкости, чтобы снять герметизатор!"))
 		return TRUE
-	user.visible_message(span_notice("[user] begins removing the seal from [src]."), span_notice("You begin removing [src]'s pneumatic seal."))
+	user.visible_message(span_notice("[user] начинает снимать герметизатор с [src]."), span_notice("Вы начинаете снимать пневматическую герметизацию с [src]."))
 	playsound(src, 'sound/machines/airlock/airlockforced.ogg', 30, TRUE)
 	if(!do_after(user, airlockseal.unseal_time, target = src))
 		return TRUE
@@ -1216,7 +1216,7 @@
 		return TRUE
 	playsound(src, 'sound/items/tools/jaws_pry.ogg', 30, TRUE)
 	airlockseal.forceMove(get_turf(user))
-	user.visible_message(span_notice("[user] finishes removing the seal from [src]."), span_notice("You finish removing [src]'s pneumatic seal."))
+	user.visible_message(span_notice("[user] заканчивает снятие герметизатора с [src]."), span_notice("Вы заканчиваете снятие пневматической герметизации с [src]."))
 	seal = null
 	modify_max_integrity(max_integrity / AIRLOCK_SEAL_MULTIPLIER)
 	update_appearance()
@@ -1249,21 +1249,21 @@
 
 /obj/machinery/door/airlock/try_to_crowbar(obj/item/tool, mob/living/user, forced = FALSE)
 	if(!isnull(tool) && tool.tool_behaviour == TOOL_CROWBAR && should_try_removing_electronics() && !operating)
-		user.visible_message(span_notice("[user] removes the electronics from the airlock assembly."), \
-			span_notice("You start to remove electronics from the airlock assembly..."))
+		user.visible_message(span_notice("[user] извлекает электронику из сборки шлюза."), \
+			span_notice("Вы начинаете извлекать электронику из сборки шлюза..."))
 
 		if(tool.use_tool(src, user, 40, volume = 100))
 			deconstruct(TRUE, user)
 			return
 
 	if(seal)
-		to_chat(user, span_warning("Remove the seal first!"))
+		to_chat(user, span_warning("Сначала снимите герметизатор!"))
 		return
 	if(locked)
-		to_chat(user, span_warning("The airlock's bolts prevent it from being forced!"))
+		to_chat(user, span_warning("Болты шлюза мешают его взломать!"))
 		return
 	if(welded)
-		to_chat(user, span_warning("It's welded, it won't budge!"))
+		to_chat(user, span_warning("Шлюз заварен, он не поддаётся!"))
 		return
 
 	if(!hasPower())
@@ -1271,14 +1271,14 @@
 			return
 
 		if(istype(tool, /obj/item/fireaxe) && !HAS_TRAIT(tool, TRAIT_WIELDED)) //being fireaxe'd
-			to_chat(user, span_warning("You need to be wielding [tool] to do that!"))
+			to_chat(user, span_warning("Вы должны держать [tool] двумя руками!"))
 			return
 
 		INVOKE_ASYNC(src, density ? PROC_REF(open) : PROC_REF(close), BYPASS_DOOR_CHECKS)
 		return
 
 	if(!forced)
-		to_chat(user, span_warning("The airlock's motors resist your efforts to force it!"))
+		to_chat(user, span_warning("Моторы шлюза сопротивляются вашим попыткам взломать его!"))
 		return
 
 	var/check_electrified = isElectrified() //setting this so we can check if the mob got shocked during the do_after below
@@ -1312,7 +1312,7 @@
 	open(BYPASS_DOOR_CHECKS)
 	take_damage(AIRLOCK_PRY_DAMAGE, BRUTE, 0, 0) // Enough to sometimes spark
 	if(density && !open(BYPASS_DOOR_CHECKS))
-		to_chat(user, span_warning("Despite your attempts, [src] refuses to open."))
+		to_chat(user, span_warning("Несмотря на ваши усилия, [src] отказывается открываться."))
 
 /obj/machinery/door/airlock/open(forced = DEFAULT_DOOR_CHECKS)
 	if(cycle_pump && !operating && !welded && !seal && locked && density)
@@ -1482,7 +1482,7 @@
 		return
 
 	// reads from the airlock painter's `available paintjob` list. lets the player choose a paint option, or cancel painting
-	var/current_paintjob = tgui_input_list(user, "Paintjob for this airlock", "Customize", sort_list(painter.available_paint_jobs))
+	var/current_paintjob = tgui_input_list(user, "Покраска для этого шлюза", "Настройка", sort_list(painter.available_paint_jobs))
 	if(isnull(current_paintjob) || !in_range(src, user) || !painter.can_use(user)) // if the user clicked cancel on the popup, or moved away, or ran out of ink, return
 		return
 
@@ -1491,7 +1491,7 @@
 	var/obj/structure/door_assembly/assembly = initial(airlock.assemblytype)
 
 	if(airlock_material == "glass" && initial(assembly.noglass)) // prevents painting glass airlocks with a paint job that doesn't have a glass version, such as the freezer
-		to_chat(user, span_warning("This paint job can only be applied to non-glass airlocks."))
+		to_chat(user, span_warning("Эта покраска применима только к шлюзам без стекла."))
 		return
 
 	// applies the user-chosen airlock's icon, overlays and assemblytype to the src airlock
@@ -1545,13 +1545,13 @@
 	if(user.combat_mode)
 		return ..()
 	if(locked || welded || seal) //Extremely generic, as aliens only understand the basics of how airlocks work.
-		to_chat(user, span_warning("[src] refuses to budge!"))
+		to_chat(user, span_warning("[src] отказывается поддаваться!"))
 		user.log_message("Tried to pry open [src], located at [loc_name(src)], but failed due to the airlock being sealed.", LOG_GAME)
 		return
 	add_fingerprint(user)
-	user.visible_message(span_warning("[user] begins prying open [src]."),\
-						span_noticealien("You begin digging your claws into [src] with all your might!"),\
-						span_warning("You hear groaning metal..."))
+	user.visible_message(span_warning("[user] начинает взламывать [src]."),\
+						span_noticealien("Вы начинаете вонзать когти в [src] изо всех сил!"),\
+						span_warning("Вы слышите скрежет металла..."))
 	user.log_message("Started prying open [src], located at [loc_name(src)].", LOG_GAME)
 	var/time_to_open = 5 //half a second
 	if(hasPower())
@@ -1560,7 +1560,7 @@
 
 	if(do_after(user, time_to_open, src))
 		if(density && !open(BYPASS_DOOR_CHECKS)) //The airlock is still closed, but something prevented it opening. (Another player noticed and bolted/welded the airlock in time!)
-			to_chat(user, span_warning("Despite your efforts, [src] managed to resist your attempts to open it!"))
+			to_chat(user, span_warning("Несмотря на ваши усилия, [src] удалось выдержать ваши попытки открыть его!"))
 			user.log_message("Tried and failed to pry open [src], located at [loc_name(src)], due to the airlock getting sealed during the do_after.", LOG_GAME)
 			return
 		user.log_message("Successfully pried open [src], located at [loc_name(src)].", LOG_GAME)
@@ -1671,10 +1671,10 @@
 	switch(the_rcd.mode)
 		if(RCD_DECONSTRUCT)
 			if(seal)
-				to_chat(user, span_notice("[src]'s seal needs to be removed first."))
+				to_chat(user, span_notice("Сначала нужно снять герметизатор с [src]."))
 				return FALSE
 			if(security_level != AIRLOCK_SECURITY_NONE)
-				to_chat(user, span_notice("[src]'s reinforcement needs to be removed first."))
+				to_chat(user, span_notice("Сначала нужно снять укрепление с [src]."))
 				return FALSE
 			return list("delay" = 5 SECONDS, "cost" = 32)
 	return FALSE
@@ -1763,14 +1763,14 @@
 				loseMainPower()
 				update_appearance()
 			else
-				to_chat(usr, span_warning("Main power is already offline."))
+				to_chat(usr, span_warning("Основное питание уже отключено."))
 			. = TRUE
 		if("disrupt-backup")
 			if(!backup_power_timer)
 				loseBackupPower()
 				update_appearance()
 			else
-				to_chat(usr, span_warning("Backup power is already offline."))
+				to_chat(usr, span_warning("Резервное питание уже отключено."))
 			. = TRUE
 		if("shock-restore")
 			shock_restore(usr)
@@ -1811,7 +1811,7 @@
 	if(!user_allowed(user))
 		return
 	if(wires.is_cut(WIRE_SHOCK))
-		to_chat(user, span_warning("Can't un-electrify the airlock - The electrification wire is cut."))
+		to_chat(user, span_warning("Не снять электризацию шлюза - провод электризации перерезан."))
 	else if(isElectrified())
 		set_electrified(MACHINE_NOT_ELECTRIFIED, user)
 
@@ -1819,7 +1819,7 @@
 	if(!user_allowed(user))
 		return
 	if(wires.is_cut(WIRE_SHOCK))
-		to_chat(user, span_warning("The electrification wire has been cut."))
+		to_chat(user, span_warning("Провод электризации перерезан."))
 	else
 		set_electrified(MACHINE_DEFAULT_ELECTRIFY_TIME, user)
 
@@ -1827,7 +1827,7 @@
 	if(!user_allowed(user))
 		return
 	if(wires.is_cut(WIRE_SHOCK))
-		to_chat(user, span_warning("The electrification wire has been cut."))
+		to_chat(user, span_warning("Провод электризации перерезан."))
 	else
 		set_electrified(MACHINE_ELECTRIFIED_PERMANENT, user)
 
@@ -1835,11 +1835,11 @@
 	if(!user_allowed(user))
 		return
 	if(wires.is_cut(WIRE_BOLTS))
-		to_chat(user, span_warning("The door bolt drop wire is cut - you can't toggle the door bolts."))
+		to_chat(user, span_warning("Провод болтов двери перерезан - вы не можете переключать болты."))
 		return
 	if(locked)
 		if(!hasPower())
-			to_chat(user, span_warning("The door has no power - you can't raise the door bolts."))
+			to_chat(user, span_warning("Дверь обесточена - вы не можете поднять болты."))
 		else
 			unbolt()
 			log_combat(user, src, "unbolted")
@@ -1857,9 +1857,9 @@
 	if(!user_allowed(user))
 		return
 	if(welded)
-		to_chat(user, span_warning("The airlock has been welded shut!"))
+		to_chat(user, span_warning("Шлюз заварен!"))
 	else if(locked)
-		to_chat(user, span_warning("The door bolts are down!"))
+		to_chat(user, span_warning("Болты двери опущены!"))
 	else if(!density)
 		close()
 	else
@@ -1926,85 +1926,85 @@
 	SIGNAL_HANDLER
 	if(locked)
 		unbolt()
-		say("Link broken, unbolting.")
+		say("Связь нарушена, отболчивание.")
 	cycle_pump = null
 
 // Station Airlocks Regular
 
 /obj/machinery/door/airlock/command
-	name = "command airlock"
+	name = "командный шлюз"
 	icon = 'icons/obj/doors/airlocks/station/command.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_com
 	normal_integrity = 450
 
 /obj/machinery/door/airlock/security
-	name = "security airlock"
+	name = "шлюз безопасности"
 	icon = 'icons/obj/doors/airlocks/station/security.dmi'
 	var/id = null
 	assemblytype = /obj/structure/door_assembly/door_assembly_sec
 	normal_integrity = 450
 
 /obj/machinery/door/airlock/engineering
-	name = "engineering airlock"
+	name = "инженерный шлюз"
 	icon = 'icons/obj/doors/airlocks/station/engineering.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_eng
 
 /obj/machinery/door/airlock/medical
-	name = "medical airlock"
+	name = "медицинский шлюз"
 	icon = 'icons/obj/doors/airlocks/station/medical.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_med
 
 /obj/machinery/door/airlock/hydroponics	//Hydroponics front doors!
-	name = "hydroponics airlock"
+	name = "шлюз гидропоники"
 	icon = 'icons/obj/doors/airlocks/station/hydroponics.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_hydro
 
 /obj/machinery/door/airlock/maintenance
-	name = "maintenance access"
+	name = "технический доступ"
 	icon = 'icons/obj/doors/airlocks/station/maintenance.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_mai
 	normal_integrity = 250
 
 /obj/machinery/door/airlock/maintenance/external
-	name = "external airlock access"
+	name = "доступ к внешнему шлюзу"
 	icon = 'icons/obj/doors/airlocks/station/maintenanceexternal.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_extmai
 
 /obj/machinery/door/airlock/mining
-	name = "mining airlock"
+	name = "шахтёрский шлюз"
 	icon = 'icons/obj/doors/airlocks/station/mining.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_min
 
 /obj/machinery/door/airlock/atmos
-	name = "atmospherics airlock"
+	name = "шлюз атмосферного отдела"
 	icon = 'icons/obj/doors/airlocks/station/atmos.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_atmo
 
 /obj/machinery/door/airlock/research
-	name = "research airlock"
+	name = "исследовательский шлюз"
 	icon = 'icons/obj/doors/airlocks/station/research.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_research
 
 /obj/machinery/door/airlock/freezer
-	name = "freezer airlock"
+	name = "морозильный шлюз"
 	icon = 'icons/obj/doors/airlocks/station/freezer.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_fre
 	can_be_glass = FALSE
 
 /obj/machinery/door/airlock/science
-	name = "science airlock"
+	name = "научный шлюз"
 	icon = 'icons/obj/doors/airlocks/station/science.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_science
 
 /obj/machinery/door/airlock/virology
-	name = "virology airlock"
+	name = "шлюз вирусологии"
 	icon = 'icons/obj/doors/airlocks/station/virology.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_viro
 
 // Station Airlocks Glass
 
 /obj/machinery/door/airlock/glass
-	name = "glass airlock"
+	name = "стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
@@ -2014,21 +2014,21 @@
 	req_access = list(ACCESS_SYNDICATE)
 
 /obj/machinery/door/airlock/glass/incinerator/syndicatelava_interior
-	name = "Turbine Interior Airlock"
+	name = "Внутренний шлюз турбины"
 	id_tag = INCINERATOR_SYNDICATELAVA_AIRLOCK_INTERIOR
 
 /obj/machinery/door/airlock/glass/incinerator/syndicatelava_exterior
-	name = "Turbine Exterior Airlock"
+	name = "Внешний шлюз турбины"
 	id_tag = INCINERATOR_SYNDICATELAVA_AIRLOCK_EXTERIOR
 
 /obj/machinery/door/airlock/command/glass
-	name = "command glass airlock"
+	name = "командный стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 	normal_integrity = 400
 
 /obj/machinery/door/airlock/engineering/glass
-	name = "engineering glass airlock"
+	name = "инженерный стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
@@ -2036,23 +2036,23 @@
 	critical_machine = TRUE //stops greytide virus from opening & bolting doors in critical positions, such as the SM chamber.
 
 /obj/machinery/door/airlock/security/glass
-	name = "security glass airlock"
+	name = "стеклянный шлюз безопасности"
 	opacity = FALSE
 	glass = TRUE
 	normal_integrity = 400
 
 /obj/machinery/door/airlock/medical/glass
-	name = "medical glass airlock"
+	name = "медицинский стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
 /obj/machinery/door/airlock/hydroponics/glass //Uses same icon as medical/glass, maybe update it with its own unique icon one day?
-	name = "hydroponics glass airlock"
+	name = "стеклянный шлюз гидропоники"
 	opacity = FALSE
 	glass = TRUE
 
 /obj/machinery/door/airlock/research/glass
-	name = "research glass airlock"
+	name = "исследовательский стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
@@ -2061,20 +2061,20 @@
 	heat_proof = TRUE
 
 /obj/machinery/door/airlock/research/glass/incinerator/ordmix_interior
-	name = "Mixing Room Interior Airlock"
+	name = "Внутренний шлюз смесительной"
 	id_tag = INCINERATOR_ORDMIX_AIRLOCK_INTERIOR
 
 /obj/machinery/door/airlock/research/glass/incinerator/ordmix_exterior
-	name = "Mixing Room Exterior Airlock"
+	name = "Внешний шлюз смесительной"
 	id_tag = INCINERATOR_ORDMIX_AIRLOCK_EXTERIOR
 
 /obj/machinery/door/airlock/mining/glass
-	name = "mining glass airlock"
+	name = "шахтёрский стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
 /obj/machinery/door/airlock/atmos/glass
-	name = "atmospheric glass airlock"
+	name = "атмосферный стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
@@ -2082,22 +2082,22 @@
 	critical_machine = TRUE //stops greytide virus from opening & bolting doors in critical positions, such as the SM chamber.
 
 /obj/machinery/door/airlock/science/glass
-	name = "science glass airlock"
+	name = "научный стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
 /obj/machinery/door/airlock/virology/glass
-	name = "virology glass airlock"
+	name = "стеклянный шлюз вирусологии"
 	opacity = FALSE
 	glass = TRUE
 
 /obj/machinery/door/airlock/maintenance/glass
-	name = "maintenance glass airlock"
+	name = "технический стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
 /obj/machinery/door/airlock/maintenance/external/glass
-	name = "maintenance external glass airlock"
+	name = "внешний технический стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 	normal_integrity = 200
@@ -2105,7 +2105,7 @@
 // Station Airlocks Mineral
 
 /obj/machinery/door/airlock/gold
-	name = "gold airlock"
+	name = "золотой шлюз"
 	icon = 'icons/obj/doors/airlocks/station/gold.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_gold
 
@@ -2128,7 +2128,7 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/silver
-	name = "silver airlock"
+	name = "серебряный шлюз"
 	icon = 'icons/obj/doors/airlocks/station/silver.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_silver
 
@@ -2137,7 +2137,7 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/diamond
-	name = "diamond airlock"
+	name = "алмазный шлюз"
 	icon = 'icons/obj/doors/airlocks/station/diamond.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_diamond
 	normal_integrity = 1000
@@ -2149,7 +2149,7 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/uranium
-	name = "uranium airlock"
+	name = "урановый шлюз"
 	icon = 'icons/obj/doors/airlocks/station/uranium.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_uranium
 	var/last_event = 0
@@ -2182,8 +2182,8 @@
 	actually_radioactive = FALSE
 
 /obj/machinery/door/airlock/plasma
-	name = "plasma airlock"
-	desc = "No way this can end badly."
+	name = "плазменный шлюз"
+	desc = "Ничем хорошим это не кончится."
 	icon = 'icons/obj/doors/airlocks/station/plasma.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_plasma
 	material_flags = MATERIAL_EFFECTS
@@ -2201,8 +2201,8 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/bananium
-	name = "bananium airlock"
-	desc = "Honkhonkhonk"
+	name = "бананиевый шлюз"
+	desc = "Хонкхонкхонк"
 	icon = 'icons/obj/doors/airlocks/station/bananium.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_bananium
 	doorOpen = 'sound/items/bikehorn.ogg'
@@ -2212,7 +2212,7 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/sandstone
-	name = "sandstone airlock"
+	name = "песчаниковый шлюз"
 	icon = 'icons/obj/doors/airlocks/station/sandstone.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_sandstone
 
@@ -2221,7 +2221,7 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/wood
-	name = "wooden airlock"
+	name = "деревянный шлюз"
 	icon = 'icons/obj/doors/airlocks/station/wood.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_wood
 
@@ -2230,7 +2230,7 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/titanium
-	name = "shuttle airlock"
+	name = "шаттловый шлюз"
 	assemblytype = /obj/structure/door_assembly/door_assembly_titanium
 	icon = 'icons/obj/doors/airlocks/shuttle/shuttle.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/shuttle/overlays.dmi'
@@ -2242,7 +2242,7 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/bronze
-	name = "bronze airlock"
+	name = "бронзовый шлюз"
 	icon = 'icons/obj/doors/airlocks/clockwork/pinion_airlock.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/clockwork/overlays.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_bronze
@@ -2256,13 +2256,13 @@
 // Public Airlocks
 
 /obj/machinery/door/airlock/public
-	name = "public airlock"
+	name = "общественный шлюз"
 	icon = 'icons/obj/doors/airlocks/public/glass.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/public/overlays.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_public
 
 /obj/machinery/door/airlock/public/glass
-	name = "public glass airlock"
+	name = "общественный стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
@@ -2271,17 +2271,17 @@
 	heat_proof = TRUE
 
 /obj/machinery/door/airlock/public/glass/incinerator/atmos_interior
-	name = "Turbine Interior Airlock"
+	name = "Внутренний шлюз турбины"
 	id_tag = INCINERATOR_ATMOS_AIRLOCK_INTERIOR
 
 /obj/machinery/door/airlock/public/glass/incinerator/atmos_exterior
-	name = "Turbine Exterior Airlock"
+	name = "Внешний шлюз турбины"
 	id_tag = INCINERATOR_ATMOS_AIRLOCK_EXTERIOR
 
 // External Airlocks
 
 /obj/machinery/door/airlock/external
-	name = "external airlock"
+	name = "внешний шлюз"
 	icon = 'icons/obj/doors/airlocks/external/external.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/external/overlays.dmi'
 	note_overlay_file = 'icons/obj/doors/airlocks/external/overlays.dmi'
@@ -2305,7 +2305,7 @@
 /obj/machinery/door/airlock/external/examine(mob/user)
 	. = ..()
 	if(space_dir)
-		. += span_notice("It has labels indicating that it has an emergency mechanism to open from the [dir2text(space_dir)] side with <b>just your hands</b> even if there's no power.")
+		. += span_notice("На нём есть надписи, указывающие на аварийный механизм открывания со стороны [dir2text(space_dir)] <b>голыми руками</b>, даже если нет питания.")
 
 /obj/machinery/door/airlock/external/cyclelinkairlock()
 	. = ..()
@@ -2317,7 +2317,7 @@
 /obj/machinery/door/airlock/external/try_safety_unlock(mob/user)
 	if(space_dir && density)
 		if(!hasPower())
-			to_chat(user, span_notice("You begin unlocking the airlock safety mechanism..."))
+			to_chat(user, span_notice("Вы начинаете разблокировку аварийного механизма шлюза..."))
 			if(do_after(user, 15 SECONDS, target = src))
 				try_to_crowbar(null, user, TRUE)
 				return TRUE
@@ -2333,7 +2333,7 @@
 /obj/machinery/door/airlock/external/ruin
 
 /obj/machinery/door/airlock/external/glass
-	name = "external glass airlock"
+	name = "внешний стеклянный шлюз"
 	opacity = FALSE
 	glass = TRUE
 
@@ -2360,7 +2360,7 @@
 // Vault Airlocks
 
 /obj/machinery/door/airlock/vault
-	name = "vault door"
+	name = "дверь хранилища"
 	icon = 'icons/obj/doors/airlocks/vault/vault.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/vault/overlays.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_vault
@@ -2373,7 +2373,7 @@
 // Hatch Airlocks
 
 /obj/machinery/door/airlock/hatch
-	name = "airtight hatch"
+	name = "герметичный люк"
 	icon = 'icons/obj/doors/airlocks/hatch/centcom.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/hatch/overlays.dmi'
 	note_overlay_file = 'icons/obj/doors/airlocks/hatch/overlays.dmi'
@@ -2381,7 +2381,7 @@
 	can_be_glass = FALSE
 
 /obj/machinery/door/airlock/maintenance_hatch
-	name = "maintenance hatch"
+	name = "технический люк"
 	icon = 'icons/obj/doors/airlocks/hatch/maintenance.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/hatch/overlays.dmi'
 	note_overlay_file = 'icons/obj/doors/airlocks/hatch/overlays.dmi'
@@ -2391,7 +2391,7 @@
 // High Security Airlocks
 
 /obj/machinery/door/airlock/highsecurity
-	name = "high tech security airlock"
+	name = "высокотехнологичный шлюз безопасности"
 	icon = 'icons/obj/doors/airlocks/highsec/highsec.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/highsec/overlays.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_highsecurity
@@ -2408,7 +2408,7 @@
 // Shuttle Airlocks
 
 /obj/machinery/door/airlock/shuttle
-	name = "shuttle airlock"
+	name = "шаттловый шлюз"
 	icon = 'icons/obj/doors/airlocks/shuttle/shuttle.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/shuttle/overlays.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_shuttle
@@ -2418,8 +2418,8 @@
 	glass = TRUE
 
 /obj/machinery/door/airlock/abductor
-	name = "alien airlock"
-	desc = "With humanity's current technological level, it could take years to hack this advanced airlock... or maybe we should give a screwdriver a try?"
+	name = "инопланетный шлюз"
+	desc = "При текущем уровне технологий человечества могут потребоваться годы, чтобы взломать этот продвинутый шлюз... или, может, стоит попробовать отвёртку?"
 	icon = 'icons/obj/doors/airlocks/abductor/abductor_airlock.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/abductor/overlays.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_abductor
@@ -2435,7 +2435,7 @@
 // Cult Airlocks
 
 /obj/machinery/door/airlock/cult
-	name = "cult airlock"
+	name = "культовый шлюз"
 	icon = 'icons/obj/doors/airlocks/cult/runed/cult.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/cult/runed/overlays.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_cult
@@ -2486,8 +2486,8 @@
 /obj/machinery/door/airlock/cult/proc/conceal()
 	icon = 'icons/obj/doors/airlocks/station/maintenance.dmi'
 	overlays_file = 'icons/obj/doors/airlocks/station/overlays.dmi'
-	name = "Airlock"
-	desc = "It opens and closes."
+	name = "Шлюз"
+	desc = "Открывается и закрывается."
 	stealthy = TRUE
 	update_appearance()
 
@@ -2529,8 +2529,8 @@
 	friendly = TRUE
 
 /obj/machinery/door/airlock/cult/weak
-	name = "brittle cult airlock"
-	desc = "An airlock hastily corrupted by blood magic, it is unusually brittle in this state."
+	name = "хрупкий культовый шлюз"
+	desc = "Шлюз, наспех искажённый кровавой магией. В таком состоянии он необычайно хрупок."
 	normal_integrity = 150
 	damage_deflection = 5
 	armor_type = /datum/armor/none
@@ -2538,7 +2538,7 @@
 // Material Airlocks
 
 /obj/machinery/door/airlock/material
-	name = "Airlock"
+	name = "Шлюз"
 	material_flags = MATERIAL_EFFECTS | MATERIAL_ADD_PREFIX | MATERIAL_GREYSCALE | MATERIAL_AFFECT_STATISTICS
 	greyscale_config = /datum/greyscale_config/material_airlock
 	assemblytype = /obj/structure/door_assembly/door_assembly_material
@@ -2575,8 +2575,8 @@
 	set_bounds()
 
 /obj/structure/fluff/airlock_filler
-	name = "airlock fluff"
-	desc = "You shouldn't be able to see this fluff!"
+	name = "заполнитель шлюза"
+	desc = "Вы не должны видеть этот заполнитель!"
 	icon = null
 	icon_state = null
 	density = TRUE

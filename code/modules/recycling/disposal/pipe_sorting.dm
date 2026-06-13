@@ -2,7 +2,7 @@
 // This is a base type, use subtypes on the map.
 /obj/structure/disposalpipe/sorting
 	name = "sorting disposal pipe"
-	desc = "An underfloor disposal pipe with a sorting mechanism."
+	desc = "Подпольная утилизационная труба с сортировочным механизмом."
 	icon_state = "pipe-j1s"
 	initialize_dirs = DISP_DIR_RIGHT | DISP_DIR_FLIP
 
@@ -49,11 +49,11 @@
 /obj/structure/disposalpipe/sorting/mail/examine(mob/user)
 	. = ..()
 	if(sortTypes.len)
-		. += "It is tagged with the following tags:"
+		. += "Она помечена следующими метками:"
 		for(var/t in sortTypes)
 			. += "\t[GLOB.TAGGERLOCATIONS[t]]."
 	else
-		. += "It has no sorting tags set."
+		. += "У неё нет установленных меток сортировки."
 
 /obj/structure/disposalpipe/sorting/mail/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(istype(I, /obj/item/dest_tagger))
@@ -62,10 +62,10 @@
 		if(O.currTag)// Tagger has a tag set
 			if(O.currTag in sortTypes)
 				sortTypes -= O.currTag
-				to_chat(user, span_notice("Removed \"[GLOB.TAGGERLOCATIONS[O.currTag]]\" filter."))
+				to_chat(user, span_notice("Удалён фильтр \"[GLOB.TAGGERLOCATIONS[O.currTag]]\"."))
 			else
 				sortTypes |= O.currTag
-				to_chat(user, span_notice("Added \"[GLOB.TAGGERLOCATIONS[O.currTag]]\" filter."))
+				to_chat(user, span_notice("Добавлен фильтр \"[GLOB.TAGGERLOCATIONS[O.currTag]]\"."))
 			playsound(src, 'sound/machines/beep/twobeep_high.ogg', 100, TRUE)
 	else
 		return ..()
@@ -78,7 +78,7 @@
 
 // Wrap sorting junction, sorts objects destined for the mail office mail table (tomail = TRUE)
 /obj/structure/disposalpipe/sorting/wrap
-	desc = "An underfloor disposal pipe which sorts wrapped and unwrapped objects."
+	desc = "Подпольная утилизационная труба, сортирующая упакованные и неупакованные предметы."
 	flip_type = /obj/structure/disposalpipe/sorting/wrap/flip
 	initialize_dirs = DISP_DIR_RIGHT | DISP_DIR_FLIP
 

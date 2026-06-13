@@ -285,7 +285,7 @@
 
 /turf/open/floor/carpet/examine(mob/user)
 	. = ..()
-	. += span_notice("There's a <b>small crack</b> on the edge of it.")
+	. += span_notice("С края видна небольшая <b>трещина</b>.")
 
 /turf/open/floor/carpet/Initialize(mapload)
 	. = ..()

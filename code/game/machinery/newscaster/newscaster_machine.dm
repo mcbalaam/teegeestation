@@ -349,12 +349,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 			if(isliving(user))
 				var/mob/living/living_user = user
 				id_card = living_user.get_idcard(hand_first = TRUE)
-		if(!(admin_access in id_card?.GetAccess()))
+			if(!(admin_access in id_card?.GetAccess()))
 				say("Доступ запрещён.")
 				return TRUE
-		var/questionable_message = params["messageID"]
-		for(var/datum/feed_message/iterated_feed_message as anything in current_channel.messages)
-			if(iterated_feed_message.message_id == questionable_message)
+			var/questionable_message = params["messageID"]
+			for(var/datum/feed_message/iterated_feed_message as anything in current_channel.messages)
+				if(iterated_feed_message.message_id == questionable_message)
 					iterated_feed_message.toggle_censor_body()
 					break
 
@@ -366,9 +366,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 			if(!(admin_access in id_card?.GetAccess()))
 				say("Доступ запрещён.")
 				return TRUE
-		var/questionable_message = params["messageID"]
-		for(var/datum/feed_message/iterated_feed_message in current_channel.messages)
-			if(iterated_feed_message.message_id == questionable_message)
+			var/questionable_message = params["messageID"]
+			for(var/datum/feed_message/iterated_feed_message in current_channel.messages)
+				if(iterated_feed_message.message_id == questionable_message)
 					iterated_feed_message.toggle_censor_author()
 					break
 
@@ -495,7 +495,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/newscaster, 30)
 		if(!user.temporarilyRemoveItemFromInventory(attacking_item))
 			return
 		paper_remaining++
-		to_chat(user, span_notice("Вы вставляете [attacking_item.declent_ru(ACCUSATIVE)] в [declent_ru(ACCUSATIVE)]! Теперь внутри [paper_remaining] лист\ов бумаги."))
+		to_chat(user, span_notice("Вы вставляете [attacking_item.declent_ru(ACCUSATIVE)] в [declent_ru(ACCUSATIVE)]! Листов внутри: [paper_remaining]."))
 		qdel(attacking_item)
 		return
 	return ..()

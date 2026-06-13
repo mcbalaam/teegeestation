@@ -31,8 +31,12 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/light_switch, 26)
 	if(!area)
 		area = get_area(src)
 	if(autoname)
-		ru_names_rename(ru_names_toml(src::name, suffix = " ([area.name])", override_base = "[declent_ru(NOMINATIVE)] ([area.name])"))
-		name = "[declent_ru(NOMINATIVE)] ([area.name])"
+		// BANDASTATION EDIT START
+		var/base_translated = declent_ru_initial(initial(name), NOMINATIVE, initial(name))
+		var/area_name_genitive = area.declent_ru(GENITIVE)
+		name = "[base_translated] [area_name_genitive]"
+		ru_names_rename(ru_names_toml(initial(name), suffix = " [area_name_genitive]", override_base = name))
+		// BANDASTATION EDIT END
 	if(mapload)
 		find_and_mount_on_atom()
 	register_context()

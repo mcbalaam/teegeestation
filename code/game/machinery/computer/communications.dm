@@ -9,7 +9,7 @@
 // The communications computer
 /obj/machinery/computer/communications
 	name = "communications console"
-	desc = "A console used for high-priority announcements and emergencies."
+	desc = "Консоль для информационных и экстренных оповещений."
 	icon_screen = "comm"
 	icon_keyboard = "tech_key"
 	req_access = list(ACCESS_COMMAND)

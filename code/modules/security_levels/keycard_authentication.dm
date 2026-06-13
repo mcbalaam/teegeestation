@@ -8,7 +8,7 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 
 /obj/machinery/keycard_auth
 	name = "keycard authentication device"
-	desc = "This device is used to trigger station functions which require more than one ID card to authenticate, or to give the Janitor access to a department."
+	desc = "Служит для активации служебных функций станции, требующих подтверждения несколькими картами, или выдачи санитарного доступа в отдел."
 	icon = 'icons/obj/machines/keycard_auth_table.dmi'
 	icon_state = "auth_off"
 	power_channel = AREA_USAGE_ENVIRON
@@ -91,7 +91,7 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 			if(!living_user || !istype(living_user))
 				return TRUE
 			if(!COOLDOWN_FINISHED(src, access_grant_cooldown))
-				balloon_alert(usr, "on cooldown!")
+				balloon_alert(usr, "подождите!")
 				return TRUE
 			var/obj/item/card/id/advanced/card = living_user.get_idcard(hand_first = TRUE)
 			if(!card)
@@ -146,10 +146,10 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	message_admins("[ADMIN_LOOKUPFLW(triggerer)] triggered and [ADMIN_LOOKUPFLW(confirmer)] confirmed event [event]")
 
 	var/area/A1 = get_area(triggerer)
-	deadchat_broadcast(" triggered [event] at [span_name("[A1.name]")].", span_name("[triggerer]"), triggerer, message_type=DEADCHAT_ANNOUNCEMENT)
+	deadchat_broadcast(" запросил [event] в [span_name("[A1.name]")].", span_name("[triggerer]"), triggerer, message_type=DEADCHAT_ANNOUNCEMENT)
 
 	var/area/A2 = get_area(confirmer)
-	deadchat_broadcast(" confirmed [event] at [span_name("[A2.name]")].", span_name("[confirmer]"), confirmer, message_type=DEADCHAT_ANNOUNCEMENT)
+	deadchat_broadcast(" подтвердил [event] в [span_name("[A2.name]")].", span_name("[confirmer]"), confirmer, message_type=DEADCHAT_ANNOUNCEMENT)
 	switch(event)
 		if(KEYCARD_RED_ALERT)
 			SSsecurity_level.set_level(SEC_LEVEL_RED)
@@ -173,7 +173,7 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 					airlock.emergency = TRUE
 					airlock.update_icon(ALL, 0)
 
-	minor_announce("Ограничения на доступ к техническим и внешним шлюзам были сняты.", "Внимание! На станции объявлена чрезвычайная ситуация!",1)
+	minor_announce("На станции объявлено положение чрезвычайной ситуации. Ограничения на доступ к техническим и внешним шлюзам были сняты.", "ВНИМАНИЕ: Чрезвычайная ситуация", 1)
 	GLOB.emergency_access = TRUE
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("emergency maintenance access", "enabled"))
 
@@ -185,13 +185,13 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 					airlock.emergency = FALSE
 					airlock.update_icon(ALL, 0)
 
-	minor_announce("Ограничения на доступ в зоны технического обслуживания были восстановлены.", "Внимание! Общестанционная чрезвычайная ситуация отменена")
+	minor_announce("Положение чрезвычайной ситуации отозвано. Ограничения на доступ в зоны технического обслуживания были восстановлены.", "Отбой чрезвычайной ситуации")
 	GLOB.emergency_access = FALSE
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("emergency maintenance access", "disabled"))
 
 /proc/toggle_bluespace_artillery()
 	GLOB.bsa_unlock = !GLOB.bsa_unlock
-	minor_announce("Оружейные протоколы блюспейс артиллерии были [GLOB.bsa_unlock? "разблокированы" : "заблокированы"]", "Обновление оружейных систем")
+	minor_announce("Оружейные протоколы блюспейс артиллерии были [GLOB.bsa_unlock? "разблокированы" : "заблокированы"]", "Оружейные системы [GLOB.station_name]")
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("bluespace artillery", GLOB.bsa_unlock? "unlocked" : "locked"))
 
 #undef ACCESS_GRANTING_COOLDOWN

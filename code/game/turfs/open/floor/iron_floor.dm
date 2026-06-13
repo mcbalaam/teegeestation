@@ -12,7 +12,7 @@
 
 /turf/open/floor/iron/examine(mob/user)
 	. = ..()
-	. += span_notice("There's a <b>small crack</b> on the edge of it.")
+	. += span_notice("С края видна небольшая <b>трещина</b>.")
 
 /turf/open/floor/iron/update_icon_state()
 	if(broken || burnt)
