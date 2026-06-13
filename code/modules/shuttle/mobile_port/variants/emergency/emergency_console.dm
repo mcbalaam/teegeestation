@@ -135,8 +135,8 @@
 		var/remaining = max(0, auth_need - new_len)
 		if(new_len && remaining)
 			priority_announce(
-				"[remaining] авторизации необходимо для раннего запуска шаттла.",
-				"Emergency Shuttle Status",
+				"[auth_num_ru(remaining)] [declension_ru(remaining, "авторизация", "авторизации", "авторизаций")] [declension_ru(remaining, "необходима", "необходимы", "необходимо")] для раннего запуска шаттла.",
+				"Система оповещения эвакуационного шаттла",
 				sound = 'sound/announcer/notice/notice1.ogg',
 				type = ANNOUNCEMENT_TYPE_PRIORITY,
 				has_important_message = TRUE,
@@ -144,8 +144,8 @@
 			)
 		if(repeal)
 			priority_announce(
-				"Авторизация на ранний запуск отозвана, [remaining] авторизации необходимо.",
-				"Emergency Shuttle Status",
+				"Авторизация на ранний запуск отозвана: [auth_num_ru(remaining)] [declension_ru(remaining, "авторизация", "авторизации", "авторизаций")] [declension_ru(remaining, "необходима", "необходимы", "необходимо")].",
+				"Система оповещения эвакуационного шаттла",
 				sound = 'sound/announcer/notice/notice2.ogg',
 				type = ANNOUNCEMENT_TYPE_PRIORITY,
 				color_override = "blue",
@@ -322,6 +322,21 @@
 
 	process(SSMACHINES_DT)
 	return TRUE
+
+/// Возвращает число в виде словосочетания с женским родом (одна, две),
+/// либо цифрами, если род не важен.
+/proc/auth_num_ru(count)
+	var/last_digit = count % 10
+	var/last_two = count % 100
+	if(last_digit == 1 && last_two != 11)
+		if(count == 1)
+			return "одна"
+		return "[trim(num_in_words(count - 1))] одна"
+	if(last_digit == 2 && last_two != 12)
+		if(count == 2)
+			return "две"
+		return "[trim(num_in_words(count - 2))] две"
+	return "[count]"
 
 #undef TIME_LEFT
 #undef ENGINES_STARTED

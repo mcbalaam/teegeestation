@@ -60,6 +60,7 @@
 
 	///How many turfs this shuttle has. Used to check against max shuttle size when expanding expandable shuttles.
 	var/turf_count = 0
+	var/datum/map_template/shuttle/source_template // BANDASTATION EDIT
 
 /obj/docking_port/mobile/Initialize(mapload, list/areas)
 	. = ..()

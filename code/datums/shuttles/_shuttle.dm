@@ -93,6 +93,7 @@
 
 //Whatever special stuff you want
 /datum/map_template/shuttle/post_load(obj/docking_port/mobile/M)
+	M.source_template = src // BANDASTATION EDIT: shuttles
 	if(movement_force)
 		M.movement_force = movement_force.Copy()
 	M.linkup()

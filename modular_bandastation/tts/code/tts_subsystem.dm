@@ -1,6 +1,7 @@
 #define TTS_REPLACEMENTS_FILE_PATH "config/bandastation/tts_replacements.json"
 #define TTS_ACRONYM_REPLACEMENTS "tts_acronym_replacements"
 #define TTS_JOB_REPLACEMENTS "tts_job_replacements"
+#define TTS_SHUTTLE_REPLACEMENTS "tts_shuttle_replacements"
 
 #define FILE_CLEANUP_DELAY 30 SECONDS
 
@@ -87,6 +88,8 @@ SUBSYSTEM_DEF(tts220)
 	var/list/tts_acronym_replacements
 	/// Replacement map for jobs for proper TTS spelling
 	VAR_PRIVATE/list/tts_job_replacements
+	/// Replacement map for shuttle names for proper TTS spelling
+	VAR_PRIVATE/list/tts_shuttle_replacements
 
 /datum/controller/subsystem/tts220/stat_entry(msg)
 	msg += "tRPS:[tts_trps] "
@@ -196,6 +199,7 @@ SUBSYSTEM_DEF(tts220)
 	tts_reused = SStts220.tts_reused
 	tts_acronym_replacements = SStts220.tts_acronym_replacements
 	tts_job_replacements = SStts220.tts_job_replacements
+	tts_shuttle_replacements = SStts220.tts_shuttle_replacements
 
 /datum/controller/subsystem/tts220/proc/load_replacements()
 	if(!fexists(TTS_REPLACEMENTS_FILE_PATH))
@@ -210,6 +214,7 @@ SUBSYSTEM_DEF(tts220)
 	var/list/replacements = json_decode(tts_replacements_json)
 	tts_acronym_replacements = replacements[TTS_ACRONYM_REPLACEMENTS]
 	tts_job_replacements = replacements[TTS_JOB_REPLACEMENTS]
+	tts_shuttle_replacements = replacements[TTS_SHUTTLE_REPLACEMENTS]
 
 /datum/controller/subsystem/tts220/proc/queue_request(text, datum/tts_seed/seed, datum/callback/proc_callback)
 	if(LAZYLEN(tts_requests_queue) > tts_requests_queue_limit)
@@ -527,6 +532,10 @@ SUBSYSTEM_DEF(tts220)
 	if(LAZYLEN(tts_job_replacements))
 		for(var/job in tts_job_replacements)
 			. = replacetext_char(., job, tts_job_replacements[job])
+
+	if(LAZYLEN(tts_shuttle_replacements))
+		for(var/shuttle in tts_shuttle_replacements)
+			. = replacetext_char(., shuttle, tts_shuttle_replacements[shuttle])
 	. = rustutils_latin_to_cyrillic(.)
 
 	var/static/regex/decimals = new(@"-?\d+\.\d+", "g")
@@ -596,5 +605,6 @@ SUBSYSTEM_DEF(tts220)
 #undef TTS_REPLACEMENTS_FILE_PATH
 #undef TTS_ACRONYM_REPLACEMENTS
 #undef TTS_JOB_REPLACEMENTS
+#undef TTS_SHUTTLE_REPLACEMENTS
 
 #undef FILE_CLEANUP_DELAY
