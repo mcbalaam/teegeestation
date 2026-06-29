@@ -68,8 +68,24 @@ export type CommsConsoleData = {
   syndicate: BooleanLike;
   canRequestERT: BooleanLike; // BANDASTATION ADDITION
 
+  // BANDASTATION EDIT START — Announcement Recording
+  recorderActive?: boolean;
+  recorderData?: RecorderData;
+  // BANDASTATION EDIT END
+
   // static_data
   callShuttleReasonMinLength: number;
   maxMessageLength: number;
   maxStatusLineLength: number;
 };
+
+// BANDASTATION EDIT START — Announcement Recording
+export type RecorderData = {
+  recording: boolean;
+  range: number;
+  fragments: { speaker_name: string; text: string }[];
+  fragmentsCount: number;
+  elapsed: number;
+  maxDuration: number;
+};
+// BANDASTATION EDIT END

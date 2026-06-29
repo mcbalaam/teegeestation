@@ -43,6 +43,29 @@ export const AnnouncementTab = (props) => {
             setMessageText('');
           }}
         />
+        {/* BANDASTATION EDIT START - Announcement Recording */}
+        <Button
+          disabled={
+            !(
+              authentication_data.announcement_authenticated ||
+              is_admin_ghost_ai
+            )
+          }
+          icon="microphone"
+          content="Record announcement"
+          onClick={() => {
+            if (
+              !(
+                authentication_data.announcement_authenticated ||
+                is_admin_ghost_ai
+              )
+            ) {
+              return;
+            }
+            act('open_recorder');
+          }}
+        />
+        {/* BANDASTATION EDIT END */}
         <Button
           icon="trash-can"
           content="Discard announcement"

@@ -1,0 +1,3 @@
+#include "_announcement_recording.dm"
+#include "code/announcement_fragment.dm"
+#include "code/announcement_recorder_console.dm"

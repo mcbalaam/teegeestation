@@ -5,6 +5,7 @@ import { capitalize } from 'tgui-core/string';
 import { useBackend } from '../../backend';
 import { AlertButton } from './AlertButton';
 import { MessageModal } from './MessageModal';
+import { RecorderModal } from './RecorderModal'; // BANDASTATION EDIT — Announcement Recording
 import { type CommsConsoleData, ShuttleState } from './types';
 
 export function PageMain(props) {
@@ -31,6 +32,8 @@ export function PageMain(props) {
     shuttleLastCalled,
     shuttleRecallable,
     canRequestERT, // BANDASTATION ADDITION
+    recorderActive, // BANDASTATION EDIT — Announcement Recording
+    recorderData,
   } = data;
 
   const [callingShuttle, setCallingShuttle] = useState(false);
@@ -116,12 +119,22 @@ export function PageMain(props) {
       <Section title="Functions">
         <Flex direction="column">
           {!!canMakeAnnouncement && (
-            <Button
-              icon="bullhorn"
-              onClick={() => act('makePriorityAnnouncement')}
-            >
-              Make Priority Announcement
-            </Button>
+            <>
+              <Button
+                icon="bullhorn"
+                onClick={() => act('makePriorityAnnouncement')}
+              >
+                Make Priority Announcement
+              </Button>
+              {/* BANDASTATION EDIT START - Announcement Recording */}
+              <Button
+                icon="microphone"
+                onClick={() => act('makeRecordedAnnouncement')}
+              >
+                Record Priority Announcement
+              </Button>
+              {/* BANDASTATION EDIT END */}
+            </>
           )}
 
           {!!canToggleEmergencyAccess && (
@@ -358,6 +371,12 @@ export function PageMain(props) {
           }}
         />
       )}
+
+      {/* BANDASTATION EDIT START — Announcement Recording */}
+      {!!recorderActive && !!recorderData && (
+        <RecorderModal recorderData={recorderData} />
+      )}
+      {/* BANDASTATION EDIT END */}
     </Box>
   );
 }
