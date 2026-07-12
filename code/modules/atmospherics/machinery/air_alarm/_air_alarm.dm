@@ -2,7 +2,7 @@
 
 /obj/machinery/airalarm
 	name = "air alarm"
-	desc = "A machine that monitors atmosphere levels. Goes off if the area is dangerous."
+	desc = "Устройство контроля атмосферы. Срабатывает, если зона опасна."
 	icon = 'icons/obj/machines/wallmounts.dmi'
 	icon_state = "alarmp"
 	idle_power_usage = BASE_MACHINE_IDLE_CONSUMPTION * 0.05
@@ -201,15 +201,15 @@ GLOBAL_LIST_EMPTY_TYPED(air_alarms, /obj/machinery/airalarm)
 	. = ..()
 	switch(buildstage)
 		if(AIR_ALARM_BUILD_NO_CIRCUIT)
-			. += span_notice("It is missing air alarm electronics.")
+			. += span_notice("Отсутствует плата воздушной сигнализации.")
 		if(AIR_ALARM_BUILD_NO_WIRES)
-			. += span_notice("It is missing wiring.")
+			. += span_notice("Отсутствует проводка.")
 		if(AIR_ALARM_BUILD_COMPLETE)
-			. += span_notice("Right-click to [locked ? "unlock" : "lock"] the interface.")
+			. += span_notice("ПКМ, чтобы [locked ? "разблокировать" : "заблокировать"] интерфейс.")
 
 /obj/machinery/airalarm/ui_status(mob/user, datum/ui_state/state)
 	if(HAS_SILICON_ACCESS(user) && aidisabled)
-		to_chat(user, "AI control has been disabled.")
+		to_chat(user, "Управление ИИ отключено.")
 	else if(!shorted)
 		return ..()
 	return UI_CLOSE
@@ -224,14 +224,14 @@ GLOBAL_LIST_EMPTY_TYPED(air_alarms, /obj/machinery/airalarm)
 		var/obj/machinery/air_sensor/sensor = multi_tool.buffer
 
 		if(!allow_link_change)
-			balloon_alert(user, "linking disabled")
+			balloon_alert(user, "привязка отключена")
 			return ITEM_INTERACT_BLOCKING
 		if(connected_sensor || sensor.connected_airalarm)
-			balloon_alert(user, "sensor already connected!")
+			balloon_alert(user, "сенсор уже подключён!")
 			return ITEM_INTERACT_BLOCKING
 
 		connect_sensor(sensor)
-		balloon_alert(user, "connected sensor")
+		balloon_alert(user, "сенсор подключён")
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/airalarm/ui_interact(mob/user, datum/tgui/ui)
@@ -682,6 +682,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/airalarm, 27)
 ///Used for engine_access air alarm helper, which set air alarm's required access to away_general_access.
 /obj/machinery/airalarm/proc/give_engine_access()
 	name = "engine air alarm"
+	ru_names_rename(ru_names_toml(name))
 	locked = FALSE
 	req_access = null
 	req_one_access = list(ACCESS_ATMOSPHERICS, ACCESS_ENGINEERING)
@@ -689,6 +690,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/airalarm, 27)
 ///Used for mixingchamber_access air alarm helper, which set air alarm's required access to away_general_access.
 /obj/machinery/airalarm/proc/give_mixingchamber_access()
 	name = "chamber air alarm"
+	ru_names_rename(ru_names_toml(name))
 	locked = FALSE
 	req_access = null
 	req_one_access = list(ACCESS_ATMOSPHERICS, ACCESS_ORDNANCE)
@@ -696,7 +698,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/airalarm, 27)
 ///Used for all_access air alarm helper, which set air alarm's required access to null.
 /obj/machinery/airalarm/proc/give_all_access()
 	name = "all-access air alarm"
-	desc = "This particular atmos control unit appears to have no access restrictions."
+	ru_names_rename(ru_names_toml(name))
+	desc = "Этот блок управления атмосферой, судя по всему, не имеет ограничений доступа."
 	locked = FALSE
 	req_access = null
 	req_one_access = null
@@ -770,12 +773,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/airalarm, 27)
 
 // BANDASTATION ADDITION: Airalarm duplicating name fix
 /obj/machinery/airalarm/proc/update_zone_name()
-	var/base_name = initial(name) // air alarm
 	var/area/current_area = get_area(src)
 	if(!current_area)
-		name = base_name
+		name = initial(name)
 		return
-	name = "[base_name] [current_area.declent_ru(GENITIVE)]"
+	name = "[declent_ru(NOMINATIVE)] [current_area.declent_ru(GENITIVE)]"
 // BANDASTATION ADDITION: End
 
 #undef AIRALARM_WARNING_COOLDOWN

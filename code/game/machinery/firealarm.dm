@@ -1,10 +1,10 @@
 /obj/item/electronics/firealarm
 	name = "fire alarm electronics"
-	desc = "A fire alarm circuit. Can handle heat levels up to 40 degrees celsius."
+	desc = "Плата контроллера тревожной кнопки пожарной сигнализации. Соответствует температурным требованиям (но это не точно)."
 
 /obj/item/wallframe/firealarm
 	name = "fire alarm frame"
-	desc = "Used for building fire alarms."
+	desc = "Используется для сборки тревожных кнопок пожарной сигнализации."
 	icon = 'icons/obj/machines/wallmounts.dmi'
 	icon_state = "fire_bitem"
 	result_path = /obj/machinery/firealarm
@@ -13,13 +13,13 @@
 /obj/item/wallframe/firealarm/try_build(atom/support, mob/user)
 	var/area/A = get_area(user)
 	if(A.always_unpowered)
-		balloon_alert(user, "cannot place in this area!")
+		balloon_alert(user, "нельзя установить здесь!")
 		return FALSE
 	return ..()
 
 /obj/machinery/firealarm
 	name = "fire alarm"
-	desc = "Pull this in case of emergency. Thus, keep pulling it forever."
+	desc = "«ПРИ ПОЖАРЕ ПОДНЯТЬ КРЫШКУ НАЖАТЬ КНОПКУ»."
 	icon = 'icons/obj/machines/wallmounts.dmi'
 	icon_state = "fire0"
 	max_integrity = 250
@@ -77,8 +77,8 @@
 	AddComponent( \
 		/datum/component/redirect_attack_hand_from_turf, \
 		screentip_texts = list( \
-			lmb_text = "Turn on alarm", \
-			rmb_text = "Turn off alarm", \
+			lmb_text = "Включить сигнализацию", \
+			rmb_text = "Выключить сигнализацию", \
 		), \
 	)
 
@@ -220,9 +220,9 @@
 		return FALSE
 	obj_flags |= EMAGGED
 	update_appearance()
-	visible_message(span_warning("Sparks fly out of [src]!"))
+	visible_message(span_warning("Из [declent_ru(DATIVE)] вылетают искры!"))
 	if(user)
-		balloon_alert(user, "circuitry fried")
+		balloon_alert(user, "электроника спалена")
 		user.log_message("emagged [src].", LOG_ATTACK)
 	playsound(src, SFX_SPARKS, 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 	set_status()
@@ -256,7 +256,7 @@
 		firelock.activate(FIRELOCK_ALARM_TYPE_GENERIC)
 	if(user)
 		if(!silent)
-			balloon_alert(user, "triggered alarm!")
+			balloon_alert(user, "сигнализация включена!")
 		user.log_message("triggered a fire alarm.", LOG_GAME)
 	my_area.fault_status = AREA_FAULT_MANUAL
 	my_area.fault_location = name
@@ -280,7 +280,7 @@
 		firelock.crack_open()
 	if(user)
 		if(!silent)
-			balloon_alert(user, "reset alarm")
+			balloon_alert(user, "сигнализация выключена")
 		user.log_message("reset a fire alarm.", LOG_GAME)
 	soundloop.stop()
 	SEND_SIGNAL(src, COMSIG_FIREALARM_ON_RESET)
@@ -315,47 +315,47 @@
 
 /obj/machinery/firealarm/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	if(issilicon(user))
-		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Toggle automatic fire detection"
+		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Включить автоматику"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(isnull(held_item))
-		context[SCREENTIP_CONTEXT_LMB] = "Turn on"
-		context[SCREENTIP_CONTEXT_RMB] = "Turn off"
+		context[SCREENTIP_CONTEXT_LMB] = "Включить"
+		context[SCREENTIP_CONTEXT_RMB] = "Выключить"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	switch(held_item.tool_behaviour)
 		if(TOOL_SCREWDRIVER)
 			if(buildstage == FIRE_ALARM_BUILD_SECURED)
-				context[SCREENTIP_CONTEXT_RMB] = "[panel_open ? "Unexpose" : "Expose"] wires"
+				context[SCREENTIP_CONTEXT_RMB] = "[panel_open ? "Скрыть" : "Раскрыть"] проводку"
 				. = CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_WELDER)
 			if(panel_open)
-				context[SCREENTIP_CONTEXT_LMB] = "Repair"
+				context[SCREENTIP_CONTEXT_LMB] = "Починить"
 				. = CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_WIRECUTTER)
 			if(panel_open && buildstage == FIRE_ALARM_BUILD_SECURED)
-				context[SCREENTIP_CONTEXT_LMB] = "Examine wires"
-				context[SCREENTIP_CONTEXT_RMB] = "Remove wires"
+				context[SCREENTIP_CONTEXT_LMB] = "Осмотреть проводку"
+				context[SCREENTIP_CONTEXT_RMB] = "Удалить проводку"
 				. = CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_MULTITOOL)
 			if(panel_open && buildstage == FIRE_ALARM_BUILD_SECURED)
-				context[SCREENTIP_CONTEXT_LMB] = "Examine wires"
+				context[SCREENTIP_CONTEXT_LMB] = "Осмотреть проводку"
 				. = CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_CROWBAR)
 			if(panel_open && buildstage == FIRE_ALARM_BUILD_NO_WIRES)
-				context[SCREENTIP_CONTEXT_RMB] = "Remove circuit"
+				context[SCREENTIP_CONTEXT_RMB] = "Извлечь плату"
 				. = CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_WRENCH)
 			if(panel_open && buildstage == FIRE_ALARM_BUILD_NO_CIRCUIT)
-				context[SCREENTIP_CONTEXT_RMB] = "Remove fire alarm"
+				context[SCREENTIP_CONTEXT_RMB] = "Разобрать"
 				. = CONTEXTUAL_SCREENTIP_SET
 
 	if(istype(held_item, /obj/item/stack/cable_coil) && panel_open && buildstage == FIRE_ALARM_BUILD_NO_WIRES)
-		context[SCREENTIP_CONTEXT_LMB] = "Install wires"
+		context[SCREENTIP_CONTEXT_LMB] = "Установить проводку"
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	if((istype(held_item, /obj/item/electronics/firealarm) || istype(held_item, /obj/item/electroadaptive_pseudocircuit)) && panel_open && buildstage == FIRE_ALARM_BUILD_NO_CIRCUIT)
-		context[SCREENTIP_CONTEXT_LMB] = "Install circuit"
+		context[SCREENTIP_CONTEXT_LMB] = "Установить плату"
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	return .
@@ -365,7 +365,7 @@
 		return NONE
 	toggle_panel_open()
 	tool.play_tool_sound(src)
-	balloon_alert_to_viewers("wires [panel_open ? "exposed" : "unexposed"]")
+	balloon_alert_to_viewers("проводка [panel_open ? "раскрыта" : "спрятана"]")
 	update_appearance()
 	return ITEM_INTERACT_SUCCESS
 
@@ -376,27 +376,27 @@
 	if(!panel_open)
 		return NONE
 	if(atom_integrity >= max_integrity)
-		balloon_alert(user, "already in good condition!")
+		balloon_alert(user, "уже в хорошем состоянии!")
 		return ITEM_INTERACT_BLOCKING
 	if(!tool.tool_start_check(user, amount = 1))
 		return ITEM_INTERACT_BLOCKING
-	balloon_alert_to_viewers("repairing...")
+	balloon_alert_to_viewers("чиним...")
 	if(!tool.use_tool(src, user, 4 SECONDS, amount = 1, volume = 50, extra_checks = CALLBACK(src, PROC_REF(state_callback), null, TRUE)))
 		return ITEM_INTERACT_BLOCKING
 	repair_damage(INFINITY)
-	balloon_alert_to_viewers("repaired")
+	balloon_alert_to_viewers("починено")
 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/firealarm/wirecutter_act_secondary(mob/living/user, obj/item/tool)
 	if(!panel_open)
 		return NONE
 	if(buildstage != FIRE_ALARM_BUILD_SECURED)
-		balloon_alert(user, "no wires to cut!")
+		balloon_alert(user, "нечего резать!")
 		return ITEM_INTERACT_BLOCKING
 
 	tool.play_tool_sound(src)
 	new /obj/item/stack/cable_coil(user.loc, 5)
-	balloon_alert_to_viewers("wires removed")
+	balloon_alert_to_viewers("проводка срезана")
 	buildstage = FIRE_ALARM_BUILD_NO_WIRES
 	update_appearance()
 	return ITEM_INTERACT_SUCCESS
@@ -407,14 +407,14 @@
 	if(buildstage != FIRE_ALARM_BUILD_NO_WIRES)
 		return NONE
 
-	loc.balloon_alert_to_viewers("removing circuit...")
+	loc.balloon_alert_to_viewers("извлекаем плату...")
 	if(!tool.use_tool(src, user, 2 SECONDS, volume = 50, extra_checks = CALLBACK(src, PROC_REF(state_callback), FIRE_ALARM_BUILD_NO_WIRES, TRUE)))
 		return ITEM_INTERACT_BLOCKING
 	if(machine_stat & BROKEN)
-		balloon_alert_to_viewers("broken circuit removed")
+		balloon_alert_to_viewers("сломанная плата извлечена")
 		set_machine_stat(machine_stat & ~BROKEN)
 	else
-		balloon_alert_to_viewers("circuit removed")
+		balloon_alert_to_viewers("плата извлечена")
 		new /obj/item/electronics/firealarm(user.drop_location())
 	buildstage = FIRE_ALARM_BUILD_NO_CIRCUIT
 	update_appearance()
@@ -427,10 +427,10 @@
 	if(!panel_open)
 		return NONE
 	if(buildstage != FIRE_ALARM_BUILD_NO_CIRCUIT)
-		balloon_alert(user, "remove [buildstage == FIRE_ALARM_BUILD_SECURED ? "wires" : "circuit"] first!")
+		balloon_alert(user, "сначала уберите [buildstage == FIRE_ALARM_BUILD_SECURED ? "проводку" : "плату"]!")
 		return ITEM_INTERACT_BLOCKING
 
-	loc.balloon_alert_to_viewers("[/obj/item/wallframe/firealarm::name] removed")
+	loc.balloon_alert_to_viewers("[declent_ru(NOMINATIVE)] снята")
 	new /obj/item/wallframe/firealarm(user.drop_location())
 	tool.play_tool_sound(loc)
 	qdel(src)
@@ -446,7 +446,7 @@
 	if(!is_wire_tool(tool))
 		return NONE
 	if(!panel_open)
-		balloon_alert(user, "expose wires first!")
+		balloon_alert(user, "сперва откройте проводку!")
 		return ITEM_INTERACT_BLOCKING
 	wires.interact(user)
 	return ITEM_INTERACT_SUCCESS
@@ -455,10 +455,10 @@
 	if(buildstage != FIRE_ALARM_BUILD_NO_WIRES)
 		return NONE
 	if(!coil.use(5))
-		balloon_alert(user, "need 5 cables!")
+		balloon_alert(user, "нужно 5 кабелей!")
 		return ITEM_INTERACT_BLOCKING
 
-	balloon_alert_to_viewers("wires installed")
+	balloon_alert_to_viewers("проводка установлена")
 	buildstage = FIRE_ALARM_BUILD_SECURED
 	update_appearance()
 	return ITEM_INTERACT_SUCCESS
@@ -467,10 +467,10 @@
 	if(buildstage != FIRE_ALARM_BUILD_NO_CIRCUIT)
 		return NONE
 	if(!user.transferItemToLoc(circuit, src))
-		balloon_alert(user, "can't install!")
+		balloon_alert(user, "не получается установить!")
 		return ITEM_INTERACT_BLOCKING
 
-	balloon_alert_to_viewers("circuit installed")
+	balloon_alert_to_viewers("плата установлена")
 	qdel(circuit)
 	buildstage = FIRE_ALARM_BUILD_NO_WIRES
 	update_appearance()
@@ -482,7 +482,7 @@
 	if(!pseudocircuit.adapt_circuit(user, circuit_cost = 0.015 * STANDARD_CELL_CHARGE))
 		return ITEM_INTERACT_BLOCKING
 
-	balloon_alert_to_viewers("circuit installed")
+	balloon_alert_to_viewers("плата установлена")
 	buildstage = FIRE_ALARM_BUILD_NO_WIRES
 	update_appearance()
 	return ITEM_INTERACT_SUCCESS
@@ -514,7 +514,7 @@
 /obj/machinery/firealarm/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, list/rcd_data)
 	switch(rcd_data[RCD_DESIGN_MODE])
 		if(RCD_WALLFRAME)
-			balloon_alert_to_viewers("circuit installed")
+			balloon_alert_to_viewers("плата установлена")
 			buildstage = FIRE_ALARM_BUILD_NO_WIRES
 			update_appearance()
 			return TRUE
@@ -560,17 +560,17 @@
 /obj/machinery/firealarm/examine(mob/user)
 	. = ..()
 	if((my_area?.fire || LAZYLEN(my_area?.active_firelocks)))
-		. += "The local area hazard light is flashing."
-		. += "The fault location display is [my_area.fault_location] ([my_area.fault_status == AREA_FAULT_AUTOMATIC ? "Automatic Detection" : "Manual Trigger"])."
+		. += "Аварийная индикация зоны мигает."
+		. += "На дисплее места неисправности: [my_area.fault_location] ([my_area.fault_status == AREA_FAULT_AUTOMATIC ? "АВТОМАТИКА" : "РУЧНОЙ РЕЖИМ"])."
 		if(is_station_level(z))
-			. += "The station security alert level is [SSsecurity_level.get_current_level_as_text()]."
-		. += "<b>Left-Click</b> to activate all firelocks in this area."
-		. += "<b>Right-Click</b> to reset firelocks in this area."
+			. += "Уровень тревоги на станции: [SSsecurity_level.get_current_level_as_text()]."
+		. += "<b>ЛКМ</b> для активации всех шлюзов в зоне."
+		. += "<b>ПКМ</b> для сброса шлюзов в зоне."
 	else
 		if(is_station_level(z))
-			. += "The station security alert level is [SSsecurity_level.get_current_level_as_text()]."
-		. += "The local area thermal detection light is [my_area.fire_detect ? "lit" : "unlit"]."
-		. += "<b>Left-Click</b> to activate all firelocks in this area."
+			. += "Уровень тревоги на станции: [SSsecurity_level.get_current_level_as_text()]."
+		. += "Индикатор термодатчика зоны [my_area.fire_detect ? "горит" : "не горит"]."
+		. += "<b>ЛКМ</b> для активации всех шлюзов в зоне."
 
 // Allows Silicons to disable thermal sensor
 /obj/machinery/firealarm/BorgCtrlClick(mob/living/silicon/robot/user)
@@ -581,7 +581,7 @@
 
 /obj/machinery/firealarm/AICtrlClick(mob/living/silicon/robot/user)
 	if(obj_flags & EMAGGED)
-		balloon_alert(user, "control circuitry malfunctioning!")
+		balloon_alert(user, "плата управления неисправна!")
 		return
 	toggle_fire_detect(user)
 
@@ -589,14 +589,14 @@
 /obj/machinery/firealarm/proc/toggle_fire_detect(mob/user, silent = FALSE)
 	if(!can_toggle_detection)
 		if(user && !silent)
-			balloon_alert(user, "thermal sensors unresponsive!")
+			balloon_alert(user, "термодатчики не отвечают!")
 		return
 	if(my_area.fire_detect)
 		disable_fire_detect(user)
 	else
 		enable_fire_detect(user)
 	if (user && !silent)
-		balloon_alert(user, "thermal sensors [my_area.fire_detect ? "enabled" : "disabled"]")
+		balloon_alert(user, "термодатчики [my_area.fire_detect ? "включены" : "выключены"]")
 
 /// Stops the area from automatically activating firelocks
 /obj/machinery/firealarm/proc/disable_fire_detect(mob/user)
@@ -633,7 +633,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/firealarm, 24) // BANDASTATION EDIT -
 
 /obj/machinery/firealarm/partyalarm
 	name = "\improper PARTY BUTTON"
-	desc = "Cuban Pete is in the house!"
+	desc = "Пиу-пиу, батя в здании!"
 	var/static/party_overlay
 
 /obj/machinery/firealarm/partyalarm/reset(mob/user, silent = FALSE)
